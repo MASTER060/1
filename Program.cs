@@ -1,16 +1,16 @@
 using System;
 using System.Windows.Forms;
 
-namespace RemoteFork
-{
-	internal static class Program
-	{
-		[STAThread]
-		private static void Main()
-		{
-			Application.EnableVisualStyles();
-			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new Form1());
-		}
-	}
+namespace RemoteFork {
+    internal static class Program {
+        [STAThread]
+        private static void Main() {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Main main = new Main {
+                WindowState = FormWindowState.Minimized
+            };
+            Application.Run(main);
+        }
+    }
 }

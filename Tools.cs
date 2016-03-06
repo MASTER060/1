@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace RemoteFork {
     public static class Tools {
-        public static string GetIPAddress(string hostname) {
+        public static string GetIPAddress(string hostname = "") {
             var hostEntry = Dns.GetHostEntry(hostname);
             var addressList = hostEntry.AddressList;
             string result;

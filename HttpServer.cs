@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace RemoteFork {
     public abstract class HttpServer {
@@ -25,8 +24,7 @@ namespace RemoteFork {
                 while (is_active) {
                     try {
                         TcpClient s = listener.AcceptTcpClient();
-                        HttpProcessor @object = new HttpProcessor(s, this);
-                        thread = new Thread(new ThreadStart(@object.Process));
+                        thread = new Thread(new HttpProcessor(s, this).Process);
                         thread.Start();
                         Thread.Sleep(10);
                     } catch (Exception) {
@@ -50,8 +48,8 @@ namespace RemoteFork {
             }
         }
 
-        public abstract void HandleGetRequest(HttpProcessor p);
+        public abstract void HandleGetRequest(HttpProcessor processor);
 
-        public abstract void HandlePostRequest(HttpProcessor p, StreamReader inputData);
+        public abstract void HandlePostRequest(HttpProcessor processor, StreamReader inputData);
     }
 }
