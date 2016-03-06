@@ -117,7 +117,6 @@
             this.devicesToolStripMenuItem1.Name = "devicesToolStripMenuItem1";
             this.devicesToolStripMenuItem1.Size = new System.Drawing.Size(206, 22);
             this.devicesToolStripMenuItem1.Text = "Нет активных устройств";
-            this.devicesToolStripMenuItem1.Click += new System.EventHandler(this.devicesToolStripMenuItem1_Click);
             // 
             // contextMenuStrip1
             // 
@@ -142,12 +141,13 @@
             // 
             this.notifyIcon1.ContextMenuStrip = this.contextMenuStrip1;
             this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
-            this.notifyIcon1.Text = "RemoteFork 1.2";
+            this.notifyIcon1.Text = "RemoteFork 1.2f3";
             this.notifyIcon1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseDoubleClick);
             // 
             // openFileDialog1
             // 
-            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.FileName = "playlist.m3u";
+            this.openFileDialog1.Filter = "Playlist (*.m3u)|*.m3u|All files (*.*)|*.*";
             // 
             // cbAutoIp
             // 
@@ -248,7 +248,7 @@
             this.MaximizeBox = false;
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "RemoteFork 1.2.f2";
+            this.Text = "RemoteFork 1.2.f3";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
             this.Load += new System.EventHandler(this.Main_Load);
             this.Resize += new System.EventHandler(this.Main_Resize);

@@ -23,8 +23,9 @@ namespace RemoteFork {
                 listener.Start();
                 while (is_active) {
                     try {
-                        TcpClient s = listener.AcceptTcpClient();
-                        thread = new Thread(new HttpProcessor(s, this).Process);
+                        TcpClient client = listener.AcceptTcpClient();
+                        HttpProcessor processor = new HttpProcessor(client, this);
+                        thread = new Thread(processor.Process);
                         thread.Start();
                         Thread.Sleep(10);
                     } catch (Exception) {

@@ -42,26 +42,5 @@ namespace RemoteFork {
             }
             return Math.Round(num, 2) + str;
         }
-
-        public static string StreamReadLine(Stream inputStream) {
-            string text = "";
-            while (true) {
-                int num = inputStream.ReadByte();
-                bool flag = num == 10;
-                if (flag) {
-                    break;
-                }
-                bool flag2 = num == 13;
-                if (!flag2) {
-                    bool flag3 = num == -1;
-                    if (flag3) {
-                        Thread.Sleep(1);
-                    } else {
-                        text += Convert.ToChar(num).ToString();
-                    }
-                }
-            }
-            return text;
-        }
     }
 }

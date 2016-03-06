@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -11,6 +12,7 @@ namespace RemoteFork {
     public partial class Main : Form {
         private HttpServer httpServer;
         private Thread thread;
+        public static HashSet<string> Devices = new HashSet<string>();
 
         #region Form
 
@@ -138,44 +140,52 @@ namespace RemoteFork {
             }
         }
 
+        private readonly List<ToolStripMenuItem> deviceMenuItems = new List<ToolStripMenuItem>();
+
         private void loadPlaylistToolStripMenuItem1_MouseHover(object sender, EventArgs e) {
             Console.WriteLine("read Sets");
-            if (!string.IsNullOrWhiteSpace(Settings.Default.Devices)) {
-                string[] array = Settings.Default.Devices.Split('~');
-                devicesToolStripMenuItem1.Text = array[0] + " (" + array[2] + ")";
+            foreach (var deviceMenuItem in deviceMenuItems) {
+                loadPlaylistToolStripMenuItem1.DropDownItems.Remove(deviceMenuItem);
+            }
+            deviceMenuItems.Clear();
+
+            if (Devices.Count > 0) {
+                foreach (var device in Devices) {
+                    string[] array = device.Split('|');
+                    string name = array[0] + " (" + array[2] + ")";
+
+                    var item = new ToolStripMenuItem {
+                        Name = "device" + array[0] + "ToolStripMenuItem",
+                        Tag = device,
+                        Text = name
+                    };
+                    item.Click += devicesToolStripMenuItem1_Click;
+
+                    deviceMenuItems.Add(item);
+                    loadPlaylistToolStripMenuItem1.DropDownItems.Add(item);
+                }
+
+                devicesToolStripMenuItem1.Visible = false;
             } else {
                 devicesToolStripMenuItem1.Text = "Нет активных устройств";
+                devicesToolStripMenuItem1.Visible = true;
             }
         }
 
         private void devicesToolStripMenuItem1_Click(object sender, EventArgs e) {
-            bool flag = openFileDialog1.ShowDialog() == DialogResult.OK;
-            if (flag) {
+            ToolStripMenuItem clickedItem = (ToolStripMenuItem)sender;
+            if (openFileDialog1.ShowDialog() == DialogResult.OK) {
                 StreamReader streamReader = new StreamReader(openFileDialog1.FileName);
                 string text = streamReader.ReadToEnd();
                 streamReader.Close();
-                bool flag2 = text.Length < 102401 &&
-                             (text.IndexOf("EXTM3U") >= 0 || text.IndexOf("<title>") >= 0 ||
-                              text.IndexOf("http://") >= 0);
-                if (flag2) {
-                    WebRequest webRequest =
-                        WebRequest.Create("http://forkplayer.tv/remote/index.php?do=uploadfile&fname=" +
-                                          openFileDialog1.FileName + "&initial=" + Settings.Default.Devices.Replace('~', '|'));
-                    webRequest.Method = "POST";
-                    webRequest.Timeout = 120000;
-                    webRequest.ContentType = "application/x-www-form-urlencoded";
-                    byte[] bytes = Encoding.GetEncoding(65001).GetBytes("text=" + WebUtility.UrlEncode(text));
-                    webRequest.ContentLength = (long)bytes.Length;
-                    Stream requestStream = webRequest.GetRequestStream();
-                    requestStream.Write(bytes, 0, bytes.Length);
-                    requestStream.Close();
-                    WebResponse response = webRequest.GetResponse();
-                    Stream responseStream = response.GetResponseStream();
-                    StreamReader streamReader2 = new StreamReader(responseStream);
-                    string text2 = streamReader2.ReadToEnd();
-                    streamReader2.Close();
-                    responseStream.Close();
-                    response.Close();
+                if (text.Length < 102401 &&
+                    (text.Contains("EXTM3U") || text.Contains("<title>") || text.Contains("http://"))) {
+                    string url = "http://forkplayer.tv/remote/index.php?do=uploadfile&fname=" +
+                                 openFileDialog1.FileName + "&initial=" + clickedItem.Tag;
+
+                    var data = new Dictionary<string, string> { { "text", text } };
+                    string text2 = HttpUtility.PostRequest(url, data).Result;
+
                     MessageBox.Show(text2);
                 } else {
                     MessageBox.Show("Неверный файл плейлиста!");

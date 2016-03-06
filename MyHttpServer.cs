@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -74,38 +75,38 @@ namespace RemoteFork {
             string result = "#EXTM3U\\n";
             if (text == "/") {
                 DriveInfo[] drives = DriveInfo.GetDrives();
-                for (int i = 0; i < drives.Length; i++) {
-                    bool isReady = drives[i].IsReady;
+                foreach (DriveInfo drive in drives) {
+                    bool isReady = drive.IsReady;
                     if (isReady) {
-                        string text5 = string.Format("{0} ({1} свободно из {2})", drives[i].Name,
-                            Tools.FSize(drives[i].AvailableFreeSpace), Tools.FSize(drives[i].TotalSize));
+                        string text5 = string.Format("{0} ({1} свободно из {2})", drive.Name,
+                            Tools.FSize(drive.AvailableFreeSpace), Tools.FSize(drive.TotalSize));
 
                         string text6 = string.Format("{0}<br>Метка диска: {1}<br>Тип носителя: {2}", text5,
-                            drives[i].VolumeLabel, drives[i].DriveType);
+                            drive.VolumeLabel, drive.DriveType);
 
                         result = string.Format("{0}#EXTINF:-1,{1}\n{2}treeview?{3}\n", result, text6, hostText,
-                            drives[i].Name);
+                            drive.Name);
 
                         Console.WriteLine(text6);
                     }
                 }
             } else {
                 string[] array = Directory.GetDirectories(text);
-                for (int j = 0; j < array.Length; j++) {
-                    string urlText = Uri.EscapeUriString(array[j] + "\\");
-                    result = string.Format("{0}#EXTINF:-1,{1}\n{2}treeview?{3}\n", result, array[j].Split('\\').Last(),
+                foreach (string directory in array) {
+                    string urlText = Uri.EscapeUriString(directory + "\\");
+                    result = string.Format("{0}#EXTINF:-1,{1}\n{2}treeview?{3}\n", result, directory.Split('\\').Last(),
                         hostText, urlText);
 
-                    Console.WriteLine(array[j]);
+                    Console.WriteLine(directory);
                 }
                 array = Directory.GetFiles(text);
-                for (int k = 0; k < array.Length; k++) {
-                    string urlText = Uri.EscapeUriString(array[k]);
-                    FileInfo fileInfo = new FileInfo(array[k]);
-                    result = string.Format("{0}#EXTINF:-1,{1} {2}\n{3}{4}\n", result, array[k].Split('\\').Last(),
+                foreach (string file in array) {
+                    string urlText = Uri.EscapeUriString(file);
+                    FileInfo fileInfo = new FileInfo(file);
+                    result = string.Format("{0}#EXTINF:-1,{1} {2}\n{3}{4}\n", result, file.Split('\\').Last(),
                         Tools.FSize(fileInfo.Length), hostText, urlText);
 
-                    Console.WriteLine(array[k]);
+                    Console.WriteLine(file);
                 }
             }
 
@@ -114,12 +115,45 @@ namespace RemoteFork {
 
         private string TestRequest(string httpUrl) {
             string result =
-                "<html><h1>ForkPlayer DLNA Work!</h1>";
+                "<html><h1>ForkPlayer DLNA Work!</h1><br><b>Server by Visual Studio 2015</b></html>";
             if (httpUrl.IndexOf('|') > 0) {
-                string text = httpUrl.Substring(6);
-                Settings.Default.Devices = text.Replace('|', '~');
-                Settings.Default.Save();
+                string device = httpUrl.Replace("/test?", "");
+                if (!Main.Devices.Contains(device)) {
+                    Main.Devices.Add(device);
+                }
             }
+            return result;
+        }
+
+        private string ParseCurlRequest(string httpUrl) {
+            string result = string.Empty;
+
+            string url = Regex.Match(httpUrl, "(?:\")(.*?)(?=\")").Groups[1].Value;
+            Dictionary<string, string> header = new Dictionary<string, string>();
+            MatchCollection matches = Regex.Matches(httpUrl, "(?:-H\\s\")(.*?)(?=\")");
+            foreach (Match match in matches) {
+                var groups = match.Groups;
+                if (groups.Count > 1) {
+                    var value = groups[1].Value;
+                    if (value.Contains(": ")) {
+                        header.Add(value.Remove(value.IndexOf(": ")), value.Substring(value.IndexOf(": ") + 2));
+                    }
+                }
+            }
+            if (httpUrl.Contains("--data")) {
+                string dataString = Regex.Match(httpUrl, "(?:--data\\s\")(.*?)(?=\")").Groups[1].Value;
+                var dataArray = dataString.Split('&');
+                Dictionary<string, string> data = new Dictionary<string, string>();
+                foreach (var value in dataArray) {
+                    data.Add(value.Remove(value.IndexOf("=")), value.Substring(value.IndexOf("=") + 1));
+                }
+                result =
+                    HttpUtility.PostRequest(url, data, header).Result;
+            } else {
+                result =
+                    HttpUtility.GetRequest(url, header).Result;
+            }
+
             return result;
         }
 
@@ -129,42 +163,34 @@ namespace RemoteFork {
             string text = WebUtility.UrlDecode(httpUrl.Substring(12));
             string[] array = text.Split('|');
             Console.WriteLine("parse0 " + array[0]);
-            if (array[0].IndexOf("curl") == 0) {
-                array[0] = array[0].Remove(0, 4);
-                if (array[0].Contains(' ')) {
-                    array[0] = array[0].Remove(array[0].IndexOf(' '));
-                }
-                array[0] = array[0].Trim();
-            }
 
-            string text11 =
-                HttpUtility.GetRequest(new Uri(array[0].Replace("\"", "\"\""))).Result;
+            string response = array[0].StartsWith("curl")
+                ? ParseCurlRequest(array[0])
+                : HttpUtility.GetRequest(array[0]).Result;
 
             if (array.Length == 1) {
-                result = text11;
+                result = response;
             } else {
-                if (array[1].IndexOf(".*?") == -1) {
-                    if (array[1] == "" && array[2] == "") {
-                        result = text11;
+                if (!array[1].Contains(".*?")) {
+                    if (string.IsNullOrEmpty(array[1]) && string.IsNullOrEmpty(array[2])) {
+                        result = response;
                     } else {
-                        int num1 = text11.IndexOf(array[1]);
+                        int num1 = response.IndexOf(array[1]);
                         if (num1 == -1) {
-                            result = "";
+                            result = string.Empty;
                         } else {
                             num1 += array[1].Length;
-                            int num2 = text11.IndexOf(array[2], num1);
-                            if (num2 == -1) {
-                                result = "";
-                            } else {
-                                result = text11.Substring(num1, num2 - num1);
-                            }
+                            int num2 = response.IndexOf(array[2], num1);
+                            result = num2 == -1 
+                                ? string.Empty
+                                : response.Substring(num1, num2 - num1);
                         }
                     }
                 } else {
                     Console.WriteLine(array[1] + "(.*?)" + array[2]);
                     string pattern = array[1] + "(.*?)" + array[2];
                     Regex regex = new Regex(pattern, RegexOptions.Multiline);
-                    Match match = regex.Match(text11);
+                    Match match = regex.Match(response);
                     if (match.Success) {
                         result = match.Groups[1].Captures[0].ToString();
                     }
@@ -175,26 +201,26 @@ namespace RemoteFork {
         }
 
         public override void HandleGetRequest(HttpProcessor processor) {
-            string httpUrl = processor.http_url;
+            string httpUrl = WebUtility.UrlDecode(processor.http_url);
             string text = string.Empty;
             if (httpUrl.Length > 10) {
-                text = WebUtility.UrlDecode(httpUrl.Substring(10));
+                text = httpUrl.Substring(10);
                 if (httpUrl.IndexOf("&") > 0) {
                     text = text.Substring(0, text.IndexOf("&"));
                 }
             }
             Console.WriteLine(httpUrl.Substring(1));
-            if (File.Exists(WebUtility.UrlDecode(httpUrl.Substring(1))) && Settings.Default.Dlna) {
+            if (File.Exists(httpUrl.Substring(1)) && Settings.Default.Dlna) {
                 DlnaRequest(httpUrl, processor);
             } else {
                 string result = string.Empty;
-                if (httpUrl.IndexOf("/treeview") == 0 && Settings.Default.Dlna) {
+                if (httpUrl.StartsWith("/treeview") && Settings.Default.Dlna) {
                     result = TreeviewRequest(text, processor);
                 } else {
-                    if (httpUrl.IndexOf("/parserlink") == 0) {
+                    if (httpUrl.StartsWith("/parserlink")) {
                         result = ParserlinkRequest(httpUrl);
                     } else {
-                        if (httpUrl.IndexOf("/test") == 0) {
+                        if (httpUrl.StartsWith("/test")) {
                             result = TestRequest(httpUrl);
                         }
                     }

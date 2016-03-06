@@ -2,23 +2,24 @@
 using System.Collections;
 using System.IO;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace RemoteFork {
     public class HttpProcessor {
         public TcpClient socket;
         public HttpServer srv;
-        private Stream inputStream;
         public StreamWriter outputStream;
         public string http_method;
         public string http_url;
         public string http_protocol_versionstring;
         public Hashtable httpHeaders = new Hashtable();
 
+        private Stream inputStream;
         private static int MAX_POST_SIZE = 10485760;
         private const int BUF_SIZE = 4096;
 
-        public HttpProcessor(TcpClient s, HttpServer srv) {
-            socket = s;
+        public HttpProcessor(TcpClient client, HttpServer srv) {
+            socket = client;
             this.srv = srv;
         }
 
@@ -53,7 +54,7 @@ namespace RemoteFork {
         }
 
         public void ParseRequest() {
-            string text = Tools.StreamReadLine(inputStream);
+            string text = StreamReadLine(inputStream);
             string[] array = text.Split(' ');
             bool flag = array.Length != 3;
             if (flag) {
@@ -67,7 +68,7 @@ namespace RemoteFork {
 
         public void ReadHeaders() {
             string text;
-            while ((text = Tools.StreamReadLine(inputStream)) != null) {
+            while ((text = StreamReadLine(inputStream)) != null) {
                 bool flag = text.Equals("");
                 if (flag) {
                     break;
@@ -141,6 +142,27 @@ namespace RemoteFork {
             } catch (Exception value) {
                 Console.WriteLine(value);
             }
+        }
+
+        private static string StreamReadLine(Stream inputStream) {
+            string text = "";
+            while (true) {
+                int num = inputStream.ReadByte();
+                bool flag = num == 10;
+                if (flag) {
+                    break;
+                }
+                bool flag2 = num == 13;
+                if (!flag2) {
+                    bool flag3 = num == -1;
+                    if (flag3) {
+                        Thread.Sleep(1);
+                    } else {
+                        text += Convert.ToChar(num).ToString();
+                    }
+                }
+            }
+            return text;
         }
     }
 }
