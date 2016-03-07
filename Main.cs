@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using RemoteFork.Properties;
@@ -72,9 +71,6 @@ namespace RemoteFork {
             if (httpServer != null) {
                 httpServer.Stop();
             }
-            if (thread != null) {
-                thread.Abort();
-            }
         }
 
         #endregion Server
@@ -82,13 +78,15 @@ namespace RemoteFork {
         #region Settings
 
         private void bStartServer_Click(object sender, EventArgs e) {
-            toolStripStatusLabel1.Text = "Сервер запущен";
+            toolStripStatusLabel1.Text = "Запуск сервера..";
             try {
                 StartServer();
                 bStartServer.Enabled = false;
                 bStopServer.Enabled = true;
-            } catch (Exception) {
+                toolStripStatusLabel1.Text = "Сервер запущен";
+            } catch (Exception ex) {
                 toolStripStatusLabel1.Text = "Ошибка!";
+                Console.WriteLine(ex);
             }
         }
 
@@ -98,8 +96,10 @@ namespace RemoteFork {
                 StopServer();
                 bStartServer.Enabled = true;
                 bStopServer.Enabled = false;
-            } catch (Exception) {
+                toolStripStatusLabel1.Text = "Сервер остановлен";
+            } catch (Exception ex) {
                 toolStripStatusLabel1.Text = "Ошибка!";
+                Console.WriteLine(ex);
             }
         }
 
@@ -172,7 +172,7 @@ namespace RemoteFork {
             }
         }
 
-        private void devicesToolStripMenuItem1_Click(object sender, EventArgs e) {
+        private async void devicesToolStripMenuItem1_Click(object sender, EventArgs e) {
             ToolStripMenuItem clickedItem = (ToolStripMenuItem)sender;
             if (openFileDialog1.ShowDialog() == DialogResult.OK) {
                 StreamReader streamReader = new StreamReader(openFileDialog1.FileName);
@@ -184,7 +184,7 @@ namespace RemoteFork {
                                  openFileDialog1.FileName + "&initial=" + clickedItem.Tag;
 
                     var data = new Dictionary<string, string> { { "text", text } };
-                    string text2 = HttpUtility.PostRequest(url, data).Result;
+                    string text2 = await HttpUtility.PostRequest(url, data);
 
                     MessageBox.Show(text2);
                 } else {

@@ -14,7 +14,7 @@ namespace RemoteFork {
         private void DlnaRequest(string httpUrl, HttpProcessor processor) {
             Console.WriteLine("video");
             using (
-                var fileStream = new FileStream(WebUtility.UrlDecode(httpUrl.Substring(1)),
+                var fileStream = new FileStream(System.Web.HttpUtility.UrlDecode(httpUrl.Substring(1)),
                     FileMode.Open, FileAccess.Read, FileShare.Read)) {
                 try {
                     long num = -1L;
@@ -56,7 +56,7 @@ namespace RemoteFork {
                         }
                         flag7 = false;
                         byte[] buffer = new byte[num4];
-                        int num6 = fileStream.Read(buffer, 0, (int)Math.Min(num4, num5));
+                        int num6 = fileStream.Read(buffer, 0, (int) Math.Min(num4, num5));
                         if (num6 == 0) {
                             break;
                         }
@@ -160,7 +160,7 @@ namespace RemoteFork {
         private string ParserlinkRequest(string httpUrl) {
             string result = string.Empty;
 
-            string text = WebUtility.UrlDecode(httpUrl.Substring(12));
+            string text = System.Web.HttpUtility.UrlDecode(httpUrl.Substring(12));
             string[] array = text.Split('|');
             Console.WriteLine("parse0 " + array[0]);
 
@@ -181,7 +181,7 @@ namespace RemoteFork {
                         } else {
                             num1 += array[1].Length;
                             int num2 = response.IndexOf(array[2], num1);
-                            result = num2 == -1 
+                            result = num2 == -1
                                 ? string.Empty
                                 : response.Substring(num1, num2 - num1);
                         }
@@ -201,7 +201,7 @@ namespace RemoteFork {
         }
 
         public override void HandleGetRequest(HttpProcessor processor) {
-            string httpUrl = WebUtility.UrlDecode(processor.http_url);
+            string httpUrl = System.Web.HttpUtility.UrlDecode(processor.http_url);
             string text = string.Empty;
             if (httpUrl.Length > 10) {
                 text = httpUrl.Substring(10);

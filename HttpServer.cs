@@ -6,46 +6,35 @@ using System.Threading;
 
 namespace RemoteFork {
     public abstract class HttpServer {
-        protected IPEndPoint ip;
+        private readonly TcpListener listener;
+        private readonly CancellationTokenSource cts = new CancellationTokenSource();
 
-        private TcpListener listener;
-        private Thread thread;
-        private bool is_active = true;
+        private const int TimeOut = 10;
 
         protected HttpServer(IPAddress ip, int port) {
-            is_active = true;
-            this.ip = new IPEndPoint(ip, port);
+            listener = new TcpListener(new IPEndPoint(ip, port));
+            listener.Start();
         }
 
         public void Listen() {
-            try {
-                listener = new TcpListener(ip);
-                listener.Start();
-                while (is_active) {
-                    try {
-                        TcpClient client = listener.AcceptTcpClient();
-                        HttpProcessor processor = new HttpProcessor(client, this);
-                        thread = new Thread(processor.Process);
-                        thread.Start();
-                        Thread.Sleep(10);
-                    } catch (Exception) {
-                        Console.WriteLine("Stop");
-                    }
+            while (!cts.IsCancellationRequested) {
+                try {
+                    TcpClient client = listener.AcceptTcpClient();
+                    HttpProcessor processor = new HttpProcessor(client, this);
+
+                    ThreadPool.QueueUserWorkItem(processor.Process);
+
+                    Thread.Sleep(TimeOut);
+                } catch (Exception) {
+                    Console.WriteLine("Stop");
                 }
-            } catch (Exception value) {
-                Console.WriteLine(value);
             }
         }
 
         public void Stop() {
-            if (is_active) {
-                is_active = false;
-                if (listener != null) {
-                    listener.Stop();
-                }
-                if (thread != null) {
-                    thread.Abort();
-                }
+            cts.Cancel();
+            if (listener != null) {
+                listener.Stop();
             }
         }
 

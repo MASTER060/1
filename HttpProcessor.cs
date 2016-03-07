@@ -23,7 +23,7 @@ namespace RemoteFork {
             this.srv = srv;
         }
 
-        public void Process() {
+        public void Process(object state) {
             inputStream = new BufferedStream(socket.GetStream());
             outputStream = new StreamWriter(new BufferedStream(socket.GetStream()));
             try {
@@ -56,35 +56,35 @@ namespace RemoteFork {
         public void ParseRequest() {
             string text = StreamReadLine(inputStream);
             string[] array = text.Split(' ');
-            bool flag = array.Length != 3;
-            if (flag) {
+            if (array.Length == 3) {
+                http_method = array[0].ToUpper();
+                http_url = array[1];
+                http_protocol_versionstring = array[2];
+                Console.WriteLine("starting: " + text);
+            } else {
                 throw new Exception("invalid http request line");
             }
-            http_method = array[0].ToUpper();
-            http_url = array[1];
-            http_protocol_versionstring = array[2];
-            Console.WriteLine("starting: " + text);
         }
 
         public void ReadHeaders() {
             string text;
             while ((text = StreamReadLine(inputStream)) != null) {
-                bool flag = text.Equals("");
-                if (flag) {
+                if (!string.IsNullOrEmpty(text)) {
+                    int num = text.IndexOf(':');
+                    if (num != -1) {
+                        string key = text.Substring(0, num);
+                        int num2 = num + 1;
+                        while (num2 < text.Length && text[num2] == ' ') {
+                            num2++;
+                        }
+                        string value = text.Substring(num2, text.Length - num2);
+                        httpHeaders[key] = value;
+                    } else {
+                        throw new Exception("invalid http header line: " + text);
+                    }
+                } else {
                     break;
                 }
-                int num = text.IndexOf(':');
-                bool flag2 = num == -1;
-                if (flag2) {
-                    throw new Exception("invalid http header line: " + text);
-                }
-                string key = text.Substring(0, num);
-                int num2 = num + 1;
-                while (num2 < text.Length && text[num2] == ' ') {
-                    num2++;
-                }
-                string value = text.Substring(num2, text.Length - num2);
-                httpHeaders[key] = value;
             }
         }
 
@@ -95,32 +95,28 @@ namespace RemoteFork {
         public void HandlePostRequest() {
             Console.WriteLine("get post data start");
             MemoryStream memoryStream = new MemoryStream();
-            bool flag = httpHeaders.ContainsKey("Content-Length");
-            if (flag) {
+            if (httpHeaders.ContainsKey("Content-Length")) {
                 int num = Convert.ToInt32(httpHeaders["Content-Length"]);
-                bool flag2 = num > MAX_POST_SIZE;
-                if (flag2) {
+                if (num <= MAX_POST_SIZE) {
+                    byte[] buffer = new byte[BUF_SIZE];
+                    int i = num;
+                    while (i > 0) {
+                        Console.WriteLine("starting Read, to_read={0}", i);
+                        int num2 = inputStream.Read(buffer, 0, Math.Min(BUF_SIZE, i));
+                        Console.WriteLine("read finished, numread={0}", num2);
+                        if (num2 == 0) {
+                            if (i != 0) {
+                                throw new Exception("client disconnected during post");
+                            }
+                        } else {
+                            i -= num2;
+                            memoryStream.Write(buffer, 0, num2);
+                        }
+                    }
+                    memoryStream.Seek(0L, SeekOrigin.Begin);
+                } else {
                     throw new Exception(string.Format("POST Content-Length({0}) too big for this simple server", num));
                 }
-                byte[] buffer = new byte[4096];
-                int i = num;
-                while (i > 0) {
-                    Console.WriteLine("starting Read, to_read={0}", i);
-                    int num2 = inputStream.Read(buffer, 0, Math.Min(4096, i));
-                    Console.WriteLine("read finished, numread={0}", num2);
-                    bool flag3 = num2 == 0;
-                    if (flag3) {
-                        bool flag4 = i == 0;
-                        if (flag4) {
-                            break;
-                        }
-                        throw new Exception("client disconnected during post");
-                    } else {
-                        i -= num2;
-                        memoryStream.Write(buffer, 0, num2);
-                    }
-                }
-                memoryStream.Seek(0L, SeekOrigin.Begin);
             }
             Console.WriteLine("get post data end");
             srv.HandlePostRequest(this, new StreamReader(memoryStream));
@@ -139,27 +135,25 @@ namespace RemoteFork {
                 outputStream.WriteLine("HTTP/1.0 404 File not found");
                 outputStream.WriteLine("Connection: close");
                 outputStream.WriteLine("");
-            } catch (Exception value) {
-                Console.WriteLine(value);
+            } catch (Exception ex) {
+                Console.WriteLine(ex);
             }
         }
 
         private static string StreamReadLine(Stream inputStream) {
-            string text = "";
+            string text = string.Empty;
             while (true) {
                 int num = inputStream.ReadByte();
-                bool flag = num == 10;
-                if (flag) {
-                    break;
-                }
-                bool flag2 = num == 13;
-                if (!flag2) {
-                    bool flag3 = num == -1;
-                    if (flag3) {
-                        Thread.Sleep(1);
-                    } else {
-                        text += Convert.ToChar(num).ToString();
+                if (num != 10) {
+                    if (num != 13) {
+                        if (num != -1) {
+                            text += Convert.ToChar(num).ToString();
+                        } else {
+                            Thread.Sleep(1);
+                        }
                     }
+                } else {
+                    break;
                 }
             }
             return text;
