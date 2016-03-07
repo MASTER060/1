@@ -121,8 +121,11 @@ namespace RemoteFork {
         }
 
         private void tbIp_TextChanged(object sender, EventArgs e) {
-            Settings.Default.IpIPAddress = tbIp.Text;
-            Settings.Default.Save();
+            IPAddress ip;
+            if (IPAddress.TryParse(tbIp.Text, out ip)) {
+                Settings.Default.IpIPAddress = tbIp.Text;
+                Settings.Default.Save();
+            }
         }
 
         private void cbDlna_CheckedChanged(object sender, EventArgs e) {
