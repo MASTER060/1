@@ -29,12 +29,10 @@ namespace RemoteFork {
             try {
                 ParseRequest();
                 ReadHeaders();
-                bool flag = http_method.Equals("GET");
-                if (flag) {
+                if (http_method.Equals("GET")) {
                     HandleGetRequest();
                 } else {
-                    bool flag2 = http_method.Equals("POST");
-                    if (flag2) {
+                    if (http_method.Equals("POST")) {
                         HandlePostRequest();
                     }
                 }
@@ -46,11 +44,18 @@ namespace RemoteFork {
                 outputStream.Flush();
             } catch (Exception ex2) {
                 Console.WriteLine("Exception: " + ex2);
+            } finally {
+                if (inputStream != null) {
+                    inputStream.Close();
+                }
+                if (outputStream != null) {
+                    outputStream.Close();
+                }
+                if (socket != null) {
+                    socket.Close();
+                }
+                Console.WriteLine("Socked close");
             }
-            inputStream = null;
-            outputStream = null;
-            Console.WriteLine("Socked close");
-            socket.Close();
         }
 
         public void ParseRequest() {
@@ -108,10 +113,10 @@ namespace RemoteFork {
                             if (i != 0) {
                                 throw new Exception("client disconnected during post");
                             }
-                        } else {
-                            i -= num2;
-                            memoryStream.Write(buffer, 0, num2);
+                            break;
                         }
+                        i -= num2;
+                        memoryStream.Write(buffer, 0, num2);
                     }
                     memoryStream.Seek(0L, SeekOrigin.Begin);
                 } else {

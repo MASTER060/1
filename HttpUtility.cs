@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace RemoteFork {
     public static class HttpUtility {
+        private const string DefaultUserAgent =
+            "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.41 (KHTML, like Gecko) Large Screen WebAppManager Safari/537.41";
+
         public static async Task<string> GetRequest(string link, Dictionary<string, string> header = null) {
             try {
                 var client = new HttpClient();
@@ -16,6 +19,7 @@ namespace RemoteFork {
                         }
                     }
                 }
+                client.DefaultRequestHeaders.UserAgent.ParseAdd(DefaultUserAgent);
 
                 return await client.GetStringAsync(link).ConfigureAwait(false);
             } catch (Exception ex) {
@@ -36,6 +40,8 @@ namespace RemoteFork {
                         }
                     }
                 }
+                client.DefaultRequestHeaders.UserAgent.ParseAdd(DefaultUserAgent);
+
 
                 HttpContent content = new FormUrlEncodedContent(data);
                 var result = await client.PostAsync(link, content).ConfigureAwait(false);

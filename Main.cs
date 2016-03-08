@@ -9,9 +9,11 @@ using RemoteFork.Properties;
 
 namespace RemoteFork {
     public partial class Main : Form {
-        private HttpServer httpServer;
-        private Thread thread;
         public static HashSet<string> Devices = new HashSet<string>();
+
+        private readonly List<HttpServer> httpServers = new List<HttpServer>();
+        private readonly List<Thread> threads = new List<Thread>();
+        private readonly List<ToolStripMenuItem> deviceMenuItems = new List<ToolStripMenuItem>();
 
         #region Form
 
@@ -20,14 +22,24 @@ namespace RemoteFork {
         }
 
         private void Main_Load(object sender, EventArgs e) {
-            tbIp.Text = Settings.Default.GetIpAuto ? Tools.GetIPAddress() : Settings.Default.IpIPAddress;
-            cbDlna.Checked = Settings.Default.Dlna;
-            cbAutoIp.Checked = Settings.Default.GetIpAuto;
             cbAutoStart.Checked = Settings.Default.ServerAutoStart;
+            cbDlna.Checked = Settings.Default.Dlna;
+            cbAllIp.Checked = Settings.Default.AllIp;
 
-            if (Settings.Default.GetIpAuto) {
-                tbIp.ReadOnly = true;
+            object[] ipAddresses = Tools.GetIPAddresses();
+            cbIp.Items.AddRange(ipAddresses);
+
+            IPAddress ip;
+            if (IPAddress.TryParse(Settings.Default.IpIPAddress, out ip)) {
+                if (cbIp.Items.Contains(ip)) {
+                    cbIp.SelectedItem = ip;
+                } else {
+                    cbIp.SelectedIndex = 0;
+                }
+            } else {
+                cbIp.SelectedIndex = 0;
             }
+            
             if (Settings.Default.ServerAutoStart) {
                 bStartServer.PerformClick();
             }
@@ -62,13 +74,25 @@ namespace RemoteFork {
         #region Server
 
         private void StartServer() {
-            httpServer = new MyHttpServer(IPAddress.Parse(tbIp.Text), int.Parse(tbPort.Text));
-            thread = new Thread(httpServer.Listen);
-            thread.Start();
+            if (cbAllIp.Checked) {
+                foreach (IPAddress ip in cbIp.Items) {
+                    var httpServer = new MyHttpServer(ip, int.Parse(tbPort.Text));
+                    var thread = new Thread(httpServer.Listen);
+                    thread.Start();
+                    threads.Add(thread);
+                    httpServers.Add(httpServer);
+                }
+            } else {
+                var httpServer = new MyHttpServer((IPAddress)cbIp.SelectedItem, int.Parse(tbPort.Text));
+                var thread = new Thread(httpServer.Listen);
+                thread.Start();
+                threads.Add(thread);
+                httpServers.Add(httpServer);
+            }
         }
 
         private void StopServer() {
-            if (httpServer != null) {
+            foreach (var httpServer in httpServers) {
                 httpServer.Stop();
             }
         }
@@ -107,29 +131,18 @@ namespace RemoteFork {
             Settings.Default.ServerAutoStart = cbAutoStart.Checked;
         }
 
-        private void cbAutoIp_CheckedChanged(object sender, EventArgs e) {
-            if (cbAutoIp.Checked) {
-                Settings.Default.GetIpAuto = true;
-                tbIp.ReadOnly = true;
-                tbIp.Text = Tools.GetIPAddress();
-            } else {
-                Settings.Default.GetIpAuto = false;
-                tbIp.ReadOnly = false;
-                Settings.Default.IpIPAddress = tbIp.Text;
-            }
+        private void cbDlna_CheckedChanged(object sender, EventArgs e) {
+            Settings.Default.Dlna = cbDlna.Checked;
             Settings.Default.Save();
         }
 
-        private void tbIp_TextChanged(object sender, EventArgs e) {
-            IPAddress ip;
-            if (IPAddress.TryParse(tbIp.Text, out ip)) {
-                Settings.Default.IpIPAddress = tbIp.Text;
-                Settings.Default.Save();
-            }
+        private void cbIp_SelectedIndexChanged(object sender, EventArgs e) {
+            Settings.Default.IpIPAddress = cbIp.SelectedItem.ToString();
+            Settings.Default.Save();
         }
 
-        private void cbDlna_CheckedChanged(object sender, EventArgs e) {
-            Settings.Default.Dlna = cbDlna.Checked;
+        private void cbAllIp_CheckedChanged(object sender, EventArgs e) {
+            Settings.Default.AllIp = cbAllIp.Checked;
             Settings.Default.Save();
         }
 
@@ -142,8 +155,6 @@ namespace RemoteFork {
                 ShowForm();
             }
         }
-
-        private readonly List<ToolStripMenuItem> deviceMenuItems = new List<ToolStripMenuItem>();
 
         private void loadPlaylistToolStripMenuItem1_MouseHover(object sender, EventArgs e) {
             Console.WriteLine("read Sets");
@@ -176,7 +187,7 @@ namespace RemoteFork {
         }
 
         private async void devicesToolStripMenuItem1_Click(object sender, EventArgs e) {
-            ToolStripMenuItem clickedItem = (ToolStripMenuItem)sender;
+            ToolStripMenuItem clickedItem = (ToolStripMenuItem) sender;
             if (openFileDialog1.ShowDialog() == DialogResult.OK) {
                 StreamReader streamReader = new StreamReader(openFileDialog1.FileName);
                 string text = streamReader.ReadToEnd();
@@ -186,7 +197,7 @@ namespace RemoteFork {
                     string url = "http://forkplayer.tv/remote/index.php?do=uploadfile&fname=" +
                                  openFileDialog1.FileName + "&initial=" + clickedItem.Tag;
 
-                    var data = new Dictionary<string, string> { { "text", text } };
+                    var data = new Dictionary<string, string> {{"text", text}};
                     string text2 = await HttpUtility.PostRequest(url, data);
 
                     MessageBox.Show(text2);
@@ -201,7 +212,7 @@ namespace RemoteFork {
         }
 
         private void openTestToolStripMenuItem_Click(object sender, EventArgs e) {
-            Process.Start("http://" + tbIp.Text + ":" + tbPort.Text + "/test");
+            Process.Start("http://" + cbIp.SelectedItem + ":" + tbPort.Text + "/test");
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -212,6 +223,6 @@ namespace RemoteFork {
             }
         }
 
-        #endregion notifyIcon
+        #endregion notifyIcon    
     }
 }

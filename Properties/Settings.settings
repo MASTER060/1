@@ -5,7 +5,7 @@
     <Setting Name="ServerAutoStart" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="GetIpAuto" Type="System.Boolean" Scope="User">
+    <Setting Name="AllIp" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="IpIPAddress" Type="System.String" Scope="User">

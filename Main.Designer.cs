@@ -37,14 +37,14 @@
             this.loadPlaylistToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.cbAutoIp = new System.Windows.Forms.CheckBox();
             this.bStartServer = new System.Windows.Forms.Button();
             this.bStopServer = new System.Windows.Forms.Button();
-            this.tbIp = new System.Windows.Forms.TextBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.cbAutoStart = new System.Windows.Forms.CheckBox();
+            this.cbIp = new System.Windows.Forms.ComboBox();
+            this.cbAllIp = new System.Windows.Forms.CheckBox();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -64,7 +64,7 @@
             this.cbDlna.AutoSize = true;
             this.cbDlna.Checked = true;
             this.cbDlna.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbDlna.Location = new System.Drawing.Point(12, 170);
+            this.cbDlna.Location = new System.Drawing.Point(12, 169);
             this.cbDlna.Name = "cbDlna";
             this.cbDlna.Size = new System.Drawing.Size(116, 17);
             this.cbDlna.TabIndex = 5;
@@ -141,24 +141,13 @@
             // 
             this.notifyIcon1.ContextMenuStrip = this.contextMenuStrip1;
             this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
-            this.notifyIcon1.Text = "RemoteFork 1.2f4";
+            this.notifyIcon1.Text = "RemoteFork 1.2f5";
             this.notifyIcon1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseDoubleClick);
             // 
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "playlist.m3u";
             this.openFileDialog1.Filter = "Playlist (*.m3u)|*.m3u|All files (*.*)|*.*";
-            // 
-            // cbAutoIp
-            // 
-            this.cbAutoIp.AutoSize = true;
-            this.cbAutoIp.Location = new System.Drawing.Point(6, 19);
-            this.cbAutoIp.Name = "cbAutoIp";
-            this.cbAutoIp.Size = new System.Drawing.Size(61, 17);
-            this.cbAutoIp.TabIndex = 2;
-            this.cbAutoIp.Text = "Auto IP";
-            this.cbAutoIp.UseVisualStyleBackColor = true;
-            this.cbAutoIp.Click += new System.EventHandler(this.cbAutoIp_CheckedChanged);
             // 
             // bStartServer
             // 
@@ -181,19 +170,11 @@
             this.bStopServer.UseVisualStyleBackColor = true;
             this.bStopServer.Click += new System.EventHandler(this.bStopServer_Click);
             // 
-            // tbIp
-            // 
-            this.tbIp.Location = new System.Drawing.Point(43, 42);
-            this.tbIp.Name = "tbIp";
-            this.tbIp.Size = new System.Drawing.Size(145, 20);
-            this.tbIp.TabIndex = 3;
-            this.tbIp.TextChanged += new System.EventHandler(this.tbIp_TextChanged);
-            // 
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 198);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 191);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(217, 22);
             this.statusStrip1.TabIndex = 19;
@@ -207,14 +188,14 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.cbAutoIp);
-            this.groupBox1.Controls.Add(this.tbIp);
+            this.groupBox1.Controls.Add(this.cbIp);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.IP);
             this.groupBox1.Controls.Add(this.tbPort);
+            this.groupBox1.Controls.Add(this.cbAllIp);
             this.groupBox1.Location = new System.Drawing.Point(12, 64);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(194, 100);
+            this.groupBox1.Size = new System.Drawing.Size(194, 99);
             this.groupBox1.TabIndex = 20;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IP:PORT";
@@ -232,11 +213,33 @@
             this.cbAutoStart.UseVisualStyleBackColor = true;
             this.cbAutoStart.CheckedChanged += new System.EventHandler(this.cbAutoStart_CheckedChanged);
             // 
+            // cbIp
+            // 
+            this.cbIp.FormattingEnabled = true;
+            this.cbIp.Location = new System.Drawing.Point(43, 42);
+            this.cbIp.Name = "cbIp";
+            this.cbIp.Size = new System.Drawing.Size(145, 21);
+            this.cbIp.TabIndex = 18;
+            this.cbIp.SelectedIndexChanged += new System.EventHandler(this.cbIp_SelectedIndexChanged);
+            // 
+            // cbAllIp
+            // 
+            this.cbAllIp.AutoSize = true;
+            this.cbAllIp.Checked = true;
+            this.cbAllIp.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbAllIp.Location = new System.Drawing.Point(6, 19);
+            this.cbAllIp.Name = "cbAllIp";
+            this.cbAllIp.Size = new System.Drawing.Size(50, 17);
+            this.cbAllIp.TabIndex = 5;
+            this.cbAllIp.Text = "All IP";
+            this.cbAllIp.UseVisualStyleBackColor = true;
+            this.cbAllIp.CheckedChanged += new System.EventHandler(this.cbAllIp_CheckedChanged);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(217, 220);
+            this.ClientSize = new System.Drawing.Size(217, 213);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.cbAutoStart);
@@ -248,7 +251,7 @@
             this.MaximizeBox = false;
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "RemoteFork 1.2.f4";
+            this.Text = "RemoteFork 1.2.f5";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
             this.Load += new System.EventHandler(this.Main_Load);
             this.Resize += new System.EventHandler(this.Main_Resize);
@@ -275,13 +278,13 @@
         private System.Windows.Forms.ToolStripMenuItem loadPlaylistToolStripMenuItem1;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.CheckBox cbAutoIp;
         private System.Windows.Forms.Button bStartServer;
         private System.Windows.Forms.Button bStopServer;
-        private System.Windows.Forms.TextBox tbIp;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox cbAutoStart;
+        private System.Windows.Forms.ComboBox cbIp;
+        private System.Windows.Forms.CheckBox cbAllIp;
     }
 }

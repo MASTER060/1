@@ -38,12 +38,12 @@ namespace RemoteFork.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool GetIpAuto {
+        public bool AllIp {
             get {
-                return ((bool)(this["GetIpAuto"]));
+                return ((bool)(this["AllIp"]));
             }
             set {
-                this["GetIpAuto"] = value;
+                this["AllIp"] = value;
             }
         }
         
