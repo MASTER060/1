@@ -11,8 +11,9 @@ namespace RemoteFork {
     public partial class Main : Form {
         public static HashSet<string> Devices = new HashSet<string>();
 
-        private readonly List<HttpServer> httpServers = new List<HttpServer>();
-        private readonly List<Thread> threads = new List<Thread>();
+        private HttpServer httpServer;
+        private Thread thread;
+
         private readonly List<ToolStripMenuItem> deviceMenuItems = new List<ToolStripMenuItem>();
 
         #region Form
@@ -22,9 +23,12 @@ namespace RemoteFork {
         }
 
         private void Main_Load(object sender, EventArgs e) {
+            Text += " " + Settings.Default.AppVersion;
+            notifyIcon1.Text += " " + Settings.Default.AppVersion;
+
             cbAutoStart.Checked = Settings.Default.ServerAutoStart;
             cbDlna.Checked = Settings.Default.Dlna;
-            cbAllIp.Checked = Settings.Default.AllIp;
+            tbPort.Text = Settings.Default.Port.ToString();
 
             object[] ipAddresses = Tools.GetIPAddresses();
             cbIp.Items.AddRange(ipAddresses);
@@ -43,6 +47,7 @@ namespace RemoteFork {
             if (Settings.Default.ServerAutoStart) {
                 bStartServer.PerformClick();
             }
+
             notifyIcon1.Visible = true;
             HideForm();
         }
@@ -74,27 +79,19 @@ namespace RemoteFork {
         #region Server
 
         private void StartServer() {
-            if (cbAllIp.Checked) {
-                foreach (IPAddress ip in cbIp.Items) {
-                    var httpServer = new MyHttpServer(ip, int.Parse(tbPort.Text));
-                    var thread = new Thread(httpServer.Listen);
-                    thread.Start();
-                    threads.Add(thread);
-                    httpServers.Add(httpServer);
-                }
-            } else {
-                var httpServer = new MyHttpServer((IPAddress)cbIp.SelectedItem, int.Parse(tbPort.Text));
-                var thread = new Thread(httpServer.Listen);
-                thread.Start();
-                threads.Add(thread);
-                httpServers.Add(httpServer);
-            }
+            httpServer = new MyHttpServer((IPAddress) cbIp.SelectedItem, int.Parse(tbPort.Text));
+            thread = new Thread(httpServer.Listen);
+            thread.Start();
+
+            var result = HttpUtility.GetRequest(
+                string.Format(
+                    "http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}",
+                    Settings.Default.AppVersion,
+                    cbIp.SelectedItem, tbPort.Text)).Result;
         }
 
         private void StopServer() {
-            foreach (var httpServer in httpServers) {
-                httpServer.Stop();
-            }
+            httpServer.Stop();
         }
 
         #endregion Server
@@ -105,6 +102,7 @@ namespace RemoteFork {
             toolStripStatusLabel1.Text = "Запуск сервера..";
             try {
                 StartServer();
+
                 bStartServer.Enabled = false;
                 bStopServer.Enabled = true;
                 toolStripStatusLabel1.Text = "Сервер запущен";
@@ -118,6 +116,7 @@ namespace RemoteFork {
             toolStripStatusLabel1.Text = "Остановка сервера..";
             try {
                 StopServer();
+
                 bStartServer.Enabled = true;
                 bStopServer.Enabled = false;
                 toolStripStatusLabel1.Text = "Сервер остановлен";
@@ -138,11 +137,6 @@ namespace RemoteFork {
 
         private void cbIp_SelectedIndexChanged(object sender, EventArgs e) {
             Settings.Default.IpIPAddress = cbIp.SelectedItem.ToString();
-            Settings.Default.Save();
-        }
-
-        private void cbAllIp_CheckedChanged(object sender, EventArgs e) {
-            Settings.Default.AllIp = cbAllIp.Checked;
             Settings.Default.Save();
         }
 

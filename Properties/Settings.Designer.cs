@@ -37,18 +37,6 @@ namespace RemoteFork.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool AllIp {
-            get {
-                return ((bool)(this["AllIp"]));
-            }
-            set {
-                this["AllIp"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string IpIPAddress {
             get {
@@ -77,6 +65,15 @@ namespace RemoteFork.Properties {
             }
             set {
                 this["Dlna"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.2f6")]
+        public string AppVersion {
+            get {
+                return ((string)(this["AppVersion"]));
             }
         }
     }

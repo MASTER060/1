@@ -6,21 +6,23 @@ using System.Threading;
 
 namespace RemoteFork {
     public class HttpProcessor {
-        public TcpClient socket;
-        public HttpServer srv;
-        public StreamWriter outputStream;
-        public string http_method;
-        public string http_url;
-        public string http_protocol_versionstring;
         public Hashtable httpHeaders = new Hashtable();
 
-        private Stream inputStream;
+        public string http_method { get; private set; }
+        public string http_url { get; private set; }
+        public string http_protocol_versionstring { get; private set; }
+        public Stream inputStream { get; private set; }
+        public StreamWriter outputStream { get; private set; }
+
+    private readonly TcpClient socket;
+        private readonly HttpServer server;
+
         private static int MAX_POST_SIZE = 10485760;
         private const int BUF_SIZE = 4096;
 
-        public HttpProcessor(TcpClient client, HttpServer srv) {
+        public HttpProcessor(TcpClient client, HttpServer server) {
             socket = client;
-            this.srv = srv;
+            this.server = server;
         }
 
         public void Process(object state) {
@@ -42,8 +44,8 @@ namespace RemoteFork {
             }
             try {
                 outputStream.Flush();
-            } catch (Exception ex2) {
-                Console.WriteLine("Exception: " + ex2);
+            } catch (Exception ex) {
+                Console.WriteLine("Exception: " + ex);
             } finally {
                 if (inputStream != null) {
                     inputStream.Close();
@@ -58,7 +60,7 @@ namespace RemoteFork {
             }
         }
 
-        public void ParseRequest() {
+        private void ParseRequest() {
             string text = StreamReadLine(inputStream);
             string[] array = text.Split(' ');
             if (array.Length == 3) {
@@ -71,18 +73,14 @@ namespace RemoteFork {
             }
         }
 
-        public void ReadHeaders() {
+        private void ReadHeaders() {
             string text;
             while ((text = StreamReadLine(inputStream)) != null) {
                 if (!string.IsNullOrEmpty(text)) {
-                    int num = text.IndexOf(':');
-                    if (num != -1) {
+                    if (text.Contains(":")) {
+                        int num = text.IndexOf(':');
                         string key = text.Substring(0, num);
-                        int num2 = num + 1;
-                        while (num2 < text.Length && text[num2] == ' ') {
-                            num2++;
-                        }
-                        string value = text.Substring(num2, text.Length - num2);
+                        string value = text.Remove(0, num + 1).Trim();
                         httpHeaders[key] = value;
                     } else {
                         throw new Exception("invalid http header line: " + text);
@@ -93,11 +91,11 @@ namespace RemoteFork {
             }
         }
 
-        public void HandleGetRequest() {
-            srv.HandleGetRequest(this);
+        private void HandleGetRequest() {
+            server.HandleGetRequest(this);
         }
 
-        public void HandlePostRequest() {
+        private void HandlePostRequest() {
             Console.WriteLine("get post data start");
             MemoryStream memoryStream = new MemoryStream();
             if (httpHeaders.ContainsKey("Content-Length")) {
@@ -124,7 +122,7 @@ namespace RemoteFork {
                 }
             }
             Console.WriteLine("get post data end");
-            srv.HandlePostRequest(this, new StreamReader(memoryStream));
+            server.HandlePostRequest(this, new StreamReader(memoryStream));
         }
 
         public void WriteSuccess(string contentType = "text/html") {

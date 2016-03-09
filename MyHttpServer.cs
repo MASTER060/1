@@ -202,19 +202,19 @@ namespace RemoteFork {
 
         public override void HandleGetRequest(HttpProcessor processor) {
             string httpUrl = System.Web.HttpUtility.UrlDecode(processor.http_url);
-            string text = string.Empty;
-            if (httpUrl.Length > 10) {
-                text = httpUrl.Substring(10);
-                if (httpUrl.IndexOf("&") > 0) {
-                    text = text.Substring(0, text.IndexOf("&"));
-                }
-            }
             Console.WriteLine(httpUrl.Substring(1));
             if (File.Exists(httpUrl.Substring(1)) && Settings.Default.Dlna) {
                 DlnaRequest(httpUrl, processor);
             } else {
                 string result = string.Empty;
                 if (httpUrl.StartsWith("/treeview") && Settings.Default.Dlna) {
+                    string text = string.Empty;
+                    if (httpUrl.Length > 10) {
+                        text = httpUrl.Substring(10);
+                        if (httpUrl.IndexOf("&") > 0) {
+                            text = text.Substring(0, text.IndexOf("&"));
+                        }
+                    }
                     result = TreeviewRequest(text, processor);
                 } else {
                     if (httpUrl.StartsWith("/parserlink")) {
@@ -228,7 +228,7 @@ namespace RemoteFork {
 
                 Console.WriteLine("request: {0}", processor.http_url);
                 processor.WriteSuccess("text/html");
-                processor.outputStream.WriteLine(result.Replace("WEB-DL", "WEBDL"));
+                processor.outputStream.WriteLine(result);
                 Console.WriteLine("List end");
             }
         }

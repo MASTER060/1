@@ -42,9 +42,8 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.cbAutoStart = new System.Windows.Forms.CheckBox();
             this.cbIp = new System.Windows.Forms.ComboBox();
-            this.cbAllIp = new System.Windows.Forms.CheckBox();
+            this.cbAutoStart = new System.Windows.Forms.CheckBox();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -53,7 +52,7 @@
             // IP
             // 
             this.IP.AutoSize = true;
-            this.IP.Location = new System.Drawing.Point(3, 45);
+            this.IP.Location = new System.Drawing.Point(3, 22);
             this.IP.Name = "IP";
             this.IP.Size = new System.Drawing.Size(20, 13);
             this.IP.TabIndex = 16;
@@ -64,7 +63,7 @@
             this.cbDlna.AutoSize = true;
             this.cbDlna.Checked = true;
             this.cbDlna.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbDlna.Location = new System.Drawing.Point(12, 169);
+            this.cbDlna.Location = new System.Drawing.Point(12, 149);
             this.cbDlna.Name = "cbDlna";
             this.cbDlna.Size = new System.Drawing.Size(116, 17);
             this.cbDlna.TabIndex = 5;
@@ -74,7 +73,7 @@
             // 
             // tbPort
             // 
-            this.tbPort.Location = new System.Drawing.Point(43, 68);
+            this.tbPort.Location = new System.Drawing.Point(43, 45);
             this.tbPort.Name = "tbPort";
             this.tbPort.ReadOnly = true;
             this.tbPort.Size = new System.Drawing.Size(145, 20);
@@ -106,7 +105,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 71);
+            this.label1.Location = new System.Drawing.Point(3, 48);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(29, 13);
             this.label1.TabIndex = 17;
@@ -141,7 +140,7 @@
             // 
             this.notifyIcon1.ContextMenuStrip = this.contextMenuStrip1;
             this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
-            this.notifyIcon1.Text = "RemoteFork 1.2f5";
+            this.notifyIcon1.Text = "RemoteFork";
             this.notifyIcon1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseDoubleClick);
             // 
             // openFileDialog1
@@ -174,7 +173,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 191);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 171);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(217, 22);
             this.statusStrip1.TabIndex = 19;
@@ -192,13 +191,21 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.IP);
             this.groupBox1.Controls.Add(this.tbPort);
-            this.groupBox1.Controls.Add(this.cbAllIp);
             this.groupBox1.Location = new System.Drawing.Point(12, 64);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(194, 99);
+            this.groupBox1.Size = new System.Drawing.Size(194, 79);
             this.groupBox1.TabIndex = 20;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IP:PORT";
+            // 
+            // cbIp
+            // 
+            this.cbIp.FormattingEnabled = true;
+            this.cbIp.Location = new System.Drawing.Point(43, 19);
+            this.cbIp.Name = "cbIp";
+            this.cbIp.Size = new System.Drawing.Size(145, 21);
+            this.cbIp.TabIndex = 18;
+            this.cbIp.SelectedIndexChanged += new System.EventHandler(this.cbIp_SelectedIndexChanged);
             // 
             // cbAutoStart
             // 
@@ -213,33 +220,11 @@
             this.cbAutoStart.UseVisualStyleBackColor = true;
             this.cbAutoStart.CheckedChanged += new System.EventHandler(this.cbAutoStart_CheckedChanged);
             // 
-            // cbIp
-            // 
-            this.cbIp.FormattingEnabled = true;
-            this.cbIp.Location = new System.Drawing.Point(43, 42);
-            this.cbIp.Name = "cbIp";
-            this.cbIp.Size = new System.Drawing.Size(145, 21);
-            this.cbIp.TabIndex = 18;
-            this.cbIp.SelectedIndexChanged += new System.EventHandler(this.cbIp_SelectedIndexChanged);
-            // 
-            // cbAllIp
-            // 
-            this.cbAllIp.AutoSize = true;
-            this.cbAllIp.Checked = true;
-            this.cbAllIp.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbAllIp.Location = new System.Drawing.Point(6, 19);
-            this.cbAllIp.Name = "cbAllIp";
-            this.cbAllIp.Size = new System.Drawing.Size(50, 17);
-            this.cbAllIp.TabIndex = 5;
-            this.cbAllIp.Text = "All IP";
-            this.cbAllIp.UseVisualStyleBackColor = true;
-            this.cbAllIp.CheckedChanged += new System.EventHandler(this.cbAllIp_CheckedChanged);
-            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(217, 213);
+            this.ClientSize = new System.Drawing.Size(217, 193);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.cbAutoStart);
@@ -251,7 +236,7 @@
             this.MaximizeBox = false;
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "RemoteFork 1.2.f5";
+            this.Text = "RemoteFork";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
             this.Load += new System.EventHandler(this.Main_Load);
             this.Resize += new System.EventHandler(this.Main_Resize);
@@ -285,6 +270,5 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox cbAutoStart;
         private System.Windows.Forms.ComboBox cbIp;
-        private System.Windows.Forms.CheckBox cbAllIp;
     }
 }
