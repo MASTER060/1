@@ -70,10 +70,33 @@ namespace RemoteFork.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1.2f6")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.2f7")]
         public string AppVersion {
             get {
                 return ((string)(this["AppVersion"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte DlnaFilterType {
+            get {
+                return ((byte)(this["DlnaFilterType"]));
+            }
+            set {
+                this["DlnaFilterType"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection DlnaDirectories {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["DlnaDirectories"]));
+            }
+            set {
+                this["DlnaDirectories"] = value;
             }
         }
     }

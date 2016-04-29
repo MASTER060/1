@@ -5,7 +5,9 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
+using RemoteFork.Network;
 using RemoteFork.Properties;
+using RemoteFork.Server;
 
 namespace RemoteFork {
     public partial class Main : Form {
@@ -43,7 +45,7 @@ namespace RemoteFork {
             } else {
                 cbIp.SelectedIndex = 0;
             }
-            
+
             if (Settings.Default.ServerAutoStart) {
                 bStartServer.PerformClick();
             }
@@ -88,6 +90,7 @@ namespace RemoteFork {
                     "http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}",
                     Settings.Default.AppVersion,
                     cbIp.SelectedItem, tbPort.Text)).Result;
+            Console.WriteLine(result);
         }
 
         private void StopServer() {
@@ -218,5 +221,10 @@ namespace RemoteFork {
         }
 
         #endregion notifyIcon    
+
+        private void llDlnaConfigurate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+            var form = new DlnaConfigurate();
+            form.ShowDialog();
+        }
     }
 }

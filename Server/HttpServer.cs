@@ -4,12 +4,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace RemoteFork {
+namespace RemoteFork.Server {
     public abstract class HttpServer {
         private readonly TcpListener listener;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
 
-        private const int TimeOut = 10;
+        private const int TIME_OUT = 10;
 
         protected HttpServer(IPAddress ip, int port) {
             listener = new TcpListener(new IPEndPoint(ip, port));
@@ -24,7 +24,7 @@ namespace RemoteFork {
 
                     ThreadPool.QueueUserWorkItem(processor.Process);
 
-                    Thread.Sleep(TimeOut);
+                    Thread.Sleep(TIME_OUT);
                 } catch (Exception) {
                     Console.WriteLine("Stop");
                 }

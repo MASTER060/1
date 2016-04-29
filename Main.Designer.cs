@@ -44,6 +44,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.cbIp = new System.Windows.Forms.ComboBox();
             this.cbAutoStart = new System.Windows.Forms.CheckBox();
+            this.llDlnaConfigurate = new System.Windows.Forms.LinkLabel();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -65,9 +66,9 @@
             this.cbDlna.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbDlna.Location = new System.Drawing.Point(12, 149);
             this.cbDlna.Name = "cbDlna";
-            this.cbDlna.Size = new System.Drawing.Size(116, 17);
+            this.cbDlna.Size = new System.Drawing.Size(94, 17);
             this.cbDlna.TabIndex = 5;
-            this.cbDlna.Text = "RemoteFork DLNA";
+            this.cbDlna.Text = "DLNA сервер";
             this.cbDlna.UseVisualStyleBackColor = true;
             this.cbDlna.CheckedChanged += new System.EventHandler(this.cbDlna_CheckedChanged);
             // 
@@ -154,7 +155,7 @@
             this.bStartServer.Name = "bStartServer";
             this.bStartServer.Size = new System.Drawing.Size(94, 23);
             this.bStartServer.TabIndex = 0;
-            this.bStartServer.Text = "Start server";
+            this.bStartServer.Text = "Запустить";
             this.bStartServer.UseVisualStyleBackColor = true;
             this.bStartServer.Click += new System.EventHandler(this.bStartServer_Click);
             // 
@@ -165,7 +166,7 @@
             this.bStopServer.Name = "bStopServer";
             this.bStopServer.Size = new System.Drawing.Size(94, 23);
             this.bStopServer.TabIndex = 1;
-            this.bStopServer.Text = "Stop server";
+            this.bStopServer.Text = "Остановить";
             this.bStopServer.UseVisualStyleBackColor = true;
             this.bStopServer.Click += new System.EventHandler(this.bStopServer_Click);
             // 
@@ -214,17 +215,30 @@
             this.cbAutoStart.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbAutoStart.Location = new System.Drawing.Point(12, 41);
             this.cbAutoStart.Name = "cbAutoStart";
-            this.cbAutoStart.Size = new System.Drawing.Size(121, 17);
+            this.cbAutoStart.Size = new System.Drawing.Size(143, 17);
             this.cbAutoStart.TabIndex = 5;
-            this.cbAutoStart.Text = "Auto start on startup";
+            this.cbAutoStart.Text = "Автостарт при запуске";
             this.cbAutoStart.UseVisualStyleBackColor = true;
             this.cbAutoStart.CheckedChanged += new System.EventHandler(this.cbAutoStart_CheckedChanged);
+            // 
+            // llDlnaConfigurate
+            // 
+            this.llDlnaConfigurate.AutoSize = true;
+            this.llDlnaConfigurate.Location = new System.Drawing.Point(145, 150);
+            this.llDlnaConfigurate.Name = "llDlnaConfigurate";
+            this.llDlnaConfigurate.Size = new System.Drawing.Size(61, 13);
+            this.llDlnaConfigurate.TabIndex = 21;
+            this.llDlnaConfigurate.TabStop = true;
+            this.llDlnaConfigurate.Text = "Настроить";
+            this.llDlnaConfigurate.VisitedLinkColor = System.Drawing.Color.Blue;
+            this.llDlnaConfigurate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llDlnaConfigurate_LinkClicked);
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(217, 193);
+            this.Controls.Add(this.llDlnaConfigurate);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.cbAutoStart);
@@ -270,5 +284,6 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox cbAutoStart;
         private System.Windows.Forms.ComboBox cbIp;
+        private System.Windows.Forms.LinkLabel llDlnaConfigurate;
     }
 }

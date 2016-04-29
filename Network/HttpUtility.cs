@@ -4,9 +4,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteFork {
+namespace RemoteFork.Network {
     public static class HttpUtility {
-        private const string DefaultUserAgent =
+        private const string DEFAULT_USER_AGENT =
             "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.41 (KHTML, like Gecko) Large Screen WebAppManager Safari/537.41";
 
         public static async Task<string> GetRequest(string link, Dictionary<string, string> header = null) {
@@ -16,11 +16,12 @@ namespace RemoteFork {
                         foreach (var h in header) {
                             try {
                                 httpClient.DefaultRequestHeaders.Add(h.Key, h.Value);
-                            } catch (Exception) {
+                            } catch (Exception ex) {
+                                Console.WriteLine(ex);
                             }
                         }
                     }
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(DefaultUserAgent);
+                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(DEFAULT_USER_AGENT);
 
                     var response = await httpClient.GetAsync(link).ConfigureAwait(false);
                     return await ReadContext(response.Content);
@@ -39,11 +40,12 @@ namespace RemoteFork {
                         foreach (var h in header) {
                             try {
                                 httpClient.DefaultRequestHeaders.Add(h.Key, h.Value);
-                            } catch (Exception) {
+                            } catch (Exception ex) {
+                                Console.WriteLine(ex);
                             }
                         }
                     }
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(DefaultUserAgent);
+                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(DEFAULT_USER_AGENT);
 
                     HttpContent content = new FormUrlEncodedContent(data);
 
