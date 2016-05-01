@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using RemoteFork.Network;
 
 namespace RemoteFork.Requestes {
@@ -7,7 +8,7 @@ namespace RemoteFork.Requestes {
         public ParseLinkRequest(string text) : base(text) {
         }
 
-        public override string Execute() {
+        public override async Task<string> Execute() {
             string result = string.Empty;
 
             string[] array = text.Substring(12).Split('|');
@@ -16,9 +17,9 @@ namespace RemoteFork.Requestes {
             string response;
             if (array[0].StartsWith("curl")) {
                 var request = new ParseCurlRequest(array[0]);
-                response = request.Execute();
+                response = await request.Execute();
             } else {
-                response = HttpUtility.GetRequest(array[0]).Result;
+                response = await HttpUtility.GetRequest(array[0]);
             }
 
             if (array.Length == 1) {

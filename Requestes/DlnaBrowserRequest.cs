@@ -3,22 +3,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using RemoteFork.Properties;
 using RemoteFork.Server;
 
 namespace RemoteFork.Requestes {
-    internal class DlnaBrowserRequest : BaseRequest {
-        protected HttpProcessor processor;
-
-        public DlnaBrowserRequest(string text, HttpProcessor processor) : base(text) {
-            this.processor = processor;
+    internal class DlnaBrowserRequest : ProcessorRequest {
+        public DlnaBrowserRequest(string text, HttpProcessor processor) : base(text, processor) {
         }
 
-        public override string Execute() {
+        public override async Task<string> Execute() {
             string hostText = string.Format("http://{0}/", processor.Host);
+
             StringBuilder result = new StringBuilder();
+
             result.AppendLine("#EXTM3U");
+
             if (text == "/") {
                 if (Settings.Default.DlnaFilterType == 1) {
                     if (Settings.Default.DlnaDirectories != null) {
@@ -27,8 +28,7 @@ namespace RemoteFork.Requestes {
                                 string urlText = HttpUtility.UrlEncode(directory + "\\");
 
                                 result.AppendLine(string.Format("#EXTINF:-1,{0}\n{1}treeview?{2}",
-                                    directory,
-                                    hostText, urlText));
+                                    directory, hostText, urlText));
 
                                 Console.WriteLine(directory);
                             }
@@ -45,8 +45,7 @@ namespace RemoteFork.Requestes {
                     }
 
                     foreach (DriveInfo drive in drives.Where(i => filter.All(j => j != i.Name))) {
-                        bool isReady = drive.IsReady;
-                        if (isReady) {
+                        if (drive.IsReady) {
                             string text5 = string.Format("{0} ({1} свободно из {2})", drive.Name,
                                 Tools.FSize(drive.AvailableFreeSpace), Tools.FSize(drive.TotalSize));
 
@@ -60,6 +59,9 @@ namespace RemoteFork.Requestes {
                         }
                     }
                 }
+
+                var plugin = new PluginRequest("/treeview?plugin", processor);
+                result.AppendLine(await plugin.Execute());
             } else {
                 string[] array = Directory.GetDirectories(text);
                 List<string> filter = new List<string>();

@@ -1,27 +1,43 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using RemoteFork.Properties;
 using RemoteFork.Requestes;
 
 namespace RemoteFork.Server {
-    public class MyHttpServer : HttpServer {
+    internal class MyHttpServer : HttpServer {
         public MyHttpServer(IPAddress ip, int port) : base(ip, port) {
         }
 
-        public override void HandleGetRequest(HttpProcessor processor) {
+        public override async Task HandleGetRequest(HttpProcessor processor) {
             string httpUrl = System.Web.HttpUtility.UrlDecode(processor.HttpUrl);
             string result = string.Empty;
 
             if (!string.IsNullOrEmpty(httpUrl)) {
                 Console.WriteLine(httpUrl.Substring(1));
                 if (File.Exists(httpUrl.Substring(1)) && Settings.Default.Dlna) {
+
+                    if (Settings.Default.DlnaFilterType == 2) {
+                        if (Settings.Default.DlnaDirectories != null) {
+                            var filter = new List<string>(Settings.Default.DlnaDirectories.Cast<string>());
+                            if (filter.Any(i => httpUrl.Contains(i))) {
+                                Console.WriteLine("request: {0}", processor.HttpUrl);
+                                processor.WriteFailure();
+                                return;
+                            }
+                        }
+                    }
                     BaseRequest request = new DlnaFileRequest(httpUrl, processor);
-                    request.Execute();
+                    await request.Execute();
                 } else {
                     BaseRequest request = null;
 
-                    if (httpUrl.StartsWith("/treeview") && Settings.Default.Dlna) {
+                    if (httpUrl.StartsWith("/treeview?plugin")) {
+                        request = new PluginRequest(httpUrl, processor);
+                    } else if (httpUrl.StartsWith("/treeview") && Settings.Default.Dlna) {
                         string text = string.Empty;
                         if (httpUrl.Length > 10) {
                             text = httpUrl.Substring(10);
@@ -40,7 +56,7 @@ namespace RemoteFork.Server {
                         }
                     }
                     if (request != null) {
-                        result = request.Execute();
+                        result = await request.Execute();
                     }
 
                     Console.WriteLine("request: {0}", processor.HttpUrl);
@@ -53,9 +69,9 @@ namespace RemoteFork.Server {
             }
         }
 
-        public override void HandlePostRequest(HttpProcessor processor, StreamReader inputData) {
+        public override async Task HandlePostRequest(HttpProcessor processor, StreamReader inputData) {
             Console.WriteLine("POST request: {0}", processor.HttpUrl);
-            string arg = inputData.ReadToEnd();
+            string arg = await inputData.ReadToEndAsync();
             processor.WriteSuccess();
             processor.WriteLines("<html><body><h1>test server</h1>",
                 "<a href=/test>return</a><p>",

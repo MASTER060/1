@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using System.Windows.Forms;
 using RemoteFork.Properties;
 
-namespace RemoteFork {
+namespace RemoteFork.Forms {
     public partial class DlnaConfigurate : Form {
         public DlnaConfigurate() {
             InitializeComponent();

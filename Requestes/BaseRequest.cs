@@ -1,4 +1,6 @@
-﻿namespace RemoteFork.Requestes {
+﻿using System.Threading.Tasks;
+
+namespace RemoteFork.Requestes {
     internal abstract class BaseRequest {
         protected string text;
 
@@ -6,6 +8,6 @@
             this.text = text;
         }
 
-        public abstract string Execute();
+        public abstract Task<string> Execute();
     }
 }

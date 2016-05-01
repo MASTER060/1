@@ -1,4 +1,4 @@
-﻿namespace RemoteFork {
+﻿namespace RemoteFork.Forms {
     partial class Main {
         /// <summary>
         /// Required designer variable.

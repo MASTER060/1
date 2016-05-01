@@ -9,8 +9,8 @@ using RemoteFork.Network;
 using RemoteFork.Properties;
 using RemoteFork.Server;
 
-namespace RemoteFork {
-    public partial class Main : Form {
+namespace RemoteFork.Forms {
+    internal partial class Main : Form {
         public static HashSet<string> Devices = new HashSet<string>();
 
         private HttpServer httpServer;
@@ -143,6 +143,11 @@ namespace RemoteFork {
             Settings.Default.Save();
         }
 
+        private void llDlnaConfigurate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+            var form = new DlnaConfigurate();
+            form.ShowDialog();
+        }
+
         #endregion Settings
 
         #region notifyIcon
@@ -220,11 +225,6 @@ namespace RemoteFork {
             }
         }
 
-        #endregion notifyIcon    
-
-        private void llDlnaConfigurate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
-            var form = new DlnaConfigurate();
-            form.ShowDialog();
-        }
+        #endregion notifyIcon
     }
 }

@@ -2,9 +2,10 @@
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RemoteFork.Server {
-    public class HttpProcessor {
+    internal class HttpProcessor {
         public string HttpUrl { get; private set; }
         public string HttpProtocolVersion { get; private set; }
         public string Host { get; private set; }
@@ -25,17 +26,17 @@ namespace RemoteFork.Server {
             this.server = server;
         }
 
-        public void Process(object state) {
+        public async void Process(object state) {
             inputStream = new BufferedStream(client.GetStream());
             outputStream = new StreamWriter(new BufferedStream(client.GetStream()));
             try {
                 string httpMethod = ParseRequest();
                 ParseHeaders();
                 if (httpMethod.Equals("GET")) {
-                    HandleGetRequest();
+                    await HandleGetRequest();
                 } else {
                     if (httpMethod.Equals("POST")) {
-                        HandlePostRequest();
+                        await HandlePostRequest();
                     }
                 }
             } catch (Exception ex) {
@@ -134,11 +135,11 @@ namespace RemoteFork.Server {
 
         #region Request processing
 
-        private void HandleGetRequest() {
-            server.HandleGetRequest(this);
+        private async Task HandleGetRequest() {
+            await server.HandleGetRequest(this);
         }
 
-        private void HandlePostRequest() {
+        private async Task HandlePostRequest() {
             Console.WriteLine("get post data start");
             MemoryStream memoryStream = new MemoryStream();
             if (!string.IsNullOrEmpty(ContentLength)) {
@@ -165,7 +166,7 @@ namespace RemoteFork.Server {
                 }
             }
             Console.WriteLine("get post data end");
-            server.HandlePostRequest(this, new StreamReader(memoryStream));
+            await server.HandlePostRequest(this, new StreamReader(memoryStream));
         }
 
         #endregion Request processing

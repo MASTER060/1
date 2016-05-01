@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace RemoteFork.Network {
-    public static class HttpUtility {
+    internal static class HttpUtility {
         private const string DEFAULT_USER_AGENT =
             "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.41 (KHTML, like Gecko) Large Screen WebAppManager Safari/537.41";
 

@@ -1,16 +1,14 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using RemoteFork.Server;
 
 namespace RemoteFork.Requestes {
-    internal class DlnaFileRequest : BaseRequest {
-        protected HttpProcessor processor;
-
-        public DlnaFileRequest(string text, HttpProcessor processor) : base(text) {
-            this.processor = processor;
+    internal class DlnaFileRequest : ProcessorRequest {
+        public DlnaFileRequest(string text, HttpProcessor processor) : base(text, processor) {
         }
 
-        public override string Execute() {
+        public override async Task<string> Execute() {
             Console.WriteLine("dlna file");
             using (
                 var fileStream = new FileStream(System.Web.HttpUtility.UrlDecode(text.Substring(1)),

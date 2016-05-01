@@ -1,4 +1,4 @@
-﻿namespace RemoteFork {
+﻿namespace RemoteFork.Forms {
     partial class DlnaConfigurate {
         /// <summary>
         /// Required designer variable.
@@ -28,10 +28,10 @@
             this.rbExcludeSelected = new System.Windows.Forms.RadioButton();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.lbDirectories = new System.Windows.Forms.ListBox();
-            this.bAddDirectorues = new System.Windows.Forms.Button();
-            this.bRemoveDirectories = new System.Windows.Forms.Button();
             this.bClearDirectories = new System.Windows.Forms.Button();
+            this.bRemoveDirectories = new System.Windows.Forms.Button();
+            this.bAddDirectorues = new System.Windows.Forms.Button();
+            this.lbDirectories = new System.Windows.Forms.ListBox();
             this.bSave = new System.Windows.Forms.Button();
             this.bCancel = new System.Windows.Forms.Button();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
@@ -96,23 +96,15 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Директории";
             // 
-            // lbDirectories
+            // bClearDirectories
             // 
-            this.lbDirectories.FormattingEnabled = true;
-            this.lbDirectories.Location = new System.Drawing.Point(6, 55);
-            this.lbDirectories.Name = "lbDirectories";
-            this.lbDirectories.Size = new System.Drawing.Size(248, 160);
-            this.lbDirectories.TabIndex = 6;
-            // 
-            // bAddDirectorues
-            // 
-            this.bAddDirectorues.Location = new System.Drawing.Point(6, 19);
-            this.bAddDirectorues.Name = "bAddDirectorues";
-            this.bAddDirectorues.Size = new System.Drawing.Size(75, 23);
-            this.bAddDirectorues.TabIndex = 3;
-            this.bAddDirectorues.Text = "Добавить";
-            this.bAddDirectorues.UseVisualStyleBackColor = true;
-            this.bAddDirectorues.Click += new System.EventHandler(this.bAddDirectorues_Click);
+            this.bClearDirectories.Location = new System.Drawing.Point(179, 19);
+            this.bClearDirectories.Name = "bClearDirectories";
+            this.bClearDirectories.Size = new System.Drawing.Size(75, 23);
+            this.bClearDirectories.TabIndex = 5;
+            this.bClearDirectories.Text = "Очистить";
+            this.bClearDirectories.UseVisualStyleBackColor = true;
+            this.bClearDirectories.Click += new System.EventHandler(this.bClearDirectories_Click);
             // 
             // bRemoveDirectories
             // 
@@ -124,15 +116,23 @@
             this.bRemoveDirectories.UseVisualStyleBackColor = true;
             this.bRemoveDirectories.Click += new System.EventHandler(this.bRemoveDirectories_Click);
             // 
-            // bClearDirectories
+            // bAddDirectorues
             // 
-            this.bClearDirectories.Location = new System.Drawing.Point(179, 19);
-            this.bClearDirectories.Name = "bClearDirectories";
-            this.bClearDirectories.Size = new System.Drawing.Size(75, 23);
-            this.bClearDirectories.TabIndex = 5;
-            this.bClearDirectories.Text = "Очистить";
-            this.bClearDirectories.UseVisualStyleBackColor = true;
-            this.bClearDirectories.Click += new System.EventHandler(this.bClearDirectories_Click);
+            this.bAddDirectorues.Location = new System.Drawing.Point(6, 19);
+            this.bAddDirectorues.Name = "bAddDirectorues";
+            this.bAddDirectorues.Size = new System.Drawing.Size(75, 23);
+            this.bAddDirectorues.TabIndex = 3;
+            this.bAddDirectorues.Text = "Добавить";
+            this.bAddDirectorues.UseVisualStyleBackColor = true;
+            this.bAddDirectorues.Click += new System.EventHandler(this.bAddDirectorues_Click);
+            // 
+            // lbDirectories
+            // 
+            this.lbDirectories.FormattingEnabled = true;
+            this.lbDirectories.Location = new System.Drawing.Point(6, 55);
+            this.lbDirectories.Name = "lbDirectories";
+            this.lbDirectories.Size = new System.Drawing.Size(248, 160);
+            this.lbDirectories.TabIndex = 6;
             // 
             // bSave
             // 
@@ -167,7 +167,8 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "DlnaConfigurate";
-            this.Text = "DlnaConfigurate";
+            this.ShowIcon = false;
+            this.Text = "Настройка DLNA";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);

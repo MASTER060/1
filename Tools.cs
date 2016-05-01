@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 
 namespace RemoteFork {
-    public static class Tools {
+    internal static class Tools {
         public static IPAddress[] GetIPAddresses(string hostname = "") {
             var hostEntry = Dns.GetHostEntry(hostname);
             var addressList = hostEntry.AddressList;

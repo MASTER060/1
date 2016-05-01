@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using RemoteFork.Forms;
 
 namespace RemoteFork {
     internal static class Program {
