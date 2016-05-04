@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using RemoteFork.Network;
+using RemoteFork.Plugins;
 using RemoteFork.Properties;
 using RemoteFork.Server;
 
@@ -15,8 +16,6 @@ namespace RemoteFork.Forms {
 
         private HttpServer httpServer;
         private Thread thread;
-
-        private readonly List<ToolStripMenuItem> deviceMenuItems = new List<ToolStripMenuItem>();
 
         #region Form
 
@@ -89,7 +88,7 @@ namespace RemoteFork.Forms {
                 string.Format(
                     "http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}",
                     Settings.Default.AppVersion,
-                    cbIp.SelectedItem, tbPort.Text)).Result;
+                    cbIp.SelectedItem, tbPort.Text));
             Console.WriteLine(result);
         }
 
@@ -148,6 +147,16 @@ namespace RemoteFork.Forms {
             form.ShowDialog();
         }
 
+        private void cbPlugins_CheckedChanged(object sender, EventArgs e) {
+            Settings.Default.Plugins = cbPlugins.Checked;
+            Settings.Default.Save();
+        }
+
+        private void llPluginsConfigurate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+            var form = new PluginsConfigurate();
+            form.ShowDialog();
+        }
+
         #endregion Settings
 
         #region notifyIcon
@@ -158,12 +167,8 @@ namespace RemoteFork.Forms {
             }
         }
 
-        private void loadPlaylistToolStripMenuItem1_MouseHover(object sender, EventArgs e) {
-            Console.WriteLine("read Sets");
-            foreach (var deviceMenuItem in deviceMenuItems) {
-                loadPlaylistToolStripMenuItem1.DropDownItems.Remove(deviceMenuItem);
-            }
-            deviceMenuItems.Clear();
+        private void loadPlaylistToolStripMenuItem1_DropDownOpening(object sender, EventArgs e) {
+            loadPlaylistToolStripMenuItem1.DropDownItems.Clear();
 
             if (Devices.Count > 0) {
                 foreach (var device in Devices) {
@@ -175,23 +180,19 @@ namespace RemoteFork.Forms {
                         Tag = device,
                         Text = name
                     };
-                    item.Click += devicesToolStripMenuItem1_Click;
-
-                    deviceMenuItems.Add(item);
+                    item.Click += devicesToolStripMenuItem_Click;
+                    
                     loadPlaylistToolStripMenuItem1.DropDownItems.Add(item);
                 }
-
-                devicesToolStripMenuItem1.Visible = false;
             } else {
-                devicesToolStripMenuItem1.Text = "Нет активных устройств";
-                devicesToolStripMenuItem1.Visible = true;
+                loadPlaylistToolStripMenuItem1.DropDownItems.Add("Нет активных устройств");
             }
         }
 
-        private async void devicesToolStripMenuItem1_Click(object sender, EventArgs e) {
-            ToolStripMenuItem clickedItem = (ToolStripMenuItem) sender;
+        private void devicesToolStripMenuItem_Click(object sender, EventArgs e) {
+            var clickedItem = (ToolStripMenuItem) sender;
             if (openFileDialog1.ShowDialog() == DialogResult.OK) {
-                StreamReader streamReader = new StreamReader(openFileDialog1.FileName);
+                var streamReader = new StreamReader(openFileDialog1.FileName);
                 string text = streamReader.ReadToEnd();
                 streamReader.Close();
                 if (text.Length < 102401 &&
@@ -200,7 +201,7 @@ namespace RemoteFork.Forms {
                                  openFileDialog1.FileName + "&initial=" + clickedItem.Tag;
 
                     var data = new Dictionary<string, string> {{"text", text}};
-                    string text2 = await HttpUtility.PostRequest(url, data);
+                    string text2 = HttpUtility.PostRequest(url, data);
 
                     MessageBox.Show(text2);
                 } else {
@@ -211,6 +212,44 @@ namespace RemoteFork.Forms {
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e) {
             ShowForm();
+        }
+
+        private void pluginsToolStripMenuItem_DropDownOpening(object sender, EventArgs e) {
+            pluginsToolStripMenuItem.DropDownItems.Clear();
+
+            var plugins = PluginManager.Instance.GetPlugins(false);
+
+            if (plugins.Count > 0) {
+                foreach (var plugin in plugins) {
+                    var item = new ToolStripMenuItem(plugin.Value.ToString()) {
+                        Tag = plugin.Key,
+                        Checked = Settings.Default.EnablePlugins != null &&
+                                  Settings.Default.EnablePlugins.Contains(plugin.Key),
+                        CheckOnClick = true
+                    };
+                    item.CheckedChanged += pluginsToolStripMenuItem_CheckedChanged;
+                    pluginsToolStripMenuItem.DropDownItems.Add(item);
+                }
+            } else {
+                pluginsToolStripMenuItem.DropDownItems.Add("Нет установленных плагинов");
+            }
+        }
+
+        private void pluginsToolStripMenuItem_CheckedChanged(object sender, EventArgs e) {
+            var clickedItem = (ToolStripMenuItem)sender;
+            string key = clickedItem.Tag.ToString();
+
+            if (clickedItem.Checked) {
+                if (!Settings.Default.EnablePlugins.Contains(key)) {
+                    Settings.Default.EnablePlugins.Add(key);
+                }
+            } else {
+                if (Settings.Default.EnablePlugins.Contains(key)) {
+                    Settings.Default.EnablePlugins.Remove(key);
+                }
+            }
+
+            Settings.Default.Save();
         }
 
         private void openTestToolStripMenuItem_Click(object sender, EventArgs e) {

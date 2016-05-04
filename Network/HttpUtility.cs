@@ -1,30 +1,34 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RemoteFork.Network {
-    internal static class HttpUtility {
+    public static class HttpUtility {
         private const string DEFAULT_USER_AGENT =
             "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.41 (KHTML, like Gecko) Large Screen WebAppManager Safari/537.41";
 
-        public static async Task<string> GetRequest(string link, Dictionary<string, string> header = null) {
+        private static readonly CookieContainer cookieContainer = new CookieContainer();
+
+        public static string GetRequest(string link, Dictionary<string, string> header = null) {
             try {
-                using (var httpClient = new HttpClient()) {
-                    if (header != null) {
-                        foreach (var h in header) {
-                            try {
-                                httpClient.DefaultRequestHeaders.Add(h.Key, h.Value);
-                            } catch (Exception ex) {
-                                Console.WriteLine(ex);
+                using (var handler = new HttpClientHandler() { CookieContainer = cookieContainer }) {
+                    using (var httpClient = new HttpClient(handler)) {
+                        if (header != null) {
+                            foreach (var h in header) {
+                                try {
+                                    httpClient.DefaultRequestHeaders.Add(h.Key, h.Value);
+                                } catch (Exception ex) {
+                                    Console.WriteLine(ex);
+                                }
                             }
                         }
-                    }
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(DEFAULT_USER_AGENT);
+                        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(DEFAULT_USER_AGENT);
 
-                    var response = await httpClient.GetAsync(link).ConfigureAwait(false);
-                    return await ReadContext(response.Content);
+                        var response = httpClient.GetAsync(link).Result;
+                        return ReadContext(response.Content);
+                    }
                 }
             } catch (Exception ex) {
                 Console.WriteLine(ex.Message);
@@ -32,25 +36,27 @@ namespace RemoteFork.Network {
             }
         }
 
-        public static async Task<string> PostRequest(string link, Dictionary<string, string> data,
+        public static string PostRequest(string link, Dictionary<string, string> data,
             Dictionary<string, string> header = null) {
             try {
-                using (var httpClient = new HttpClient()) {
-                    if (header != null) {
-                        foreach (var h in header) {
-                            try {
-                                httpClient.DefaultRequestHeaders.Add(h.Key, h.Value);
-                            } catch (Exception ex) {
-                                Console.WriteLine(ex);
+                using (var handler = new HttpClientHandler() { CookieContainer = cookieContainer }) {
+                    using (var httpClient = new HttpClient(handler)) {
+                        if (header != null) {
+                            foreach (var h in header) {
+                                try {
+                                    httpClient.DefaultRequestHeaders.Add(h.Key, h.Value);
+                                } catch (Exception ex) {
+                                    Console.WriteLine(ex);
+                                }
                             }
                         }
+                        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(DEFAULT_USER_AGENT);
+
+                        HttpContent content = new FormUrlEncodedContent(data);
+
+                        var response = httpClient.PostAsync(link, content).Result;
+                        return ReadContext(response.Content);
                     }
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(DEFAULT_USER_AGENT);
-
-                    HttpContent content = new FormUrlEncodedContent(data);
-
-                    var response = await httpClient.PostAsync(link, content).ConfigureAwait(false);
-                    return await ReadContext(response.Content);
                 }
             } catch (Exception ex) {
                 Console.WriteLine(ex.Message);
@@ -58,8 +64,8 @@ namespace RemoteFork.Network {
             }
         }
 
-        private static async Task<string> ReadContext(HttpContent context) {
-            var result = await context.ReadAsByteArrayAsync();
+        private static string ReadContext(HttpContent context) {
+            var result = context.ReadAsByteArrayAsync().Result;
             try {
                 var encoding = Encoding.GetEncoding(context.Headers.ContentType.CharSet);
                 result = Encoding.Convert(encoding, Encoding.Default,

@@ -35,6 +35,7 @@
             this.devicesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.loadPlaylistToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.pluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.bStartServer = new System.Windows.Forms.Button();
@@ -45,6 +46,8 @@
             this.cbIp = new System.Windows.Forms.ComboBox();
             this.cbAutoStart = new System.Windows.Forms.CheckBox();
             this.llDlnaConfigurate = new System.Windows.Forms.LinkLabel();
+            this.cbPlugins = new System.Windows.Forms.CheckBox();
+            this.llPluginsConfigurate = new System.Windows.Forms.LinkLabel();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -123,10 +126,11 @@
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loadPlaylistToolStripMenuItem1,
             this.openTestToolStripMenuItem,
+            this.pluginsToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(184, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(184, 136);
             // 
             // loadPlaylistToolStripMenuItem1
             // 
@@ -135,7 +139,14 @@
             this.loadPlaylistToolStripMenuItem1.Name = "loadPlaylistToolStripMenuItem1";
             this.loadPlaylistToolStripMenuItem1.Size = new System.Drawing.Size(183, 22);
             this.loadPlaylistToolStripMenuItem1.Text = "Загрузить плейлист";
-            this.loadPlaylistToolStripMenuItem1.MouseHover += new System.EventHandler(this.loadPlaylistToolStripMenuItem1_MouseHover);
+            this.loadPlaylistToolStripMenuItem1.DropDownOpening += new System.EventHandler(this.loadPlaylistToolStripMenuItem1_DropDownOpening);
+            // 
+            // pluginsToolStripMenuItem
+            // 
+            this.pluginsToolStripMenuItem.Name = "pluginsToolStripMenuItem";
+            this.pluginsToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.pluginsToolStripMenuItem.Text = "Плагины";
+            this.pluginsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.pluginsToolStripMenuItem_DropDownOpening);
             // 
             // notifyIcon1
             // 
@@ -174,7 +185,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 171);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 192);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(217, 22);
             this.statusStrip1.TabIndex = 19;
@@ -233,15 +244,42 @@
             this.llDlnaConfigurate.VisitedLinkColor = System.Drawing.Color.Blue;
             this.llDlnaConfigurate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llDlnaConfigurate_LinkClicked);
             // 
+            // cbPlugins
+            // 
+            this.cbPlugins.AutoSize = true;
+            this.cbPlugins.Checked = true;
+            this.cbPlugins.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbPlugins.Location = new System.Drawing.Point(12, 172);
+            this.cbPlugins.Name = "cbPlugins";
+            this.cbPlugins.Size = new System.Drawing.Size(71, 17);
+            this.cbPlugins.TabIndex = 5;
+            this.cbPlugins.Text = "Плагины";
+            this.cbPlugins.UseVisualStyleBackColor = true;
+            this.cbPlugins.CheckedChanged += new System.EventHandler(this.cbPlugins_CheckedChanged);
+            // 
+            // llPluginsConfigurate
+            // 
+            this.llPluginsConfigurate.AutoSize = true;
+            this.llPluginsConfigurate.Location = new System.Drawing.Point(145, 173);
+            this.llPluginsConfigurate.Name = "llPluginsConfigurate";
+            this.llPluginsConfigurate.Size = new System.Drawing.Size(61, 13);
+            this.llPluginsConfigurate.TabIndex = 21;
+            this.llPluginsConfigurate.TabStop = true;
+            this.llPluginsConfigurate.Text = "Настроить";
+            this.llPluginsConfigurate.VisitedLinkColor = System.Drawing.Color.Blue;
+            this.llPluginsConfigurate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llPluginsConfigurate_LinkClicked);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(217, 193);
+            this.ClientSize = new System.Drawing.Size(217, 214);
+            this.Controls.Add(this.llPluginsConfigurate);
             this.Controls.Add(this.llDlnaConfigurate);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.cbAutoStart);
+            this.Controls.Add(this.cbPlugins);
             this.Controls.Add(this.cbDlna);
             this.Controls.Add(this.bStartServer);
             this.Controls.Add(this.bStopServer);
@@ -285,5 +323,8 @@
         private System.Windows.Forms.CheckBox cbAutoStart;
         private System.Windows.Forms.ComboBox cbIp;
         private System.Windows.Forms.LinkLabel llDlnaConfigurate;
+        private System.Windows.Forms.CheckBox cbPlugins;
+        private System.Windows.Forms.LinkLabel llPluginsConfigurate;
+        private System.Windows.Forms.ToolStripMenuItem pluginsToolStripMenuItem;
     }
 }

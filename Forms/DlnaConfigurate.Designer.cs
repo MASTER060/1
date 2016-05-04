@@ -168,6 +168,7 @@
             this.MinimizeBox = false;
             this.Name = "DlnaConfigurate";
             this.ShowIcon = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Настройка DLNA";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

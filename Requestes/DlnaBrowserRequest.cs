@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using RemoteFork.Properties;
 using RemoteFork.Server;
@@ -13,7 +12,7 @@ namespace RemoteFork.Requestes {
         public DlnaBrowserRequest(string text, HttpProcessor processor) : base(text, processor) {
         }
 
-        public override async Task<string> Execute() {
+        public override string Execute() {
             string hostText = string.Format("http://{0}/", processor.Host);
 
             StringBuilder result = new StringBuilder();
@@ -61,7 +60,7 @@ namespace RemoteFork.Requestes {
                 }
 
                 var plugin = new PluginRequest("/treeview?plugin", processor);
-                result.AppendLine(await plugin.Execute());
+                result.AppendLine(plugin.Execute());
             } else {
                 string[] array = Directory.GetDirectories(text);
                 List<string> filter = new List<string>();

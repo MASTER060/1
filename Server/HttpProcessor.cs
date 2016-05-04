@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace RemoteFork.Server {
     internal class HttpProcessor {
@@ -13,7 +12,7 @@ namespace RemoteFork.Server {
         public string ContentLength { get; private set; }
 
         private Stream inputStream;
-        private StreamWriter outputStream;
+        public StreamWriter outputStream;
 
         private readonly TcpClient client;
         private readonly HttpServer server;
@@ -26,34 +25,36 @@ namespace RemoteFork.Server {
             this.server = server;
         }
 
-        public async void Process(object state) {
+        public void Process(object state) {
             inputStream = new BufferedStream(client.GetStream());
             outputStream = new StreamWriter(new BufferedStream(client.GetStream()));
             try {
                 string httpMethod = ParseRequest();
                 ParseHeaders();
                 if (httpMethod.Equals("GET")) {
-                    await HandleGetRequest();
+                    HandleGetRequest();
                 } else {
                     if (httpMethod.Equals("POST")) {
-                        await HandlePostRequest();
+                        HandlePostRequest();
                     }
                 }
             } catch (Exception ex) {
                 Console.WriteLine("Exception: " + ex);
-                WriteFailure();
+                //WriteFailure();
             }
             try {
                 outputStream.Flush();
             } catch (Exception ex) {
                 Console.WriteLine("Exception: " + ex);
             } finally {
-                if (inputStream != null) {
-                    inputStream.Close();
-                }
-                if (outputStream != null) {
-                    outputStream.Close();
-                }
+                inputStream = null;
+                outputStream = null;
+                //if (inputStream != null) {
+                //    inputStream.Close();
+                //}
+                //if (outputStream != null) {
+                //    outputStream.Close();
+                //}
                 if (client != null) {
                     client.Close();
                 }
@@ -135,11 +136,11 @@ namespace RemoteFork.Server {
 
         #region Request processing
 
-        private async Task HandleGetRequest() {
-            await server.HandleGetRequest(this);
+        private void HandleGetRequest() {
+            server.HandleGetRequest(this);
         }
 
-        private async Task HandlePostRequest() {
+        private void HandlePostRequest() {
             Console.WriteLine("get post data start");
             MemoryStream memoryStream = new MemoryStream();
             if (!string.IsNullOrEmpty(ContentLength)) {
@@ -166,7 +167,7 @@ namespace RemoteFork.Server {
                 }
             }
             Console.WriteLine("get post data end");
-            await server.HandlePostRequest(this, new StreamReader(memoryStream));
+            server.HandlePostRequest(this, new StreamReader(memoryStream));
         }
 
         #endregion Request processing
@@ -178,35 +179,46 @@ namespace RemoteFork.Server {
         }
 
         public void WriteLine(string content) {
-            outputStream.WriteLine(content);
+            if (outputStream.BaseStream.CanWrite) {
+                outputStream.WriteLine(content);
+            }
         }
 
         public void WriteLines(params string[] content) {
-            foreach (string s in content) {
-                outputStream.WriteLine(s);
+            if (outputStream.BaseStream.CanWrite) {
+                foreach (string s in content) {
+                    outputStream.WriteLine(s);
+                }
             }
         }
 
         public void WriteSuccess(string contentType = "text/html") {
-            outputStream.WriteLine("HTTP/1.0 200 OK");
-            outputStream.WriteLine("Access-Control-Allow-Origin: *");
-            outputStream.WriteLine("Content-Type: text/html; charset=UTF-8");
-            outputStream.WriteLine("Connection: close");
-            outputStream.WriteLine("");
+            if (outputStream.BaseStream.CanWrite) {
+                outputStream.WriteLine("HTTP/1.0 200 OK");
+                outputStream.WriteLine("Access-Control-Allow-Origin: *");
+                outputStream.WriteLine("Content-Type: text/html; charset=UTF-8");
+                outputStream.WriteLine("Connection: close");
+                outputStream.WriteLine("");
+            }
         }
 
         public void WriteFailure() {
             try {
-                outputStream.WriteLine("HTTP/1.0 404 File not found");
-                outputStream.WriteLine("Connection: close");
-                outputStream.WriteLine("");
+                if (outputStream.BaseStream.CanWrite) {
+                    outputStream.WriteLine("HTTP/1.0 404 File not found");
+                    outputStream.WriteLine("Connection: close");
+                    outputStream.WriteLine("");
+                }
             } catch (Exception ex) {
                 Console.WriteLine(ex);
             }
         }
 
         public void WriteBaseStream(byte[] buffer, int offset, int count) {
-            outputStream.BaseStream.Write(buffer, offset, count);
+            if (outputStream.BaseStream.CanWrite) {
+                outputStream.BaseStream.Write(buffer, offset, count);
+                outputStream.Flush();
+            }
         }
 
         #endregion Writing result

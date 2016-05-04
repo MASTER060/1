@@ -70,7 +70,7 @@ namespace RemoteFork.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1.2f7")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.2f9")]
         public string AppVersion {
             get {
                 return ((string)(this["AppVersion"]));
@@ -91,12 +91,39 @@ namespace RemoteFork.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsi=\"http://www.w3." +
+            "org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" />")]
         public global::System.Collections.Specialized.StringCollection DlnaDirectories {
             get {
                 return ((global::System.Collections.Specialized.StringCollection)(this["DlnaDirectories"]));
             }
             set {
                 this["DlnaDirectories"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsi=\"http://www.w3." +
+            "org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" />")]
+        public global::System.Collections.Specialized.StringCollection EnablePlugins {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["EnablePlugins"]));
+            }
+            set {
+                this["EnablePlugins"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Plugins {
+            get {
+                return ((bool)(this["Plugins"]));
+            }
+            set {
+                this["Plugins"] = value;
             }
         }
     }

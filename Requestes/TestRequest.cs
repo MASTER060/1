@@ -1,12 +1,11 @@
-﻿using System.Threading.Tasks;
-using RemoteFork.Forms;
+﻿using RemoteFork.Forms;
 
 namespace RemoteFork.Requestes {
     internal class TestRequest : BaseRequest {
         public TestRequest(string text) : base(text) {
         }
 
-        public override async Task<string> Execute() {
+        public override string Execute() {
             const string result = "<html><h1>ForkPlayer DLNA Work!</h1><br><b>Server by Visual Studio 2015</b></html>";
 
             if (text.IndexOf('|') > 0) {

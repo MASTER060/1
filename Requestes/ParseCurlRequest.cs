@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using RemoteFork.Network;
 
 namespace RemoteFork.Requestes {
@@ -9,7 +8,7 @@ namespace RemoteFork.Requestes {
         public ParseCurlRequest(string text) : base(text) {
         }
 
-        public override async Task<string> Execute() {
+        public override string Execute() {
             string result;
 
             string url = Regex.Match(text, "(?:\")(.*?)(?=\")").Groups[1].Value;
@@ -30,9 +29,9 @@ namespace RemoteFork.Requestes {
                 var data =
                     dataArray.ToDictionary(value => value.Remove(value.IndexOf("=", StringComparison.Ordinal)),
                         value => value.Substring(value.IndexOf("=", StringComparison.Ordinal) + 1));
-                result = await HttpUtility.PostRequest(url, data, header);
+                result = HttpUtility.PostRequest(url, data, header);
             } else {
-                result = await HttpUtility.GetRequest(url, header);
+                result = HttpUtility.GetRequest(url, header);
             }
 
             return result;

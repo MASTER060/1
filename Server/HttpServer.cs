@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace RemoteFork.Server {
     internal abstract class HttpServer {
@@ -39,8 +38,8 @@ namespace RemoteFork.Server {
             }
         }
 
-        public abstract Task HandleGetRequest(HttpProcessor processor);
+        public abstract void HandleGetRequest(HttpProcessor processor);
 
-        public abstract Task HandlePostRequest(HttpProcessor processor, StreamReader inputData);
+        public abstract void HandlePostRequest(HttpProcessor processor, StreamReader inputData);
     }
 }

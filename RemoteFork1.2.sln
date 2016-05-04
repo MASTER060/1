@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteFork1.2", "RemoteFork1.2.csproj", "{FB52D32C-4A1F-477F-9870-DDBA0D27FA5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteFork.Plugin", "RemoteforkPlugin\RemoteFork.Plugin.csproj", "{24EBFB74-93D1-493B-A238-AA9B1CEABDFC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{FB52D32C-4A1F-477F-9870-DDBA0D27FA5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB52D32C-4A1F-477F-9870-DDBA0D27FA5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB52D32C-4A1F-477F-9870-DDBA0D27FA5D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{24EBFB74-93D1-493B-A238-AA9B1CEABDFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{24EBFB74-93D1-493B-A238-AA9B1CEABDFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{24EBFB74-93D1-493B-A238-AA9B1CEABDFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{24EBFB74-93D1-493B-A238-AA9B1CEABDFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
