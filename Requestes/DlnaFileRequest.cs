@@ -9,12 +9,12 @@ namespace RemoteFork.Requestes {
         }
 
         public override string Execute() {
-            Console.WriteLine("dlna file");
+            Logger.Debug("DlnaFileRequest: {0}", text);
             using (
                 var fileStream = new FileStream(System.Web.HttpUtility.UrlDecode(text),
                     FileMode.Open, FileAccess.Read, FileShare.Read)) {
                 try {
-                    List<string> content = new List<string>();
+                    var content = new List<string>();
 
                     long count = fileStream.Length;
                     long offset = 0;
@@ -47,9 +47,10 @@ namespace RemoteFork.Requestes {
                     content.Add(string.Empty);
                     processor.WriteLines(content.ToArray());
                     processor.SetAutoFlush(true);
-                    Console.WriteLine("fs.Seek=" + offset);
+
                     fileStream.Seek(offset, SeekOrigin.Begin);
-                    Console.WriteLine("starting Read, to_read={0}", lenght);
+
+                    Logger.Debug("DlnaFileRequest->offset: {0} leght: {1}", offset, lenght);
                     while (lenght > 0L) {
                         byte[] buffer = new byte[256000];
                         int num6 = fileStream.Read(buffer, 0, (int) Math.Min(256000, lenght));
@@ -60,7 +61,7 @@ namespace RemoteFork.Requestes {
                         processor.WriteBaseStream(buffer, 0, num6);
                     }
                 } finally {
-                    Console.WriteLine("fs read end ");
+                    Logger.Debug("DlnaFileRequest->End");
                     fileStream.Close();
                 }
             }

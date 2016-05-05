@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
+using RemoteFork.Forms;
 using RemoteFork.Properties;
 using RemoteFork.Server;
 
@@ -15,7 +15,7 @@ namespace RemoteFork.Requestes {
         public override string Execute() {
             string hostText = string.Format("http://{0}/", processor.Host);
 
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
 
             result.AppendLine("#EXTM3U");
 
@@ -29,21 +29,14 @@ namespace RemoteFork.Requestes {
                                 result.AppendLine(string.Format("#EXTINF:-1,{0}\n{1}treeview?{2}",
                                     directory, hostText, urlText));
 
-                                Console.WriteLine(directory);
+                                Logger.Debug("DlnaBrowserRequest->Filtering directory: {0}", directory);
                             }
                         }
                     }
                 } else {
                     var drives = DriveInfo.GetDrives();
-                    List<string> filter = new List<string>();
 
-                    if (Settings.Default.DlnaFilterType == 2) {
-                        if (Settings.Default.DlnaDirectories != null) {
-                            filter.AddRange(Settings.Default.DlnaDirectories.Cast<string>());
-                        }
-                    }
-
-                    foreach (DriveInfo drive in drives.Where(i => filter.All(j => j != i.Name))) {
+                    foreach (var drive in drives.Where(i => DlnaConfigurate.CheckAccess(i.Name))) {
                         if (drive.IsReady) {
                             string text5 = string.Format("{0} ({1} свободно из {2})", drive.Name,
                                 Tools.FSize(drive.AvailableFreeSpace), Tools.FSize(drive.TotalSize));
@@ -54,40 +47,46 @@ namespace RemoteFork.Requestes {
                             result.AppendLine(string.Format("#EXTINF:-1,{0}\n{1}treeview?{2}", driveName, hostText,
                                 drive.Name));
 
-                            Console.WriteLine(driveName);
+                            Logger.Debug("DlnaBrowserRequest->Drive: {0}", driveName);
                         }
                     }
                 }
 
-                var plugin = new PluginRequest("/treeview?plugin", processor);
-                result.AppendLine(plugin.Execute());
-            } else {
-                string[] array = Directory.GetDirectories(text);
-                List<string> filter = new List<string>();
+                if (Settings.Default.UserUrls != null && Settings.Default.UserUrls.Count > 0) {
+                    result.AppendLine(string.Format("#EXTINF:-1,{0}\n{1}treeview?{2}.m3u",
+                        "Пользовательские ссылки", hostText, "urls"));
 
-                if (Settings.Default.DlnaFilterType == 2) {
-                    if (Settings.Default.DlnaDirectories != null) {
-                        filter.AddRange(Settings.Default.DlnaDirectories.Cast<string>());
-                    }
+                    Logger.Debug("DlnaBrowserRequest->User urls: {0}", Settings.Default.UserUrls.Count);
                 }
 
-                foreach (string directory in array.Where(i => filter.All(j => j != i))) {
+                var plugin = new PluginRequest("/treeview?plugin", processor);
+                result.AppendLine(plugin.Execute());
+            } else if (text == "urls.m3u") {
+                if (Settings.Default.UserUrls != null && Settings.Default.UserUrls.Count > 0) {
+                    foreach (string url in Settings.Default.UserUrls) {
+                        result.AppendLine(string.Format("#EXTINF:-1,{0}\n{0}",url));
+                    }
+                }
+            } else {
+                string[] array = Directory.GetDirectories(text);
+
+                foreach (string directory in array.Where(DlnaConfigurate.CheckAccess)) {
                     string urlText = HttpUtility.UrlEncode(directory + "\\");
 
                     result.AppendLine(string.Format("#EXTINF:-1,{0}\n{1}treeview?{2}", directory.Split('\\').Last(),
                         hostText, urlText));
 
-                    Console.WriteLine(directory);
+                    Logger.Debug("DlnaBrowserRequest->Directory: {0}", directory);
                 }
                 array = Directory.GetFiles(text);
-                foreach (string file in array) {
+                foreach (string file in array.Where(DlnaConfigurate.CheckAccess)) {
                     string urlText = HttpUtility.UrlEncode(file.Replace("\\", "\\\\"));
                     FileInfo fileInfo = new FileInfo(file);
 
                     result.AppendLine(string.Format("#EXTINF:-1,{0} ({1})\n{2}{3}", file.Split('\\').Last(),
                         Tools.FSize(fileInfo.Length), hostText, urlText));
 
-                    Console.WriteLine(file);
+                    Logger.Debug("DlnaBrowserRequest->Directory: {0}", file);
                 }
             }
 

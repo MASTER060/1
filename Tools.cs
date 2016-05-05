@@ -37,6 +37,8 @@ namespace RemoteFork {
             return Math.Round(num, 2) + str;
         }
 
+        #region File extensions
+
         private static readonly IDictionary<string, string> mappings =
             new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase) {
                 #region Big freaking list of mime types
@@ -271,5 +273,7 @@ namespace RemoteFork {
             var extension = mappings.FirstOrDefault(i => fileName.EndsWith(i.Key));
             return extension.Value;
         }
+
+        #endregion File extensions
     }
 }

@@ -36,6 +36,7 @@
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.loadPlaylistToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.pluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.playUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.bStartServer = new System.Windows.Forms.Button();
@@ -48,6 +49,8 @@
             this.llDlnaConfigurate = new System.Windows.Forms.LinkLabel();
             this.cbPlugins = new System.Windows.Forms.CheckBox();
             this.llPluginsConfigurate = new System.Windows.Forms.LinkLabel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.cbLogs = new System.Windows.Forms.ComboBox();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -88,21 +91,21 @@
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.exitToolStripMenuItem.Text = "Выход";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.settingsToolStripMenuItem.Text = "Настройки";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
             // openTestToolStripMenuItem
             // 
             this.openTestToolStripMenuItem.Name = "openTestToolStripMenuItem";
-            this.openTestToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.openTestToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.openTestToolStripMenuItem.Text = "Открыть тест";
             this.openTestToolStripMenuItem.Click += new System.EventHandler(this.openTestToolStripMenuItem_Click);
             // 
@@ -125,28 +128,36 @@
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loadPlaylistToolStripMenuItem1,
-            this.openTestToolStripMenuItem,
             this.pluginsToolStripMenuItem,
+            this.playUrlToolStripMenuItem,
+            this.openTestToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(184, 136);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(221, 136);
             // 
             // loadPlaylistToolStripMenuItem1
             // 
             this.loadPlaylistToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.devicesToolStripMenuItem1});
             this.loadPlaylistToolStripMenuItem1.Name = "loadPlaylistToolStripMenuItem1";
-            this.loadPlaylistToolStripMenuItem1.Size = new System.Drawing.Size(183, 22);
+            this.loadPlaylistToolStripMenuItem1.Size = new System.Drawing.Size(220, 22);
             this.loadPlaylistToolStripMenuItem1.Text = "Загрузить плейлист";
             this.loadPlaylistToolStripMenuItem1.DropDownOpening += new System.EventHandler(this.loadPlaylistToolStripMenuItem1_DropDownOpening);
             // 
             // pluginsToolStripMenuItem
             // 
             this.pluginsToolStripMenuItem.Name = "pluginsToolStripMenuItem";
-            this.pluginsToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.pluginsToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.pluginsToolStripMenuItem.Text = "Плагины";
             this.pluginsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.pluginsToolStripMenuItem_DropDownOpening);
+            // 
+            // playUrlToolStripMenuItem
+            // 
+            this.playUrlToolStripMenuItem.Name = "playUrlToolStripMenuItem";
+            this.playUrlToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            this.playUrlToolStripMenuItem.Text = "Пользовательские ссылки";
+            this.playUrlToolStripMenuItem.Click += new System.EventHandler(this.playUrlToolStripMenuItem_Click);
             // 
             // notifyIcon1
             // 
@@ -185,7 +196,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 192);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 222);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(217, 22);
             this.statusStrip1.TabIndex = 19;
@@ -269,11 +280,36 @@
             this.llPluginsConfigurate.VisitedLinkColor = System.Drawing.Color.Blue;
             this.llPluginsConfigurate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llPluginsConfigurate_LinkClicked);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(9, 195);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(74, 13);
+            this.label2.TabIndex = 22;
+            this.label2.Text = "Логирование";
+            // 
+            // cbLogs
+            // 
+            this.cbLogs.FormattingEnabled = true;
+            this.cbLogs.Items.AddRange(new object[] {
+            "Выключить",
+            "Информация",
+            "Ошибки",
+            "Отладка"});
+            this.cbLogs.Location = new System.Drawing.Point(89, 192);
+            this.cbLogs.Name = "cbLogs";
+            this.cbLogs.Size = new System.Drawing.Size(111, 21);
+            this.cbLogs.TabIndex = 23;
+            this.cbLogs.SelectedIndexChanged += new System.EventHandler(this.cbLogs_SelectedIndexChanged);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(217, 214);
+            this.ClientSize = new System.Drawing.Size(217, 244);
+            this.Controls.Add(this.cbLogs);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.llPluginsConfigurate);
             this.Controls.Add(this.llDlnaConfigurate);
             this.Controls.Add(this.groupBox1);
@@ -326,5 +362,8 @@
         private System.Windows.Forms.CheckBox cbPlugins;
         private System.Windows.Forms.LinkLabel llPluginsConfigurate;
         private System.Windows.Forms.ToolStripMenuItem pluginsToolStripMenuItem;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox cbLogs;
+        private System.Windows.Forms.ToolStripMenuItem playUrlToolStripMenuItem;
     }
 }

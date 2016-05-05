@@ -12,7 +12,7 @@ namespace RemoteFork.Requestes {
         public override string Execute() {
             string hostText = string.Format("http://{0}/", processor.Host);
 
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
 
             if (text == "/treeview?plugin") {
                 var plugins = PluginManager.Instance.GetPlugins();
@@ -23,7 +23,7 @@ namespace RemoteFork.Requestes {
                     result.AppendLine(string.Format("#EXTINF:-1,{0}\n{1}treeview?plugin{2}.xml", plugin.Value.Name,
                         hostText, urlText));
 
-                    Console.WriteLine(plugin.Value.Name);
+                    Logger.Debug("PluginRequest->List {0}", plugin.Value.Name);
                 }
             } else {
                 result.AppendLine("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>");
@@ -36,7 +36,7 @@ namespace RemoteFork.Requestes {
                     var arg = array[0].Split(';');
                     var plugin = PluginManager.Instance.GetPlugin(arg[0]);
                     if (plugin != null) {
-                        Console.WriteLine("Execute {0}", plugin.Name);
+                        Logger.Debug("PluginRequest->Execute: {0}", plugin.Name);
 
                         var items = plugin.Instance.GetList(array[0]);
                         foreach (var item in items) {
@@ -58,7 +58,6 @@ namespace RemoteFork.Requestes {
                                     break;
                             }
                         }
-                        Console.WriteLine(plugin.Name);
                     }
                 }
                 result.AppendLine("</items>");

@@ -27,6 +27,8 @@ namespace RemoteFork.Forms {
             Text += " " + Settings.Default.AppVersion;
             notifyIcon1.Text += " " + Settings.Default.AppVersion;
 
+            cbLogs.SelectedIndex = Settings.Default.LogLevel;
+
             cbAutoStart.Checked = Settings.Default.ServerAutoStart;
             cbDlna.Checked = Settings.Default.Dlna;
             tbPort.Text = Settings.Default.Port.ToString();
@@ -84,12 +86,17 @@ namespace RemoteFork.Forms {
             thread = new Thread(httpServer.Listen);
             thread.Start();
 
+            RegisterServer();
+        }
+
+        private void RegisterServer() {
             var result = HttpUtility.GetRequest(
                 string.Format(
                     "http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}",
                     Settings.Default.AppVersion,
                     cbIp.SelectedItem, tbPort.Text));
-            Console.WriteLine(result);
+
+            Logger.Debug("StartServer->Result: {0}", result);
         }
 
         private void StopServer() {
@@ -110,7 +117,7 @@ namespace RemoteFork.Forms {
                 toolStripStatusLabel1.Text = "Сервер запущен";
             } catch (Exception ex) {
                 toolStripStatusLabel1.Text = "Ошибка!";
-                Console.WriteLine(ex);
+                Logger.Error("StartServer->Errot: {0}", ex);
             }
         }
 
@@ -124,7 +131,7 @@ namespace RemoteFork.Forms {
                 toolStripStatusLabel1.Text = "Сервер остановлен";
             } catch (Exception ex) {
                 toolStripStatusLabel1.Text = "Ошибка!";
-                Console.WriteLine(ex);
+                Logger.Error("StopServer->Errot: {0}", ex);
             }
         }
 
@@ -155,6 +162,15 @@ namespace RemoteFork.Forms {
         private void llPluginsConfigurate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
             var form = new PluginsConfigurate();
             form.ShowDialog();
+        }
+
+        private void cbLogs_SelectedIndexChanged(object sender, EventArgs e) {
+            var cb = (ComboBox) sender;
+
+            Settings.Default.LogLevel = (byte) cb.SelectedIndex;
+            Settings.Default.Save();
+
+            Logger.Level = (Logger.LogLevel) cb.SelectedIndex;
         }
 
         #endregion Settings
@@ -210,8 +226,9 @@ namespace RemoteFork.Forms {
             }
         }
 
-        private void settingsToolStripMenuItem_Click(object sender, EventArgs e) {
-            ShowForm();
+        private void playUrlToolStripMenuItem_Click(object sender, EventArgs e) {
+            var form = new PlayUrl();
+            form.ShowDialog();
         }
 
         private void pluginsToolStripMenuItem_DropDownOpening(object sender, EventArgs e) {
@@ -250,6 +267,10 @@ namespace RemoteFork.Forms {
             }
 
             Settings.Default.Save();
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e) {
+            ShowForm();
         }
 
         private void openTestToolStripMenuItem_Click(object sender, EventArgs e) {

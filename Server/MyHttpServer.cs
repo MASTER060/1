@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using RemoteFork.Forms;
 using RemoteFork.Properties;
 using RemoteFork.Requestes;
 
@@ -13,32 +13,18 @@ namespace RemoteFork.Server {
 
         public override void HandleGetRequest(HttpProcessor processor) {
             string httpUrl = System.Web.HttpUtility.UrlDecode(processor.HttpUrl);
+            Logger.Info("HandleGetRequest->Url: {0}", httpUrl);
             string result = string.Empty;
 
             if (!string.IsNullOrEmpty(httpUrl)) {
-                Console.WriteLine(httpUrl.Substring(1));
                 if (File.Exists(httpUrl.Substring(1).Split('?').First()) && Settings.Default.Dlna) {
-                    if (Settings.Default.DlnaDirectories != null) {
-                        var filter = new List<string>(Settings.Default.DlnaDirectories.Cast<string>());
-                        switch (Settings.Default.DlnaFilterType) {
-                            case 1:
-                                if (filter.All(i => !httpUrl.Contains(i))) {
-                                    Console.WriteLine("request: {0}", processor.HttpUrl);
-                                    processor.WriteFailure();
-                                    return;
-                                }
-                                break;
-                            case 2:
-                                if (filter.Any(i => httpUrl.Contains(i))) {
-                                    Console.WriteLine("request: {0}", processor.HttpUrl);
-                                    processor.WriteFailure();
-                                    return;
-                                }
-                                break;
-                        }
+                    if (DlnaConfigurate.CheckAccess(httpUrl.Substring(1).Split('?').First())) {
+                        var request = new DlnaFileRequest(httpUrl.Substring(1).Split('?').First(), processor);
+                        request.Execute();
+                    } else {
+                        Logger.Error("HandleGetRequest: {0}", httpUrl);
+                        processor.WriteFailure();
                     }
-                    var request = new DlnaFileRequest(httpUrl.Substring(1).Split('?').First(), processor);
-                    request.Execute();
                 } else {
                     BaseRequest request = null;
 
@@ -66,18 +52,18 @@ namespace RemoteFork.Server {
                         result = request.Execute();
                     }
 
-                    Console.WriteLine("request: {0}", processor.HttpUrl);
+                    Logger.Debug("HandleGetRequest->Result:\r\n {0}", result);
                     processor.WriteSuccess();
                     processor.WriteLine(result);
                 }
             } else {
-                Console.WriteLine("request: {0}", processor.HttpUrl);
+                Logger.Error("HandleGetRequest->Error: {0}", httpUrl);
                 processor.WriteFailure();
             }
         }
 
         public override void HandlePostRequest(HttpProcessor processor, StreamReader inputData) {
-            Console.WriteLine("POST request: {0}", processor.HttpUrl);
+            Logger.Info("HandlePostRequest->Url: {0}", processor.HttpUrl);
             string arg = inputData.ReadToEnd();
             processor.WriteSuccess();
             processor.WriteLines("<html><body><h1>test server</h1>",

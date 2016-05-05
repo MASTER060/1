@@ -8,10 +8,11 @@ namespace RemoteFork.Server {
     internal abstract class HttpServer {
         private readonly TcpListener listener;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
-
+        
         private const int TIME_OUT = 10;
 
         protected HttpServer(IPAddress ip, int port) {
+            Logger.Info("Server start");
             listener = new TcpListener(new IPEndPoint(ip, port));
             listener.Start();
         }
@@ -26,12 +27,13 @@ namespace RemoteFork.Server {
 
                     Thread.Sleep(TIME_OUT);
                 } catch (Exception) {
-                    Console.WriteLine("Stop");
+                    Logger.Error("Server crashed");
                 }
             }
         }
 
         public void Stop() {
+            Logger.Info("Server stop");
             cts.Cancel();
             if (listener != null) {
                 listener.Stop();

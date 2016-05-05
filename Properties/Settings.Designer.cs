@@ -70,7 +70,7 @@ namespace RemoteFork.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1.2f9")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.2f10")]
         public string AppVersion {
             get {
                 return ((string)(this["AppVersion"]));
@@ -124,6 +124,44 @@ namespace RemoteFork.Properties {
             }
             set {
                 this["Plugins"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsi=\"http://www.w3." +
+            "org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" />")]
+        public global::System.Collections.Specialized.StringCollection DlnaFileExtensions {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["DlnaFileExtensions"]));
+            }
+            set {
+                this["DlnaFileExtensions"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte LogLevel {
+            get {
+                return ((byte)(this["LogLevel"]));
+            }
+            set {
+                this["LogLevel"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsi=\"http://www.w3." +
+            "org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" />")]
+        public global::System.Collections.Specialized.StringCollection UserUrls {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["UserUrls"]));
+            }
+            set {
+                this["UserUrls"] = value;
             }
         }
     }

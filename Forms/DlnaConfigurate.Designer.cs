@@ -35,8 +35,11 @@
             this.bSave = new System.Windows.Forms.Button();
             this.bCancel = new System.Windows.Forms.Button();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.tbDlnaFileExtensions = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // rbAll
@@ -91,7 +94,7 @@
             this.groupBox2.Controls.Add(this.lbDirectories);
             this.groupBox2.Location = new System.Drawing.Point(12, 110);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(260, 227);
+            this.groupBox2.Size = new System.Drawing.Size(260, 178);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Директории";
@@ -128,10 +131,13 @@
             // 
             // lbDirectories
             // 
+            this.lbDirectories.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lbDirectories.FormattingEnabled = true;
             this.lbDirectories.Location = new System.Drawing.Point(6, 55);
             this.lbDirectories.Name = "lbDirectories";
-            this.lbDirectories.Size = new System.Drawing.Size(248, 160);
+            this.lbDirectories.Size = new System.Drawing.Size(248, 108);
             this.lbDirectories.TabIndex = 6;
             // 
             // bSave
@@ -154,11 +160,29 @@
             this.bCancel.UseVisualStyleBackColor = true;
             this.bCancel.Click += new System.EventHandler(this.bCancel_Click);
             // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.tbDlnaFileExtensions);
+            this.groupBox3.Location = new System.Drawing.Point(12, 294);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(254, 43);
+            this.groupBox3.TabIndex = 10;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Расширения фалов [например: avi,mov,mp3]";
+            // 
+            // tbDlnaFileExtensions
+            // 
+            this.tbDlnaFileExtensions.Location = new System.Drawing.Point(6, 17);
+            this.tbDlnaFileExtensions.Name = "tbDlnaFileExtensions";
+            this.tbDlnaFileExtensions.Size = new System.Drawing.Size(242, 20);
+            this.tbDlnaFileExtensions.TabIndex = 0;
+            // 
             // DlnaConfigurate
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 376);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.bCancel);
             this.Controls.Add(this.bSave);
             this.Controls.Add(this.groupBox2);
@@ -173,6 +197,8 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -191,5 +217,7 @@
         private System.Windows.Forms.Button bSave;
         private System.Windows.Forms.Button bCancel;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.TextBox tbDlnaFileExtensions;
     }
 }

@@ -63,13 +63,13 @@ namespace RemoteFork.Plugins {
                             }
                         }
                     } catch (Exception ex) {
-                        Console.WriteLine(ex);
+                        Logger.Debug("LoadPlugins->{0}: {1}", file, ex);
                     }
                 }
             }
         }
         private static string GetChecksum(string file) {
-            using (FileStream stream = File.OpenRead(file)) {
+            using (var stream = File.OpenRead(file)) {
                 var sha = new SHA256Managed();
                 byte[] checksum = sha.ComputeHash(stream);
                 return BitConverter.ToString(checksum).Replace("-", string.Empty);
@@ -103,7 +103,15 @@ namespace RemoteFork.Plugins {
         }
 
         public PluginInstance GetPlugin(string name) {
-            return plugins.ContainsKey(name) ? plugins[name] : null;
+            if (plugins.ContainsKey(name)) {
+                if (Settings.Default.Plugins && Settings.Default.EnablePlugins != null) {
+                    if (Settings.Default.EnablePlugins.Contains(name)) {
+                        return plugins[name];
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

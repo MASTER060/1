@@ -40,7 +40,8 @@ namespace RemoteFork.Requestes {
                         }
                     }
                 } else {
-                    Console.WriteLine(array[1] + "(.*?)" + array[2]);
+                    Logger.Debug("ParseLinkRequest: {0}", array[1] + "(.*?)" + array[2]);
+
                     string pattern = array[1] + "(.*?)" + array[2];
                     var regex = new Regex(pattern, RegexOptions.Multiline);
                     var match = regex.Match(response);
