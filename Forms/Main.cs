@@ -239,9 +239,9 @@ namespace RemoteFork.Forms {
             if (plugins.Count > 0) {
                 foreach (var plugin in plugins) {
                     var item = new ToolStripMenuItem(plugin.Value.ToString()) {
-                        Tag = plugin.Key,
+                        Tag = plugin.Value.Key,
                         Checked = Settings.Default.EnablePlugins != null &&
-                                  Settings.Default.EnablePlugins.Contains(plugin.Key),
+                                  Settings.Default.EnablePlugins.Contains(plugin.Value.Key),
                         CheckOnClick = true
                     };
                     item.CheckedChanged += pluginsToolStripMenuItem_CheckedChanged;

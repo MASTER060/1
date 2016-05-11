@@ -13,7 +13,7 @@ namespace RemoteFork.Server {
 
         public override void HandleGetRequest(HttpProcessor processor) {
             string httpUrl = System.Web.HttpUtility.UrlDecode(processor.HttpUrl);
-            Logger.Info("HandleGetRequest->Url: {0}", httpUrl);
+            //Logger.Info("HandleGetRequest->Url: {0}", httpUrl);
             string result = string.Empty;
 
             if (!string.IsNullOrEmpty(httpUrl)) {
@@ -63,7 +63,7 @@ namespace RemoteFork.Server {
         }
 
         public override void HandlePostRequest(HttpProcessor processor, StreamReader inputData) {
-            Logger.Info("HandlePostRequest->Url: {0}", processor.HttpUrl);
+            //Logger.Info("HandlePostRequest->Url: {0}", processor.HttpUrl);
             string arg = inputData.ReadToEnd();
             processor.WriteSuccess();
             processor.WriteLines("<html><body><h1>test server</h1>",

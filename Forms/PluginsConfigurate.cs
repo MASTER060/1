@@ -13,7 +13,7 @@ namespace RemoteFork.Forms {
 
             foreach (var plugin in plugins) {
                 clbPlugins.Items.Add(plugin.Value,
-                    Settings.Default.EnablePlugins != null && Settings.Default.EnablePlugins.Contains(plugin.Key));
+                    Settings.Default.EnablePlugins != null && Settings.Default.EnablePlugins.Contains(plugin.Value.Key));
             }
         }
 

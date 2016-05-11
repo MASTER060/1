@@ -57,7 +57,9 @@ namespace RemoteFork.Plugins {
                                             attributes.FirstOrDefault(i => i.GetType() == typeof (PluginAttribute));
                                     if (attribute != null) {
                                         var plugin = new PluginInstance(GetChecksum(file), results, type, attribute);
-                                        plugins.Add(plugin.Key, plugin);
+                                        if (!plugins.ContainsKey(plugin.Name)) {
+                                            plugins.Add(plugin.Id, plugin);
+                                        }
                                     }
                                 }
                             }
@@ -92,7 +94,7 @@ namespace RemoteFork.Plugins {
                 var dict = new Dictionary<string, PluginInstance>();
 
                 if (Settings.Default.Plugins && Settings.Default.EnablePlugins != null) {
-                    foreach (var plugin in plugins.Where(plugin => Settings.Default.EnablePlugins.Contains(plugin.Key))) {
+                    foreach (var plugin in plugins.Where(plugin => Settings.Default.EnablePlugins.Contains(plugin.Value.Key))) {
                         dict.Add(plugin.Key, plugin.Value);
                     }
                 }
@@ -105,7 +107,7 @@ namespace RemoteFork.Plugins {
         public PluginInstance GetPlugin(string name) {
             if (plugins.ContainsKey(name)) {
                 if (Settings.Default.Plugins && Settings.Default.EnablePlugins != null) {
-                    if (Settings.Default.EnablePlugins.Contains(name)) {
+                    if (Settings.Default.EnablePlugins.Contains(plugins[name].Key)) {
                         return plugins[name];
                     }
                 }

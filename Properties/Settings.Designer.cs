@@ -70,7 +70,7 @@ namespace RemoteFork.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1.2f10")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.2f11")]
         public string AppVersion {
             get {
                 return ((string)(this["AppVersion"]));
