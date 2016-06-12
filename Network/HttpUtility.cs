@@ -2,13 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
+using RemoteFork.Properties;
 
 namespace RemoteFork.Network {
     public static class HttpUtility {
-        private const string DEFAULT_USER_AGENT =
-            "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.41 (KHTML, like Gecko) Large Screen WebAppManager Safari/537.41";
-
         private static readonly CookieContainer cookieContainer = new CookieContainer();
 
         public static string GetRequest(string link, Dictionary<string, string> header = null) {
@@ -35,7 +32,7 @@ namespace RemoteFork.Network {
                     SetHandler(handler);
                     using (var httpClient = new HttpClient(handler)) {
                         AddHeader(httpClient, header);
-                        
+
                         HttpContent content = new FormUrlEncodedContent(data);
 
                         var response = httpClient.PostAsync(link, content).Result;
@@ -63,35 +60,36 @@ namespace RemoteFork.Network {
                     }
                 }
             }
-            if (!httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(DEFAULT_USER_AGENT)) {
-                Logger.Debug("HttpUtility->AddUserAgent: {0}", DEFAULT_USER_AGENT);
+            if (!httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(Settings.Default.UserAgent)) {
+                Logger.Debug("HttpUtility->AddUserAgent: {0}", Settings.Default.UserAgent);
             }
         }
 
         private static string ReadContext(HttpContent context) {
-            var result = context.ReadAsByteArrayAsync().Result;
-            try {
-                var encoding = Encoding.GetEncoding(context.Headers.ContentType.CharSet);
-                result = Encoding.Convert(encoding, Encoding.Default, result);
-            } catch {
-                try {
-                    var encoding = Encoding.UTF8;
-                    result = Encoding.Convert(encoding, Encoding.Default, result);
-                } catch {
-                    try {
-                        var encoding = Encoding.ASCII;
-                        result = Encoding.Convert(encoding, Encoding.Default, result);
-                    } catch {
-                        try {
-                            var encoding = Encoding.Unicode;
-                            result = Encoding.Convert(encoding, Encoding.Default, result);
-                        } catch (Exception ex) {
-                            Logger.Error("HttpUtility->ReadContext: {0}", ex.Message);
-                        }
-                    }
-                }
-            }
-            return Encoding.Default.GetString(result);
+            return context.ReadAsStringAsync().Result;
+            //var result = context.ReadAsByteArrayAsync().Result;
+            //try {
+            //    var encoding = Encoding.GetEncoding(context.Headers.ContentType.CharSet);
+            //    result = Encoding.Convert(encoding, Encoding.Default, result);
+            //} catch {
+            //    try {
+            //        var encoding = Encoding.UTF8;
+            //        result = Encoding.Convert(encoding, Encoding.Default, result);
+            //    } catch {
+            //        try {
+            //            var encoding = Encoding.ASCII;
+            //            result = Encoding.Convert(encoding, Encoding.Default, result);
+            //        } catch {
+            //            try {
+            //                var encoding = Encoding.Unicode;
+            //                result = Encoding.Convert(encoding, Encoding.Default, result);
+            //            } catch (Exception ex) {
+            //                Logger.Error("HttpUtility->ReadContext: {0}", ex.Message);
+            //            }
+            //        }
+            //    }
+            //}
+            //return Encoding.Default.GetString(result);
         }
     }
 }

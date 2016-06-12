@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -64,7 +63,8 @@ namespace RemoteFork.Requestes {
             } else if (text == "urls.m3u") {
                 if (Settings.Default.UserUrls != null && Settings.Default.UserUrls.Count > 0) {
                     foreach (string url in Settings.Default.UserUrls) {
-                        result.AppendLine(string.Format("#EXTINF:-1,{0}\n{0}",url));
+                        result.AppendLine(string.Format("#EXTINF:-1,{0}\n{1}", url.Split('\\').Last().Split('/').Last(),
+                            url));
                     }
                 }
             } else {

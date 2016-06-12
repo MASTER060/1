@@ -51,6 +51,8 @@
             this.llPluginsConfigurate = new System.Windows.Forms.LinkLabel();
             this.label2 = new System.Windows.Forms.Label();
             this.cbLogs = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.tbUserAgent = new System.Windows.Forms.TextBox();
             this.contextMenuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -196,7 +198,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 222);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 253);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(217, 22);
             this.statusStrip1.TabIndex = 19;
@@ -303,11 +305,30 @@
             this.cbLogs.TabIndex = 23;
             this.cbLogs.SelectedIndexChanged += new System.EventHandler(this.cbLogs_SelectedIndexChanged);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(9, 223);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(60, 13);
+            this.label3.TabIndex = 24;
+            this.label3.Text = "User-Agent";
+            // 
+            // tbUserAgent
+            // 
+            this.tbUserAgent.Location = new System.Drawing.Point(89, 220);
+            this.tbUserAgent.Name = "tbUserAgent";
+            this.tbUserAgent.Size = new System.Drawing.Size(111, 20);
+            this.tbUserAgent.TabIndex = 25;
+            this.tbUserAgent.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbUserAgent_KeyDown);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(217, 244);
+            this.ClientSize = new System.Drawing.Size(217, 275);
+            this.Controls.Add(this.tbUserAgent);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.cbLogs);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.llPluginsConfigurate);
@@ -365,5 +386,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox cbLogs;
         private System.Windows.Forms.ToolStripMenuItem playUrlToolStripMenuItem;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox tbUserAgent;
     }
 }

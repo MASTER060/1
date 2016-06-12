@@ -10,7 +10,7 @@ using System.Runtime.Versioning;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyFileVersion("1.2.0.11")]
+[assembly: AssemblyFileVersion("1.2.0.12")]
 [assembly: AssemblyProduct("RemoteFork1.2")]
 [assembly: AssemblyTitle("RemoteFork1.2")]
 [assembly: AssemblyTrademark("")]

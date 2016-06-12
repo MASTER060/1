@@ -24,32 +24,7 @@ namespace RemoteFork.Forms {
         }
 
         private void Main_Load(object sender, EventArgs e) {
-            Text += " " + Settings.Default.AppVersion;
-            notifyIcon1.Text += " " + Settings.Default.AppVersion;
-
-            cbLogs.SelectedIndex = Settings.Default.LogLevel;
-
-            cbAutoStart.Checked = Settings.Default.ServerAutoStart;
-            cbDlna.Checked = Settings.Default.Dlna;
-            tbPort.Text = Settings.Default.Port.ToString();
-
-            object[] ipAddresses = Tools.GetIPAddresses();
-            cbIp.Items.AddRange(ipAddresses);
-
-            IPAddress ip;
-            if (IPAddress.TryParse(Settings.Default.IpIPAddress, out ip)) {
-                if (cbIp.Items.Contains(ip)) {
-                    cbIp.SelectedItem = ip;
-                } else {
-                    cbIp.SelectedIndex = 0;
-                }
-            } else {
-                cbIp.SelectedIndex = 0;
-            }
-
-            if (Settings.Default.ServerAutoStart) {
-                bStartServer.PerformClick();
-            }
+            LoadSettings();
 
             notifyIcon1.Visible = true;
             HideForm();
@@ -78,6 +53,41 @@ namespace RemoteFork.Forms {
         }
 
         #endregion Form
+
+        #region Settings
+
+        private void LoadSettings() {
+            Text += " " + Settings.Default.AppVersion;
+            notifyIcon1.Text += " " + Settings.Default.AppVersion;
+
+            cbLogs.SelectedIndex = Settings.Default.LogLevel;
+
+            cbAutoStart.Checked = Settings.Default.ServerAutoStart;
+            cbDlna.Checked = Settings.Default.Dlna;
+            tbPort.Text = Settings.Default.Port.ToString();
+
+            object[] ipAddresses = Tools.GetIPAddresses();
+            cbIp.Items.AddRange(ipAddresses);
+
+            IPAddress ip;
+            if (IPAddress.TryParse(Settings.Default.IpIPAddress, out ip)) {
+                if (cbIp.Items.Contains(ip)) {
+                    cbIp.SelectedItem = ip;
+                } else {
+                    cbIp.SelectedIndex = 0;
+                }
+            } else {
+                cbIp.SelectedIndex = 0;
+            }
+
+            if (Settings.Default.ServerAutoStart) {
+                bStartServer.PerformClick();
+            }
+
+            tbUserAgent.Text = Settings.Default.UserAgent;
+        }
+
+        #endregion Settings
 
         #region Server
 
@@ -197,7 +207,7 @@ namespace RemoteFork.Forms {
                         Text = name
                     };
                     item.Click += devicesToolStripMenuItem_Click;
-                    
+
                     loadPlaylistToolStripMenuItem1.DropDownItems.Add(item);
                 }
             } else {
@@ -253,7 +263,7 @@ namespace RemoteFork.Forms {
         }
 
         private void pluginsToolStripMenuItem_CheckedChanged(object sender, EventArgs e) {
-            var clickedItem = (ToolStripMenuItem)sender;
+            var clickedItem = (ToolStripMenuItem) sender;
             string key = clickedItem.Tag.ToString();
 
             if (clickedItem.Checked) {
@@ -286,5 +296,17 @@ namespace RemoteFork.Forms {
         }
 
         #endregion notifyIcon
+
+        private void tbUserAgent_KeyDown(object sender, KeyEventArgs e) {
+            switch (e.KeyCode) {
+                case Keys.Escape:
+                    tbUserAgent.Text = Settings.Default.UserAgent;
+                    break;
+                case Keys.Enter:
+                    Settings.Default.UserAgent = tbUserAgent.Text;
+                    Settings.Default.Save();
+                    break;
+            }
+        }
     }
 }
