@@ -48,6 +48,7 @@ namespace RemoteFork.Plugins
             var hasCompileErrors = false;
             foreach (CompilerError ce in result.Errors)
             {
+                if(!ce.IsWarning) Console.WriteLine(ce.FileName + ce.Line + ce.Column + ce.IsWarning + ce.ErrorNumber + ce.ErrorText);
                 Log.Debug(m => m("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column, ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText));
 
                 if (!ce.IsWarning)

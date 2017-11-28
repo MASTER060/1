@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="ServerAutoStart" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="IpIPAddress" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -27,7 +27,7 @@
       <Value Profile="(Default)">Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36</Value>
     </Setting>
     <Setting Name="THVPAutoStart" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="DlnaDirectories" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;

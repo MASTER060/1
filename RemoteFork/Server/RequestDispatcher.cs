@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using Common.Logging;
 using RemoteFork.Properties;
@@ -57,53 +59,89 @@ namespace RemoteFork.Server {
             }
         };
 
-
-        public RequestDispatcher() {
-            AddHandler(ModuleMap.AnyPath, HttpVerbs.Any, (server, context) => Handle(context));
+        public WebServer _webServer;
+        public RequestDispatcher(WebServer Server) {
+            _webServer = Server;
+            AddHandler(ModuleMap.AnyPath, Unosquare.Labs.EmbedIO.Constants.HttpVerbs.Any, Handle2);
+          
         }
 
-        private bool Handle(HttpListenerContext context) {
-            Log.Debug(m => m("Processing url: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
+        private Task<bool> Handle2(HttpListenerContext server, CancellationToken ctx)
+        {
+            //_webServer.RunAsync();
+            Console.WriteLine("RequestDispatcher");
+            try
+            {
+             //   server.Response.SendChunked=true;
+                Handle(server, ctx);
+            }catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
+            return Task.FromResult(true);
+        }
 
-            context.Response.Headers.Add("Server", $"RemoteFork/{Assembly.GetExecutingAssembly().GetName().Version}");
+        private void Handle(HttpListenerContext context, CancellationToken ctx) {
+            
+           // new Task(() =>            {
+                 Console.WriteLine("RequestDispatcher2");
+                Log.Debug(m => m("Processing url: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
 
-            var route = Routes.FirstOrDefault(r => r.CanHandle(context));
+                context.Response.Headers.Add("Server", $"RemoteFork/{Assembly.GetExecutingAssembly().GetName().Version}");
+                context.Response.KeepAlive = false;
+                var route = Routes.FirstOrDefault(r => r.CanHandle(context));
 
-            if (route?.Handler != null) {
-                context.Response.Headers.Add(Constants.HeaderAccessControlAllowOrigin);
-
-                context.Response.StatusCode = HttpStatusCode.Ok.ToInteger();
-
-                try {
-                    route.Handler.Handle(context);
-                } catch (Exception e) {
-                    Log.Error(e.Message, e);
-
-                    context.Response.StatusCode = HttpStatusCode.InternalServerError.ToInteger();
-                }
-            } else {
-                context.Response.Headers.Add(Constants.HeaderAccessControlAllowOrigin);
-                if (context.Request.RawUrl.IndexOf("/proxym3u8") == 0)
+                if (route?.Handler != null)
                 {
-                    Console.WriteLine("Proxy m3u8:" + context.Request.RawUrl);
-                    context.Response.StatusCode = HttpStatusCode.Ok.ToInteger();
-                    var Handler = new ProxyM3u8();
-                    Handler.Handle(context,true);
-                  
+                    context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
 
+                    context.Response.StatusCode = HttpStatusCode.Ok.ToInteger();
+
+                    try
+                    {
+                        Console.WriteLine(context.Request.RawUrl);
+                        route.Handler.Handle(context);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e.Message, e);
+
+                        context.Response.StatusCode = HttpStatusCode.InternalServerError.ToInteger();
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("URL:" + context.Request.RawUrl);
+                    context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+                    if (context.Request.RawUrl.IndexOf("/acestream") == 0)
+                    {
+                        Console.WriteLine("acestream:" + context.Request.RawUrl);
+                        context.Response.StatusCode = HttpStatusCode.Ok.ToInteger();
+                        var Handler = new AceStream();
+                        Handler.Handle(context, true);
 
-                    Log.Debug(m => m("Resource not found: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
 
-                    BaseRequestHandler.WriteResponse(context.Response, HttpStatusCode.NotFound, $"Resource Not found: {HttpUtility.UrlDecode(context.Request.RawUrl)}");
+                    }
+                    else if (context.Request.RawUrl.IndexOf("/proxym3u8") == 0)
+                    {
+                        Console.WriteLine("Proxy m3u8:" + context.Request.RawUrl);
+                        context.Response.StatusCode = HttpStatusCode.Ok.ToInteger();
+                        var Handler = new ProxyM3u8();
+                        Handler.Handle(context, true);
 
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("URL:" + context.Request.RawUrl);
+
+                        Log.Debug(m => m("Resource not found: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
+
+                        BaseRequestHandler.WriteResponse(context.Response, HttpStatusCode.NotFound, $"Resource Not found: {HttpUtility.UrlDecode(context.Request.RawUrl)}");
+
+                    }
                 }
-            }
-
-            return true;
+          //  });
+            Console.WriteLine("end RequestDispatcher");
+            
         }
 
         internal class Route {
@@ -114,4 +152,6 @@ namespace RemoteFork.Server {
 
         public override string Name => "RequestDispatcher";
     }
+
+    
 }

@@ -104,6 +104,14 @@ namespace RemoteFork.Forms {
             }
         }
 
+        public static bool CheckAccess(DirectoryInfo directory) {
+            return CheckAccess(directory.FullName);
+        }
+
+        public static bool CheckAccess(FileInfo file) {
+            return CheckAccess(file.FullName);
+        }
+
         public static bool CheckAccess(string file) {
             var result = true;
 
@@ -113,7 +121,7 @@ namespace RemoteFork.Forms {
                 var filter = new List<string>(Settings.Default.DlnaDirectories.Cast<string>());
                 switch (Settings.Default.DlnaFilterType) {
                     case 1:
-                        if (filter.All(i => !file.StartsWith(i))) {
+                        if (filter.All(i => !file.StartsWith(i, StringComparison.OrdinalIgnoreCase))) {
                             result = false;
                         }
                         break;

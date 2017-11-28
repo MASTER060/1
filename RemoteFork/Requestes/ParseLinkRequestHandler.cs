@@ -55,7 +55,7 @@ namespace RemoteFork.Requestes {
                             if (!string.IsNullOrEmpty(request.Headers.Get("Range"))){
                                 header["Range"] = request.Headers.Get("Range");
                             }
-                            response.Headers.Add(Unosquare.Labs.EmbedIO.Constants.HeaderAcceptRanges, "bytes");
+                            response.Headers.Add("Accept-Ranges", "bytes");
                             Console.WriteLine("reproxy with ContentType");
                             usertype = true;
                             response.ContentType = Headers[++i];
@@ -71,15 +71,19 @@ namespace RemoteFork.Requestes {
                     {
                         url = url.Substring(0, url.LastIndexOf("/") + 1) + ts;
                         Console.WriteLine("Full ts url " + url);
-                        response.ContentType = "video/mp2t";
+                        response.Headers.AddWithoutValidate("Content-Type", "video/mp2t");
 
                     }
-                    else response.ContentType = "application/vnd.apple.mpegurl";
+                    else response.Headers.AddWithoutValidate("Content-Type", "application/vnd.apple.mpegurl");
                 }
                 response.Headers.Remove("Tranfer-Encoding");
                 response.Headers.Remove("Keep-Alive");
+                response.Headers.AddWithoutValidate("Connection", "Close");
+
+
                 // response.AddHeader("Accept-Ranges", "bytes");
                 Console.WriteLine("Real url:" + url);
+                Console.WriteLine("usertype:" + usertype);
                 HttpUtility.GetByteRequest(response, url, header, usertype);
             }
             catch (Exception e)

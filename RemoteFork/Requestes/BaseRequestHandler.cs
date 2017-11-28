@@ -30,8 +30,10 @@ namespace RemoteFork.Requestes {
 
         protected virtual void SetDefaultReponseHeaders(HttpListenerResponse response) {
             response.SendChunked = false;
-            response.ContentEncoding = Encoding.UTF8;
-            response.ContentType = Constants.DefaultMimeTypes[".html"];
+            //response.ContentEncoding = Encoding.UTF8;
+
+           // response.Headers.Add("Connection", "Close");
+            response.ContentType = "text/html";
         }
 
         protected static string GetHostUrl(HttpListenerRequest request) {

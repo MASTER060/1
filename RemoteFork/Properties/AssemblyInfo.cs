@@ -3,17 +3,17 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyVersion("1.37.0.1")]
+[assembly: AssemblyVersion("1.38.0.4")]
 [assembly:
     Debuggable(
         DebuggableAttribute.DebuggingModes.Default | DebuggableAttribute.DebuggingModes.DisableOptimizations |
         DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints |
         DebuggableAttribute.DebuggingModes.EnableEditAndContinue)]
-[assembly: AssemblyCompany("ForkPlayer && THVP")]
+[assembly: AssemblyCompany("ForkPlayer && THVP && AceStream")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyFileVersion("1.37.0.1")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: AssemblyProduct("RemoteFork")]
 [assembly: AssemblyTitle("RemoteFork")]
 [assembly: AssemblyTrademark("")]

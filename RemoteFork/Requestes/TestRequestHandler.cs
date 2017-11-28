@@ -19,7 +19,7 @@ namespace RemoteFork.Requestes {
                 }
             }
 
-            WriteResponse(response, $"<html><h1>ForkPlayer DLNA Work!</h1><br><b>RemoteFork Server. v. {Assembly.GetExecutingAssembly().GetName().Version}</b></html>");
+            WriteResponse(response, $"<html><h1>ForkPlayer DLNA Work!</h1><br><b>RemoteFork Server. v. {Assembly.GetExecutingAssembly().GetName().Version}</b> with Ace Stream</html>");
         }
     }
 }

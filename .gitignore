@@ -234,3 +234,8 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+/PluginApi/bin
+/PluginApi/obj
+/RemoteFork/bin
+/RemoteFork/obj
+/packages

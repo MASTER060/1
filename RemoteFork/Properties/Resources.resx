@@ -117,10 +117,63 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="folderBrowserDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
-  <data name="ServerRegistration" xml:space="preserve">
-    <value>Регистрация сервера...</value>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Logo.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Main_ServerRegistration" xml:space="preserve">
+    <value>Регистрация сервера</value>
+  </data>
+  <data name="Main_Starting_Server" xml:space="preserve">
+    <value>Запуск сервера</value>
+  </data>
+  <data name="Main_Error" xml:space="preserve">
+    <value>Ошибка!</value>
+  </data>
+  <data name="Main_Stopping_Server" xml:space="preserve">
+    <value>Остановка сервера</value>
+  </data>
+  <data name="Main_Start_From_Admin_mini" xml:space="preserve">
+    <value>Запустите от администратора!</value>
+  </data>
+  <data name="Main_Autostart" xml:space="preserve">
+    <value>Автозапуск</value>
+  </data>
+  <data name="Main_Can_Not_Access_Registry" xml:space="preserve">
+    <value>Нет доступа к реестру</value>
+  </data>
+  <data name="Main_No_Active_Devices" xml:space="preserve">
+    <value>Нет активных устройств</value>
+  </data>
+  <data name="Main_Start_From_Admin_maxi" xml:space="preserve">
+    <value>Запустите программу от имени администратора!</value>
+  </data>
+  <data name="Main_Invalid_Playlist_File" xml:space="preserve">
+    <value>Неверный файл плейлиста!</value>
+  </data>
+  <data name="Main_No_Installed_Plugins" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Main_THVP_Already_Running" xml:space="preserve">
+    <value>THVP BitTorrent уже запущен!</value>
+  </data>
+  <data name="Main_TurnOn_Not_Recommended" xml:space="preserve">
+    <value>Включение не рекомендуется: 
+-увеличится время ответа от ForkPlayer к RemoteFork на 20-30сек.
+-не будет работать доступ к файлам вашего ПК и плагины
+-не будет работать THVP bittorrent
+-не будет работать обработка некоторых ресурсов (трее тв, moonwalk)</value>
+  </data>
+  <data name="Main_Enable_Proxy" xml:space="preserve">
+    <value>Включить работу через Proxy</value>
+  </data>
+  <data name="Main_Downloading_New_Version" xml:space="preserve">
+    <value>Скачивание новой версии</value>
+  </data>
+  <data name="Main_Download_Completed" xml:space="preserve">
+    <value>Выполнено скачивание!</value>
+  </data>
+  <data name="Main_Server_Disabled" xml:space="preserve">
+    <value>Внешний сервер отключен</value>
   </data>
 </root>
