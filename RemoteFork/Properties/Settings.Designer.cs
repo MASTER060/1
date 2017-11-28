@@ -26,12 +26,12 @@ namespace RemoteFork.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ServerAutoStart {
+        public bool AutoStartWindows {
             get {
-                return ((bool)(this["ServerAutoStart"]));
+                return ((bool)(this["AutoStartWindows"]));
             }
             set {
-                this["ServerAutoStart"] = value;
+                this["AutoStartWindows"] = value;
             }
         }
         
@@ -190,6 +190,54 @@ namespace RemoteFork.Properties {
             }
             set {
                 this["proxy"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CheckUpdate {
+            get {
+                return ((bool)(this["CheckUpdate"]));
+            }
+            set {
+                this["CheckUpdate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DlnaHiidenFiles {
+            get {
+                return ((bool)(this["DlnaHiidenFiles"]));
+            }
+            set {
+                this["DlnaHiidenFiles"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("262144")]
+        public int FileBufferSize {
+            get {
+                return ((int)(this["FileBufferSize"]));
+            }
+            set {
+                this["FileBufferSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoStartServer {
+            get {
+                return ((bool)(this["AutoStartServer"]));
+            }
+            set {
+                this["AutoStartServer"] = value;
             }
         }
     }

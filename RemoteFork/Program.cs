@@ -11,6 +11,7 @@ namespace RemoteFork {
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
             var main = new Main {
 #if DEBUG
                 WindowState = FormWindowState.Normal

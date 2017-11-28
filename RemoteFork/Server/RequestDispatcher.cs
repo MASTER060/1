@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Common.Logging;
+using NLog;
 using RemoteFork.Properties;
 using RemoteFork.Requestes;
 using Unosquare.Labs.EmbedIO;
@@ -13,7 +13,7 @@ using Unosquare.Net;
 
 namespace RemoteFork.Server {
     internal class RequestDispatcher : WebModuleBase {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(RequestDispatcher));
+        private static readonly ILogger Log = LogManager.GetLogger("RequestDispatcher", typeof(RequestDispatcher));
 
         private static readonly List<Route> Routes = new List<Route> {
             new Route {
@@ -84,7 +84,7 @@ namespace RemoteFork.Server {
             
            // new Task(() =>            {
                  Console.WriteLine("RequestDispatcher2");
-                Log.Debug(m => m("Processing url: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
+                Log.Debug("Processing url: {0}", HttpUtility.UrlDecode(context.Request.RawUrl));
 
                 context.Response.Headers.Add("Server", $"RemoteFork/{Assembly.GetExecutingAssembly().GetName().Version}");
                 context.Response.KeepAlive = false;
@@ -103,7 +103,7 @@ namespace RemoteFork.Server {
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e.Message, e);
+                        Log.Error(e);
 
                         context.Response.StatusCode = HttpStatusCode.InternalServerError.ToInteger();
                     }
@@ -124,7 +124,7 @@ namespace RemoteFork.Server {
                     {
                         Console.WriteLine("Proxy m3u8:" + context.Request.RawUrl);
                         context.Response.StatusCode = HttpStatusCode.Ok.ToInteger();
-                        var Handler = new ProxyM3u8();
+                        var Handler = new ProxyM3u8RequestHandler();
                         Handler.Handle(context, true);
 
 
@@ -133,7 +133,7 @@ namespace RemoteFork.Server {
                     {
                         Console.WriteLine("URL:" + context.Request.RawUrl);
 
-                        Log.Debug(m => m("Resource not found: {0}", HttpUtility.UrlDecode(context.Request.RawUrl)));
+                        Log.Debug("Resource not found: {0}", HttpUtility.UrlDecode(context.Request.RawUrl));
 
                         BaseRequestHandler.WriteResponse(context.Response, HttpStatusCode.NotFound, $"Resource Not found: {HttpUtility.UrlDecode(context.Request.RawUrl)}");
 

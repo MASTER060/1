@@ -46,8 +46,7 @@
     <RootNamespace>RemoteFork</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>
-    </ApplicationIcon>
+    <ApplicationIcon>Logo.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <Prefer32Bit>false</Prefer32Bit>
@@ -86,18 +85,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Common.Logging, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Common.Logging.3.4.1\lib\net40\Common.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Common.Logging.Core, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Common.Logging.Core.3.4.1\lib\net40\Common.Logging.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Common.Logging.NLog41, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Common.Logging.NLog41.3.4.1\lib\net40\Common.Logging.NLog41.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="MetroFramework, Version=1.4.0.0, Culture=neutral, PublicKeyToken=5f91a84759bf584a, processorArchitecture=MSIL">
       <HintPath>..\packages\MetroModernUI.1.4.0.0\lib\net\MetroFramework.dll</HintPath>
     </Reference>
@@ -110,7 +97,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
@@ -140,26 +126,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppLogLevel.cs" />
-    <Compile Include="Forms\DlnaConfigurate.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\DlnaConfigurate.Designer.cs">
-      <DependentUpon>DlnaConfigurate.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\PlayUrl.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\PlayUrl.Designer.cs">
       <DependentUpon>PlayUrl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\PluginsConfigurate.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\PluginsConfigurate.Designer.cs">
-      <DependentUpon>PluginsConfigurate.cs</DependentUpon>
-    </Compile>
     <Compile Include="EmbedIOLogger.cs" />
     <Compile Include="Network\HttpUtility.cs" />
+    <Compile Include="Requestes\ProxyM3u8RequestHandler.cs" />
     <Compile Include="Plugins\PluginContext.cs" />
     <Compile Include="Plugins\PluginInstance.cs" />
     <Compile Include="Plugins\PluginManager.cs" />
@@ -200,20 +175,12 @@
     <Compile Include="Unosquare\Labs\EmbedIO\Log.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Forms\DlnaConfigurate.resx">
-      <DependentUpon>DlnaConfigurate.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\PlayUrl.resx">
       <DependentUpon>PlayUrl.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\PluginsConfigurate.resx">
-      <DependentUpon>PluginsConfigurate.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -256,7 +223,9 @@
       <Name>PluginApi</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Logo.ico" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Logo.ico" />
   </ItemGroup>

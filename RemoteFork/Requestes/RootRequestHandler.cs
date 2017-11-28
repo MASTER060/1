@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using Common.Logging;
-using RemoteFork.Forms;
+using NLog;
 using RemoteFork.Plugins;
 using RemoteFork.Properties;
 using RemoteFork.Server;
@@ -12,7 +11,7 @@ using Unosquare.Net;
 
 namespace RemoteFork.Requestes {
     internal class RootRequestHandler : BaseRequestHandler {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(RootRequestHandler));
+        private static readonly ILogger Log = LogManager.GetLogger("RootRequestHandler", typeof(RootRequestHandler));
 
         internal static readonly string TreePath = "/treeview";
 
@@ -27,14 +26,14 @@ namespace RemoteFork.Requestes {
                         if (Directory.Exists(directory)) {
                             result.Add(DlnaDirectoryRequestHandler.CreateDirectoryItem(request, directory));
 
-                            Log.Debug(m => m($"Filtering directory: {0}", directory));
+                            Log.Debug($"Filtering directory: {directory}");
                         }
                     }
                 }
             } else {
                 var drives = DriveInfo.GetDrives();
 
-                foreach (var drive in drives.Where(i => DlnaConfigurate.CheckAccess(i.Name))) {
+                foreach (var drive in drives.Where(i => Tools.CheckAccessPath(i.Name))) {
                     if (drive.IsReady) {
                         string mainText = $"{drive.Name} ({Tools.FSize(drive.AvailableFreeSpace)} свободно из {Tools.FSize(drive.TotalSize)})";
                         string subText = $"<br>Метка диска: {drive.VolumeLabel}<br>Тип носителя: {drive.DriveType}";
@@ -49,7 +48,7 @@ namespace RemoteFork.Requestes {
                                        Type = ItemType.DIRECTORY
                                    });
 
-                        Log.Debug(m => m($"Drive: {mainText}{subText}"));
+                        Log.Debug($"Drive: {mainText}{subText}");
                     }
                 }
             }
@@ -63,7 +62,7 @@ namespace RemoteFork.Requestes {
                     }
                 );
 
-                Log.Debug(m => m("User urls: {0}", Settings.Default.UserUrls.Count));
+                Log.Debug("User urls: {0}", Settings.Default.UserUrls.Count);
             }
 
             foreach (var plugin in PluginManager.Instance.GetPlugins()) {
@@ -76,7 +75,7 @@ namespace RemoteFork.Requestes {
                     }
                 );
 
-                Log.Debug(m => m("Plugin: {0}", plugin.Value.Name));
+                Log.Debug("Plugin: {0}", plugin.Value.Name);
             }
 
             WriteResponse(response, ResponseSerializer.ToM3U(result.ToArray()));

@@ -143,7 +143,7 @@ namespace RemoteFork.Properties {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на .
+        ///   Ищет локализованную строку, похожую на Нет установленных плагинов.
         /// </summary>
         internal static string Main_No_Installed_Plugins {
             get {

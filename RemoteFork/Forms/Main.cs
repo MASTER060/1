@@ -2,132 +2,27 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Windows.Forms;
-using Common.Logging;
 using RemoteFork.Network;
 using RemoteFork.Plugins;
 using RemoteFork.Properties;
 using RemoteFork.Server;
 using System.Text.RegularExpressions;
+using MetroFramework;
+using NLog;
 
 namespace RemoteFork.Forms {
     internal partial class Main : MetroFramework.Forms.MetroForm {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(Main));
+        private static readonly ILogger Log = LogManager.GetLogger("Main", typeof(Main));
 
         public static HashSet<string> Devices = new HashSet<string>();
         private bool loading = true;
         private HttpServer _httpServer;
-
-        #region Settings
-
-        private void LoadSettings() {
-            notifyIcon1.Text = Text += $" {Assembly.GetExecutingAssembly().GetName().Version}";
-
-            mcbLogs.SelectedIndex = Settings.Default.LogLevel;
-
-            mcbAutoStart.Checked = Settings.Default.ServerAutoStart;
-            mcbDlna.Checked = Settings.Default.Dlna;
-            mtbServerPort.Text = Settings.Default.Port.ToString();
-            mcbUseProxy.Checked = Settings.Default.proxy;
-
-            object[] ipAddresses = Tools.GetIPAddresses();
-            mcbServerIp.Items.AddRange(ipAddresses);
-
-            IPAddress ip;
-            if (IPAddress.TryParse(Settings.Default.IpIPAddress, out ip)) {
-                if (mcbServerIp.Items.Contains(ip)) {
-                    mcbServerIp.SelectedItem = ip;
-                } else {
-                    mcbServerIp.SelectedIndex = 0;
-                }
-            } else {
-                mcbServerIp.SelectedIndex = 0;
-            }
-            if (Settings.Default.ServerAutoStart || true) {
-                mbStartServer.PerformClick();
-            }
-
-            if (Settings.Default.THVPAutoStart) {
-                ThvpStart();
-            }
-            mcbThvpAutoStart.Checked = Settings.Default.THVPAutoStart;
-
-            mtbUserAgent.Text = Settings.Default.UserAgent;
-            loading = false;
-
-        }
-
-        #endregion Settings
-
-        private void tbUserAgent_KeyDown(object sender, KeyEventArgs e) {
-            switch (e.KeyCode) {
-                case Keys.Escape:
-                    mtbUserAgent.Text = Settings.Default.UserAgent;
-                    break;
-                case Keys.Enter:
-                    Settings.Default.UserAgent = mtbUserAgent.Text;
-                    Settings.Default.Save();
-                    break;
-            }
-        }
-
-        /// <summary>
-        ///     Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing) {
-            if (disposing) {
-                StopServer();
-                components?.Dispose();
-            }
-
-            base.Dispose(disposing);
-        }
-
-        #region Form
-
-        public Main() {
-            InitializeComponent();
-        }
-
-        private void Main_Load(object sender, EventArgs e) {
-
-            Environment.CurrentDirectory = Path.GetDirectoryName(Application.ExecutablePath);
-
-            LoadSettings();
-            try {
-                notifyIcon1.Visible = true;
-                HideForm();
-                //webBrowser1.Navigate("http://tree.tv/feedback");
-                Autost();
-
-            } catch (Exception exception) {
-            }
-        }
-
-        private void Main_FormClosing(object sender, FormClosingEventArgs e) {
-            StopServer();
-        }
-
-        private void Main_Resize(object sender, EventArgs e) {
-            if (WindowState == FormWindowState.Minimized) HideForm();
-        }
-
-        private void ShowForm() {
-            Show();
-            WindowState = FormWindowState.Normal;
-        }
-
-        private void HideForm() {
-            Hide();
-            WindowState = FormWindowState.Minimized;
-        }
-
-        #endregion Form
-
-        #region Server
+        
+        #region SERVER
 
         private void StartServer() {
             _httpServer = new HttpServer((IPAddress) mcbServerIp.SelectedItem, int.Parse(mtbServerPort.Text));
@@ -150,15 +45,16 @@ namespace RemoteFork.Forms {
                 Assembly.GetExecutingAssembly().GetName().Version, mcbServerIp.SelectedItem, mtbServerPort.Text,
                 mcbUseProxy.Checked);
             if (result.Split('|')[0] == "new_version") {
-                MenuItemNewVersion.Text = result.Split('|')[1];
-                MenuItemNewVersion.Visible = true;
-                urlnewversion = result.Split('|')[2];
-                newversion = result.Split('|')[3];
+                if (mcbCheckUpdate.Checked) {
+                    MenuItemNewVersion.Text = result.Split('|')[1];
+                    MenuItemNewVersion.Visible = true;
+                    urlnewversion = result.Split('|')[2];
+                    newversion = result.Split('|')[3];
+                }
             }
-            if (mcbUseProxy.Checked) timerR.Enabled = true;
-            else timerR.Enabled = false;
+            timerR.Enabled = mcbUseProxy.Checked;
             toolStripStatusLabel1.Text = $"{Resources.Main_ServerRegistration}: OK";
-            Log.Debug(m => m("StartServer->Result: {0}", result));
+            Log.Debug("StartServer->Result: {0}", result);
         }
 
         private void StopServer() {
@@ -168,9 +64,224 @@ namespace RemoteFork.Forms {
             }
         }
 
-        #endregion Server
+        #endregion SERVER
+        
+        #region PROGRAM
+        
+        /// <summary>
+        ///     Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing) {
+            if (disposing) {
+                StopServer();
+                components?.Dispose();
+            }
 
-        #region Settings
+            base.Dispose(disposing);
+        }
+        
+        #region SETTINGS
+
+        private void LoadSettings() {
+            notifyIcon1.Text = Text += $" {Assembly.GetExecutingAssembly().GetName().Version}";
+
+            mcbLogs.SelectedIndex = Settings.Default.LogLevel;
+
+            mcbAutoStartWindows.Checked = Settings.Default.AutoStartWindows;
+            mtAutoStartServer.Checked = Settings.Default.AutoStartServer;
+            mcbDlna.Checked = Settings.Default.Dlna;
+            mtbServerPort.Text = Settings.Default.Port.ToString();
+            mcbUseProxy.Checked = Settings.Default.proxy;
+            mcbCheckUpdate.Checked = Settings.Default.CheckUpdate;
+            mcbThvpAutoStart.Checked = Settings.Default.THVPAutoStart;
+
+            mtbUserAgent.Text = Settings.Default.UserAgent;
+
+            object[] ipAddresses = Tools.GetIPAddresses();
+            mcbServerIp.Items.AddRange(ipAddresses);
+
+            if (IPAddress.TryParse(Settings.Default.IpIPAddress, out IPAddress ip)) {
+                if (mcbServerIp.Items.Contains(ip)) {
+                    mcbServerIp.SelectedItem = ip;
+                } else {
+                    mcbServerIp.SelectedIndex = 0;
+                }
+            } else {
+                mcbServerIp.SelectedIndex = 0;
+            }
+
+            if (Settings.Default.AutoStartServer) {
+                mbStartServer.PerformClick();
+            }
+
+            if (Settings.Default.THVPAutoStart) {
+                ThvpStart();
+            }
+
+            loading = false;
+
+        }
+
+        #endregion SETTINGS
+
+        private void CheckAutostart() {
+            try {
+                var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run\", true);
+                if (key.GetValue("RemoteFork") != null) key.DeleteValue("RemoteFork");
+                if (mcbAutoStartWindows.Checked) {
+                    key.SetValue("RemoteFork", Application.ExecutablePath);
+                }
+            } catch (Exception e) {
+                toolStripStatusLabel1.Text = Resources.Main_Start_From_Admin_mini;
+                mcbAutoStartWindows.Enabled = false;
+                mcbAutoStartWindows.Text = $"{Resources.Main_Autostart} ({Resources.Main_Can_Not_Access_Registry})";
+                var t = new ToolTip();
+                t.SetToolTip(mcbAutoStartWindows, $"{e.Message} {Resources.Main_Start_From_Admin_maxi}");
+                if (mcbAutoStartWindows.Checked) {
+                    //  cbAutoStart.Checked = false;
+                    // MessageBox.Show("Не удалось установить RemoteFork в автозапуск при старте Windows. Запустите программу от имени администратора!", e.Message);
+                }
+            }
+        }
+
+        #region TIMER
+
+        private void timerR_Tick(object sender, EventArgs e) {
+            if (!Settings.Default.proxy) {
+                mcbUseProxy.Checked = false;
+                toolStripStatusLabel1.Text = Resources.Main_Server_Disabled;
+                timerR.Enabled = false;
+                return;
+            }
+            toolStripStatusLabel1.Text += "...";
+            //Console.WriteLine("timer");
+            string result =
+                HttpUtility.GetRequest(
+                    "http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&direct&proxy=1&v=get");
+            //  Console.WriteLine(result);
+            if (result.IndexOf("/parserlink") == 0) {
+                Console.WriteLine("parserlink remote");
+                var result2 = string.Empty;
+
+                var requestStrings = System.Web.HttpUtility.UrlDecode(result.Substring(12)).Split('|');
+                var Handle = new Requestes.ParseLinkRequestHandler();
+                if (requestStrings != null) {
+                    Console.WriteLine("Parsing: {0}", requestStrings[0]);
+
+                    string curlResponse = requestStrings[0].StartsWith("curl")
+                        ? Handle.CurlRequest(System.Web.HttpUtility.UrlDecode(requestStrings[0]))
+                        : HttpUtility.GetRequest(requestStrings[0]);
+                    //Console.WriteLine("Response original " + curlResponse);
+                    if (requestStrings.Length == 1) {
+                        result2 = curlResponse;
+                    } else {
+                        requestStrings[1] = System.Web.HttpUtility.UrlDecode(requestStrings[1]);
+                        requestStrings[2] = System.Web.HttpUtility.UrlDecode(requestStrings[2]);
+                        Console.WriteLine("1: {0}", requestStrings[1]);
+                        Console.WriteLine("2: {0}", requestStrings[2]);
+                        if (!requestStrings[1].Contains(".*?")) {
+                            if (string.IsNullOrEmpty(requestStrings[1]) && string.IsNullOrEmpty(requestStrings[2])) {
+                                result2 = curlResponse;
+                            } else {
+                                var num1 = curlResponse.IndexOf(requestStrings[1], StringComparison.Ordinal);
+                                if (num1 == -1) {
+                                    result2 = string.Empty;
+                                } else {
+                                    num1 += requestStrings[1].Length;
+                                    var num2 = curlResponse.IndexOf(requestStrings[2], num1, StringComparison.Ordinal);
+                                    result2 = num2 == -1 ? string.Empty : curlResponse.Substring(num1, num2 - num1);
+                                }
+                            }
+                        } else {
+                            Log.Debug($"ParseLinkRequest: {requestStrings[1]}(.*?){requestStrings[2]}");
+                            Console.WriteLine($"ParseLinkRequest: {requestStrings[1]}(.*?){requestStrings[2]}");
+
+                            string pattern = requestStrings[1] + "(.*?)" + requestStrings[2];
+                            var regex = new Regex(pattern, RegexOptions.Multiline);
+                            var match = regex.Match(curlResponse);
+                            if (match.Success) result2 = match.Groups[1].Captures[0].ToString();
+                        }
+                    }
+                    //Console.WriteLine("result="+result2);
+                    string xu = "http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&proxy=1&v=post&u=" +
+                                System.Web.HttpUtility.UrlEncode(result);
+                    Console.WriteLine(xu);
+                    Console.WriteLine(
+                        $"answ={HttpUtility.PostRequest(xu, "s=" + System.Web.HttpUtility.UrlEncode(result2))}");
+                }
+            }
+
+            toolStripStatusLabel1.Text = toolStripStatusLabel1.Text.Replace("...", "");
+        }
+
+        #endregion TIMER
+        
+        #region THVP
+
+        public void ThvpStart() {
+            var ps1 = Process.GetProcessesByName("thvp");
+            if (ps1.Length <= 0) {
+                var thvpPath = Path.Combine(Directory.GetCurrentDirectory(), "THVP/thvp.exe");
+                if (File.Exists(thvpPath)) {
+                    Process.Start(thvpPath);
+                }
+            }
+        }
+
+        #endregion THVP
+
+        #endregion PROGRAM
+
+        #region FORM
+
+        public Main() {
+            InitializeComponent();
+        }
+
+        private void Main_Load(object sender, EventArgs e) {
+            Environment.CurrentDirectory = Path.GetDirectoryName(Application.ExecutablePath);
+
+            LoadSettings();
+
+            InitializePlugins();
+            InitializeDlna();
+
+            mtbFileBufferSize.Value =
+                (Settings.Default.FileBufferSize / 1024).Clamp(mtbFileBufferSize.Minimum, mtbFileBufferSize.Maximum);
+
+            try {
+                CheckAutostart();
+            } catch (Exception exception) {
+                Console.WriteLine(exception);
+            } finally {
+                notifyIcon1.Visible = true;
+                HideForm();
+            }
+        }
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e) {
+            StopServer();
+        }
+
+        private void Main_Resize(object sender, EventArgs e) {
+            if (WindowState == FormWindowState.Minimized) HideForm();
+        }
+
+        private void ShowForm() {
+            Show();
+            WindowState = FormWindowState.Normal;
+        }
+
+        private void HideForm() {
+            Hide();
+            WindowState = FormWindowState.Minimized;
+        }
+
+        #region SETTINGS
+
+        #region MAIN
 
         private void bStartServer_Click(object sender, EventArgs e) {
             toolStripStatusLabel1.Text = $"{Resources.Main_Starting_Server}...";
@@ -185,7 +296,7 @@ namespace RemoteFork.Forms {
 
             } catch (Exception ex) {
                 toolStripStatusLabel1.Text = Resources.Main_Error;
-                Log.Error(m => m("StartServer->Errot: {0}", ex));
+                Log.Error(ex, "StartServer->Error");
             }
         }
 
@@ -199,40 +310,19 @@ namespace RemoteFork.Forms {
                 toolStripStatusLabel1.Text = $"{Resources.Main_Stopping_Server}: OK";
             } catch (Exception ex) {
                 toolStripStatusLabel1.Text = Resources.Main_Error;
-                Log.Error(m => m("StopServer->Errot: {0}", ex));
+                Log.Error(ex, "StopServer->Error");
             }
         }
 
         private void cbAutoStart_CheckedChanged(object sender, EventArgs e) {
-            //Console.WriteLine("cbAutoStart_CheckedChanged");
-            Autost();
-            Settings.Default.ServerAutoStart = mcbAutoStart.Checked;
+            CheckAutostart();
+
+            Settings.Default.AutoStartWindows = mcbAutoStartWindows.Checked;
             Settings.Default.Save();
         }
 
-        private void Autost() {
-            try {
-                var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run\", true);
-                if (key.GetValue("RemoteFork") != null) key.DeleteValue("RemoteFork");
-                if (mcbAutoStart.Checked) key.SetValue("RemoteFork", Application.ExecutablePath);
-
-            } catch (Exception e) {
-                toolStripStatusLabel1.Text = Resources.Main_Start_From_Admin_mini;
-                mcbAutoStart.Enabled = false;
-                mcbAutoStart.Text = $"{Resources.Main_Autostart} ({Resources.Main_Can_Not_Access_Registry})";
-                var t = new ToolTip();
-                t.SetToolTip(mcbAutoStart, $"{e.Message} {Resources.Main_Start_From_Admin_maxi}");
-                if (mcbAutoStart.Checked) {
-                    //  cbAutoStart.Checked = false;
-                    // MessageBox.Show("Не удалось установить RemoteFork в автозапуск при старте Windows. Запустите программу от имени администратора!", e.Message);
-                }
-            }
-
-        }
-
-        private void cbDlna_CheckedChanged(object sender, EventArgs e) {
-            Settings.Default.Dlna = mcbDlna.Checked;
+        private void mtAutoStartServer_CheckedChanged(object sender, EventArgs e) {
+            Settings.Default.AutoStartServer = mtAutoStartServer.Checked;
             Settings.Default.Save();
         }
 
@@ -241,33 +331,208 @@ namespace RemoteFork.Forms {
             Settings.Default.Save();
         }
 
-        private void llDlnaConfigurate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
-            var form = new DlnaConfigurate();
-            form.ShowDialog();
-        }
+        private void mcbCheckUpdate_CheckedChanged(object sender, EventArgs e) {
+            if (loading) return;
 
-        private void cbPlugins_CheckedChanged(object sender, EventArgs e) {
-            Settings.Default.Plugins = mcbPlugins.Checked;
+            Settings.Default.CheckUpdate = mcbCheckUpdate.Checked;
             Settings.Default.Save();
         }
 
-        private void llPluginsConfigurate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
-            var form = new PluginsConfigurate();
-            form.ShowDialog();
+        private void cbThvpAutoStart_CheckedChanged(object sender, EventArgs e) {
+            Settings.Default.THVPAutoStart = mcbThvpAutoStart.Checked;
+            Settings.Default.Save();
+        }
+
+        private void cbUseProxy_CheckedChanged(object sender, EventArgs e) {
+            if (loading) return;
+            if (mcbUseProxy.Checked) {
+                if (MetroMessageBox.Show(this,
+                        Resources.Main_TurnOn_Not_Recommended,
+                        Resources.Main_Enable_Proxy, MessageBoxButtons.YesNo) != DialogResult.Yes) {
+                    mcbUseProxy.Checked = false;
+                    return;
+                } else {
+                    ServerRegistration();
+                }
+            }
+            Settings.Default.proxy = mcbUseProxy.Checked;
+            Settings.Default.Save();
+        }
+
+        #endregion MAIN
+        
+        #region DLNA
+
+        private void cbDlna_CheckedChanged(object sender, EventArgs e) {
+            Settings.Default.Dlna = mcbDlna.Checked;
+            metroPanel6.Enabled = metroPanel7.Enabled = mcbDlna.Checked;
+
+            Settings.Default.Save();
+        }
+
+        private void InitializeDlna() {
+            mcbDlnaFilterType.SelectedIndex = Settings.Default.DlnaFilterType;
+            mtDlnaHiddenFiles.Checked = Settings.Default.DlnaHiidenFiles;
+
+            if ((Settings.Default.DlnaFileExtensions != null) && (Settings.Default.DlnaFileExtensions.Count > 0)) {
+                mtbDlnaFileExtensions.Text = string.Join(",", Settings.Default.DlnaFileExtensions.Cast<string>());
+                mlSampleTypes.Visible = false;
+            }
+
+            if ((Settings.Default.DlnaDirectories != null) && (Settings.Default.DlnaDirectories.Count > 0)) {
+                foreach (var directory in Settings.Default.DlnaDirectories) mlvDlna.Items.Add(directory, directory, string.Empty);
+            }
+
+            metroPanel6.Enabled = metroPanel7.Enabled = mcbDlna.Checked;
+        }
+
+        private void mtbTypes_Enter(object sender, EventArgs e) {
+            mlSampleTypes.Visible = false;
+        }
+
+        private void mtbTypes_Leave(object sender, EventArgs e) {
+            mlSampleTypes.Visible = string.IsNullOrWhiteSpace(mtbDlnaFileExtensions.Text);
+        }
+
+        private void tsmiDlnaListAdd_Click(object sender, EventArgs e) {
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK) {
+                string path = folderBrowserDialog1.SelectedPath;
+                if (!mlvDlna.Items.ContainsKey(path)) {
+                    mlvDlna.Items.Add(path, path, string.Empty);
+
+                    if (!Settings.Default.DlnaDirectories.Contains(path)) {
+                        Settings.Default.DlnaDirectories.Add(path);
+                        Settings.Default.Save();
+                    }
+                } else {
+                    MetroMessageBox.Show(this, "Выбранный каталог уже добавлен.");
+                }
+            }
+        }
+
+        private void tsmiDlnaListRemove_Click(object sender, EventArgs e) {
+            if (mlvDlna.SelectedIndices.Count > 0) {
+                foreach (int id in mlvDlna.SelectedIndices) {
+                    mlvDlna.Items.RemoveAt(id);
+
+                    if (Settings.Default.DlnaDirectories.Contains(mlvDlna.Items[id].Text)) {
+                        Settings.Default.DlnaDirectories.Remove(mlvDlna.Items[id].Text);
+                    }
+                }
+
+                Settings.Default.Save();
+            }
+        }
+
+        private void tsmiDlnaListClear_Click(object sender, EventArgs e) {
+            mlvDlna.Items.Clear();
+            Settings.Default.DlnaDirectories.Clear();
+            Settings.Default.Save();
+        }
+
+        private void mcbDlnaFilterType_SelectedIndexChanged(object sender, EventArgs e) {
+            Settings.Default.DlnaFilterType = (byte) mcbDlnaFilterType.SelectedIndex;
+            Settings.Default.Save();
+        }
+
+        private void mtDlnaHiddenFiles_CheckedChanged(object sender, EventArgs e) {
+            Settings.Default.DlnaHiidenFiles = mtDlnaHiddenFiles.Checked;
+            Settings.Default.Save();
+        }
+
+        private void mtbDlnaFileExtensions_KeyUp(object sender, KeyEventArgs e) {
+            string text = mtbDlnaFileExtensions.Text;
+            Settings.Default.DlnaFileExtensions.Clear();
+            if (!string.IsNullOrWhiteSpace(text)) {
+                if (Regex.IsMatch(text, "^((\\D[\\w]+,)\\s*)+(\\D[\\w]+)\\s*$",
+                    RegexOptions.IgnoreCase & RegexOptions.Multiline)) {
+                    foreach (var item in text.Split(',')) {
+                        Settings.Default.DlnaFileExtensions.Add(item.Trim());
+                    }
+                }
+            }
+            Settings.Default.Save();
+        }
+
+        #endregion DLNA
+
+        #region PLUGINS
+
+        private void cbPlugins_CheckedChanged(object sender, EventArgs e) {
+            Settings.Default.Plugins = mcbPlugins.Checked;
+            mclbPlugins.Enabled = mcbPlugins.Checked;
+
+            Settings.Default.Save();
+        }
+
+        private void InitializePlugins() {
+            var plugins = PluginManager.Instance.GetPlugins(false);
+
+            foreach (var plugin in plugins) {
+                var item = new ListViewItem {
+                    Checked = Settings.Default.EnablePlugins != null
+                              && Settings.Default.EnablePlugins.Contains(plugin.Value.Key),
+                    Text = plugin.Value.ToString(),
+                    Tag = plugin.Value.Key
+                };
+                mclbPlugins.Items.Add(item);
+            }
+
+            mclbPlugins.Enabled = mcbPlugins.Checked;
+        }
+
+        private void mclbPlugins_ItemChecked(object sender, ItemCheckedEventArgs e) {
+            var item = e.Item;
+            string key = item.Tag.ToString();
+            if (item.Checked) {
+                if (!Settings.Default.EnablePlugins.Contains(key)) {
+                    Settings.Default.EnablePlugins.Add(key);
+                }
+            } else {
+                if (Settings.Default.EnablePlugins.Contains(key)) {
+                    Settings.Default.EnablePlugins.Remove(key);
+                }
+            }
+
+            Settings.Default.Save();
+        }
+
+        #endregion PLUGINS
+
+        #region  DEVELOPER
+
+        private void tbUserAgent_KeyDown(object sender, KeyEventArgs e) {
+            switch (e.KeyCode) {
+                case Keys.Escape:
+                    mtbUserAgent.Text = Settings.Default.UserAgent;
+                    break;
+                case Keys.Enter:
+                    Settings.Default.UserAgent = mtbUserAgent.Text;
+                    Settings.Default.Save();
+                    break;
+            }
         }
 
         private void cbLogs_SelectedIndexChanged(object sender, EventArgs e) {
-            var cb = (ComboBox) sender;
+            var cb = (ComboBox)sender;
 
-            Settings.Default.LogLevel = (byte) cb.SelectedIndex;
+            Settings.Default.LogLevel = (byte)cb.SelectedIndex;
             Settings.Default.Save();
 
             NLog.LogManager.GlobalThreshold = AppLogLevel.FromOrdinal(cb.SelectedIndex);
         }
 
-        #endregion Settings
+        private void mtbFileBufferSize_ValueChanged(object sender, EventArgs e) {
+            mlFileBufferSize.Text = mtbFileBufferSize.Value.ToString();
+            Settings.Default.FileBufferSize = mtbFileBufferSize.Value * 1024;
+            Settings.Default.Save();
+        }
 
-        #region notifyIcon
+        #endregion DEVELOPER
+
+        #endregion SETTINGS
+
+        #region NOTIFYICON
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e) {
             if (e.Button == MouseButtons.Left) {
@@ -312,9 +577,9 @@ namespace RemoteFork.Forms {
                     var data = "text=" + System.Web.HttpUtility.UrlEncode(text);
                     var text2 = HttpUtility.PostRequest(url, data);
 
-                    MessageBox.Show(text2);
+                    MetroMessageBox.Show(this, text2);
                 } else {
-                    MessageBox.Show(Resources.Main_Invalid_Playlist_File);
+                    MetroMessageBox.Show(this, Resources.Main_Invalid_Playlist_File);
                 }
             }
         }
@@ -378,51 +643,13 @@ namespace RemoteFork.Forms {
             }
         }
 
-        #endregion notifyIcon
-
-        #region THVP
-
-        public void ThvpStart() {
-            var ps1 = Process.GetProcessesByName("thvp");
-            if (ps1.Length > 0) {
-                MessageBox.Show(Resources.Main_THVP_Already_Running);
-            } else {
-                var thvpPath = Path.Combine(Directory.GetCurrentDirectory(), "THVP/thvp.exe");
-                if (File.Exists(thvpPath)) {
-                    Process.Start(thvpPath);
-                }
-            }
-        }
-
         private void runToolStripMenuItem_Click(object sender, EventArgs e) {
             ThvpStart();
         }
 
-        private void cbThvpAutoStart_CheckedChanged(object sender, EventArgs e) {
-            Settings.Default.THVPAutoStart = mcbThvpAutoStart.Checked;
-            Settings.Default.Save();
-        }
-
         private void gotoToolStripMenuItem_Click(object sender, EventArgs e) {
+
             Process.Start("http://thvp.ru/about");
-        }
-
-        #endregion
-
-        private void cbUseProxy_CheckedChanged(object sender, EventArgs e) {
-            if (loading) return;
-            if (mcbUseProxy.Checked) {
-                if (MessageBox.Show(
-                        Resources.Main_TurnOn_Not_Recommended,
-                        Resources.Main_Enable_Proxy, MessageBoxButtons.YesNo) != DialogResult.Yes) {
-                    mcbUseProxy.Checked = false;
-                    return;
-                } else {
-                    ServerRegistration();
-                }
-            }
-            Settings.Default.proxy = mcbUseProxy.Checked;
-            Settings.Default.Save();
         }
 
         private void MenuItemNewVersion_Click(object sender, EventArgs e) {
@@ -436,72 +663,8 @@ namespace RemoteFork.Forms {
             Process.Start(Environment.CurrentDirectory);
         }
 
-        private void timerR_Tick(object sender, EventArgs e) {
-            if (!Settings.Default.proxy) {
-                mcbUseProxy.Checked = false;
-                toolStripStatusLabel1.Text = Resources.Main_Server_Disabled;
-                timerR.Enabled = false;
-                return;
-            }
-            toolStripStatusLabel1.Text += "...";
-            //Console.WriteLine("timer");
-            string result =
-                HttpUtility.GetRequest(
-                    "http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&direct&proxy=1&v=get");
-            //  Console.WriteLine(result);
-            if (result.IndexOf("/parserlink") == 0) {
-                Console.WriteLine("parserlink remote");
-                var result2 = string.Empty;
+        #endregion NOTIFYICON
 
-                var requestStrings = System.Web.HttpUtility.UrlDecode(result.Substring(12)).Split('|');
-                var Handle = new Requestes.ParseLinkRequestHandler();
-                if (requestStrings != null) {
-                    Console.WriteLine("Parsing: {0}", requestStrings[0]);
-
-                    string curlResponse = requestStrings[0].StartsWith("curl")
-                        ? Handle.CurlRequest(System.Web.HttpUtility.UrlDecode(requestStrings[0]))
-                        : HttpUtility.GetRequest(requestStrings[0]);
-                    //Console.WriteLine("Response original " + curlResponse);
-                    if (requestStrings.Length == 1) {
-                        result2 = curlResponse;
-                    } else {
-                        requestStrings[1] = System.Web.HttpUtility.UrlDecode(requestStrings[1]);
-                        requestStrings[2] = System.Web.HttpUtility.UrlDecode(requestStrings[2]);
-                        Console.WriteLine("1: {0}", requestStrings[1]);
-                        Console.WriteLine("2: {0}", requestStrings[2]);
-                        if (!requestStrings[1].Contains(".*?")) {
-                            if (string.IsNullOrEmpty(requestStrings[1]) && string.IsNullOrEmpty(requestStrings[2])) {
-                                result2 = curlResponse;
-                            } else {
-                                var num1 = curlResponse.IndexOf(requestStrings[1], StringComparison.Ordinal);
-                                if (num1 == -1) {
-                                    result2 = string.Empty;
-                                } else {
-                                    num1 += requestStrings[1].Length;
-                                    var num2 = curlResponse.IndexOf(requestStrings[2], num1, StringComparison.Ordinal);
-                                    result2 = num2 == -1 ? string.Empty : curlResponse.Substring(num1, num2 - num1);
-                                }
-                            }
-                        } else {
-                            Log.Debug(m => m("ParseLinkRequest: {0}", requestStrings[1] + "(.*?)" + requestStrings[2]));
-                            Console.WriteLine("ParseLinkRequest: {0}", requestStrings[1] + "(.*?)" + requestStrings[2]);
-
-                            string pattern = requestStrings[1] + "(.*?)" + requestStrings[2];
-                            var regex = new Regex(pattern, RegexOptions.Multiline);
-                            var match = regex.Match(curlResponse);
-                            if (match.Success) result2 = match.Groups[1].Captures[0].ToString();
-                        }
-                    }
-                    //Console.WriteLine("result="+result2);
-                    string xu = "http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&proxy=1&v=post&u=" +
-                                System.Web.HttpUtility.UrlEncode(result);
-                    Console.WriteLine(xu);
-                    Console.WriteLine(
-                        $"answ={HttpUtility.PostRequest(xu, "s=" + System.Web.HttpUtility.UrlEncode(result2))}");
-                }
-            }
-
-            toolStripStatusLabel1.Text = toolStripStatusLabel1.Text.Replace("...", "");
-        }
+        #endregion FORM
     }
 }

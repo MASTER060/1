@@ -2,14 +2,14 @@
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Common.Logging;
+using NLog;
 using RemoteFork.Plugins;
 using RemoteFork.Server;
 using Unosquare.Net;
 
 namespace RemoteFork.Requestes {
     internal class PluginRequestHandler : BaseRequestHandler {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(TestRequestHandler));
+        private static readonly ILogger Log = LogManager.GetLogger("TestRequestHandler", typeof(TestRequestHandler));
 
         internal static readonly string ParamPluginKey = "plugin";
 
@@ -22,29 +22,29 @@ namespace RemoteFork.Requestes {
                 var plugin = PluginManager.Instance.GetPlugin(pluginKey);
 
                 if (plugin != null) {
-                    Log.Debug(m => m("Execute: {0}", plugin.Name));
+                    Log.Debug("Execute: {0}", plugin.Name);
 
                     var pluginResponse = plugin.Instance.GetList(new PluginContext(pluginKey, request, new NameValueCollection(request.QueryString)));
 
                     if (pluginResponse != null) {
                         if (pluginResponse.source != null)
                         {
-                            Log.Debug(m => m("Plugin Playlist.source not null! Write to response Playlist.source and ignore other methods. Plugin: {0}", pluginKey));
+                            Log.Debug("Plugin Playlist.source not null! Write to response Playlist.source and ignore other methods. Plugin: {0}", pluginKey);
                             WriteResponse(response, pluginResponse.source);
                         }
                         else WriteResponse(response, ResponseSerializer.ToXml(pluginResponse));
                     } else {
-                        Log.Warn(m => m("Plugin Playlist is null. Plugin: {0}", pluginKey));
+                        Log.Warn("Plugin Playlist is null. Plugin: {0}", pluginKey);
 
                         WriteResponse(response, HttpStatusCode.NotFound, $"Plugin Playlist is null. Plugin: {pluginKey}");
                     }
                 } else {
-                    Log.Warn(m => m("Plugin Not Found. Plugin: {0}", pluginKey));
+                    Log.Warn("Plugin Not Found. Plugin: {0}", pluginKey);
 
                     WriteResponse(response, HttpStatusCode.NotFound, $"Plugin Not Found. Plugin: {pluginKey}");
                 }
             } else {
-                Log.Warn(m => m("Plugin is not defined in request. Plugin: {0}", pluginKey));
+                Log.Warn("Plugin is not defined in request. Plugin: {0}", pluginKey);
 
                 WriteResponse(response, HttpStatusCode.NotFound, $"Plugin is not defined in request. Plugin: {pluginKey}");
             }

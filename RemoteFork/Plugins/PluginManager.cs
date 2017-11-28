@@ -5,17 +5,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
-using Common.Logging;
 using Microsoft.CSharp;
 using Microsoft.VisualBasic;
+using NLog;
 using RemoteFork.Properties;
-using System.Xml.Linq;
 
 namespace RemoteFork.Plugins
 {
     internal class PluginManager
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(PluginManager));
+        private static readonly ILogger Log = LogManager.GetLogger("PluginManager", typeof(PluginManager));
 
         public static readonly PluginManager Instance = new PluginManager();
 
@@ -49,7 +48,7 @@ namespace RemoteFork.Plugins
             foreach (CompilerError ce in result.Errors)
             {
                 if(!ce.IsWarning) Console.WriteLine(ce.FileName + ce.Line + ce.Column + ce.IsWarning + ce.ErrorNumber + ce.ErrorText);
-                Log.Debug(m => m("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column, ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText));
+                Log.Debug("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column, ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText);
 
                 if (!ce.IsWarning)
                 {
@@ -86,7 +85,7 @@ namespace RemoteFork.Plugins
             var hasCompileErrors = false;
             foreach (CompilerError ce in result.Errors)
             {
-                Log.Debug(m => m("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column, ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText));
+                Log.Debug("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column, ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText);
 
                 if (!ce.IsWarning)
                 {
@@ -125,7 +124,7 @@ namespace RemoteFork.Plugins
                 }
                 catch (Exception e)
                 {
-                    Log.Error(m => m("LoadPlugins->{0}: {1}", file, e));
+                    Log.Error("LoadPlugins->{0}: {1}", file, e);
                 }
             }
         }
@@ -142,7 +141,7 @@ namespace RemoteFork.Plugins
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(m => m("LoadPlugins->{0}: {1}", file, ex));
+                    Log.Error("LoadPlugins->{0}: {1}", file, ex);
                 }
             }
         }
@@ -159,7 +158,7 @@ namespace RemoteFork.Plugins
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(m => m("LoadPlugins->{0}: {1}", file, ex));
+                    Log.Error("LoadPlugins->{0}: {1}", file, ex);
                 }
             }
         }
@@ -181,13 +180,11 @@ namespace RemoteFork.Plugins
                             {
                                 plugins.Add(plugin.Id, plugin);
 
-                                Log.Debug(m => m(
-                                              "Loaded plugin [id: {0}, name: {1}, type: {2}, version: {3}]",
-                                              plugin.Id,
-                                              plugin.Name,
-                                              type.FullName,
-                                              plugin.Version
-                                          )
+                                Log.Debug("Loaded plugin [id: {0}, name: {1}, type: {2}, version: {3}]",
+                                    plugin.Id,
+                                    plugin.Name,
+                                    type.FullName,
+                                    plugin.Version
                                 );
                             }
                         }

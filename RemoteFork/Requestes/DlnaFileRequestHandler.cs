@@ -5,147 +5,130 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Common.Logging;
-using RemoteFork.Forms;
+using NLog;
+using RemoteFork.Properties;
 using RemoteFork.Server;
 using Unosquare.Labs.EmbedIO;
 using Unosquare.Net;
 
 namespace RemoteFork.Requestes {
     internal class DlnaFileRequestHandler : BaseRequestHandler {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(DlnaFileRequestHandler));
+        private static readonly ILogger Log = LogManager.GetLogger("DlnaFileRequestHandler", typeof(DlnaFileRequestHandler));
 
-        private const int BufferSize = 1024 * 256;
-
-        public override void Handle(HttpListenerContext context)
-        {
+        public override void Handle(HttpListenerContext context) {
             Console.WriteLine("Handle get file");
-            var file = context.Request.QueryString.GetValues(null)?.FirstOrDefault(s => s.StartsWith(Uri.UriSchemeFile));
-            if (!string.IsNullOrEmpty(file))
-            {
-                try
-                {
+            string file = context.Request.QueryString.GetValues(null)
+                ?.FirstOrDefault(s => s.StartsWith(Uri.UriSchemeFile));
+            if (!string.IsNullOrEmpty(file)) {
+                try {
                     var fileRequest = FileRequest.Create(context, file);
 
-                    if (fileRequest.File.Exists && DlnaConfigurate.CheckAccess(fileRequest.File.FullName))
-                    {
-                        var requestId = DateTime.Now.Ticks.ToString("x2");
-                        Log.Debug(m => m(
-                                      "[{0}] Requested: {1}, Rnages: [{2}]-[{3}]/{4}",
-                                      requestId,
-                                      fileRequest.File.FullName,
-                                      string.Join(",", fileRequest.RangesStartIndexes),
-                                      string.Join(",", fileRequest.RangesEndIndexes),
-                                      fileRequest.File.Length
-                                  )
+                    if (fileRequest.File.Exists && Tools.CheckAccessPath(fileRequest.File.FullName)) {
+                        string requestId = DateTime.Now.Ticks.ToString("x2");
+                        Log.Debug(
+                            "[{0}] Requested: {1}, Rnages: [{2}]-[{3}]/{4}",
+                            requestId,
+                            fileRequest.File.FullName,
+                            string.Join(",", fileRequest.RangesStartIndexes),
+                            string.Join(",", fileRequest.RangesEndIndexes),
+                            fileRequest.File.Length
                         );
                         context.Response.KeepAlive = false;
                         Console.WriteLine("[{0}] Requested: {1}, Rnages: [{2}]-[{3}]/{4}",
-                                      requestId,
-                                      fileRequest.File.FullName,
-                                      string.Join(",", fileRequest.RangesStartIndexes),
-                                      string.Join(",", fileRequest.RangesEndIndexes),
-                                      fileRequest.File.Length);
-                            context.Response.Headers.Add("Accept-Ranges", "bytes");
-                        if (ValidateRanges(fileRequest, context.Response) && ValidateModificationDate(fileRequest, context) && ValidateEntityTag(fileRequest, context))
-                        {
+                            requestId,
+                            fileRequest.File.FullName,
+                            string.Join(",", fileRequest.RangesStartIndexes),
+                            string.Join(",", fileRequest.RangesEndIndexes),
+                            fileRequest.File.Length);
+                        context.Response.Headers.Add("Accept-Ranges", "bytes");
+                        if (ValidateRanges(fileRequest, context.Response) &&
+                            ValidateModificationDate(fileRequest, context) && ValidateEntityTag(fileRequest, context)) {
                             context.Response.Headers.Add("Last-Modified", fileRequest.File.LastWriteTime.ToString("r"));
                             context.Response.Headers.Add("Etag", fileRequest.EntityTag);
 
-                            if (!fileRequest.RangeRequest)
-                            {
+                            if (!fileRequest.RangeRequest) {
                                 context.Response.ContentLength64 = fileRequest.File.Length;
                                 context.Response.ContentType = fileRequest.ContentType;
                                 context.Response.StatusCode = HttpStatusCode.Ok.ToInteger();
 
-                                if (HttpMethod.ANY.FromString(context.Request.HttpMethod) != HttpMethod.HEAD)
-                                {
-                                    using (var fileStream = fileRequest.File.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
-                                    {
-                                        long sent = Copy(fileStream, context.Response.OutputStream);
+                                if (HttpMethod.ANY.FromString(context.Request.HttpMethod) != HttpMethod.HEAD) {
+                                    using (var fileStream =
+                                        fileRequest.File.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) {
+                                        long sent = Copy(fileStream, context.Response.OutputStream,
+                                            Settings.Default.FileBufferSize);
 
-                                        Log.Debug(m => m("[{0}] Sent: {1} bytes", requestId, sent));
+                                        Log.Debug("[{0}] Sent: {1} bytes", requestId, sent);
                                     }
                                 }
-                            }
-                            else
-                            {
+                            } else {
                                 context.Response.ContentLength64 = fileRequest.GetContentLength();
 
-                                if (!fileRequest.MultipartRequest)
-                                {
-                                    context.Response.Headers.Add("Content-Range", $"bytes {fileRequest.RangesStartIndexes[0]}-{fileRequest.RangesEndIndexes[0]}/{fileRequest.File.Length}");
+                                if (!fileRequest.MultipartRequest) {
+                                    context.Response.Headers.Add("Content-Range",
+                                        $"bytes {fileRequest.RangesStartIndexes[0]}-{fileRequest.RangesEndIndexes[0]}/{fileRequest.File.Length}");
                                     context.Response.ContentType = fileRequest.ContentType;
-                                }
-                                else
-                                {
-                                    context.Response.ContentType = $"multipart/byteranges; boundary={fileRequest.Boundary}";
+                                } else {
+                                    context.Response.ContentType =
+                                        $"multipart/byteranges; boundary={fileRequest.Boundary}";
                                 }
 
                                 context.Response.StatusCode = HttpStatusCode.PartialContent.ToInteger();
-                                if (HttpMethod.ANY.FromString(context.Request.HttpMethod) != HttpMethod.HEAD)
-                                {
-                                    using (var fileStream = fileRequest.File.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
-                                    {
-                                        for (var i = 0; i < fileRequest.RangesStartIndexes.Length; i++)
-                                        {
-                                            if (fileRequest.MultipartRequest)
-                                            {
+                                if (HttpMethod.ANY.FromString(context.Request.HttpMethod) != HttpMethod.HEAD) {
+                                    using (var fileStream =
+                                        fileRequest.File.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) {
+                                        for (int i = 0; i < fileRequest.RangesStartIndexes.Length; i++) {
+                                            if (fileRequest.MultipartRequest) {
                                                 Copy($"--{fileRequest.Boundary}\r\n", context.Response.OutputStream);
-                                                Copy($"Content-Type: {fileRequest.ContentType}\r\n", context.Response.OutputStream);
-                                                Copy($"Content-Range: bytes {fileRequest.RangesStartIndexes[i]}-{fileRequest.RangesEndIndexes[i]}/{fileRequest.File.Length}\r\n\r\n", context.Response.OutputStream);
+                                                Copy($"Content-Type: {fileRequest.ContentType}\r\n",
+                                                    context.Response.OutputStream);
+                                                Copy(
+                                                    $"Content-Range: bytes {fileRequest.RangesStartIndexes[i]}-{fileRequest.RangesEndIndexes[i]}/{fileRequest.File.Length}\r\n\r\n",
+                                                    context.Response.OutputStream);
                                             }
 
                                             Copy(
                                                 fileStream,
                                                 context.Response.OutputStream,
                                                 fileRequest.RangesStartIndexes[i],
-                                                fileRequest.RangesEndIndexes[i] - fileRequest.RangesStartIndexes[i] + 1
+                                                fileRequest.RangesEndIndexes[i] - fileRequest.RangesStartIndexes[i] + 1,
+                                                Settings.Default.FileBufferSize
                                             );
 
                                             //Log.Debug(m => m("[{0}] Sent: {1} bytes", requestId, sent));
 
-                                            if (fileRequest.MultipartRequest)
-                                            {
+                                            if (fileRequest.MultipartRequest) {
                                                 Copy("\r\n", context.Response.OutputStream);
                                             }
                                         }
 
-                                        if (fileRequest.MultipartRequest)
-                                        {
+                                        if (fileRequest.MultipartRequest) {
                                             Copy($"--{fileRequest.Boundary}--", context.Response.OutputStream);
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    else
-                    {
-                        Log.Debug(m => m("File not found: {0}", file));
+                    } else {
+                        Log.Debug("File not found: {0}", file);
 
                         WriteResponse(context.Response, HttpStatusCode.NotFound, $"File not found: {file}");
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     Console.WriteLine(ex);
                 }
-            }
-            else
-            {
-                Log.Debug(m => m("Incorrect parameter: {0}", file));
+            } else {
+                Log.Debug("Incorrect parameter: {0}", file);
 
                 WriteResponse(context.Response, HttpStatusCode.NotFound, $"Incorrect parameter: {file}");
             }
         }
 
-        private static long Copy(Stream input, Stream output) {
+        private static long Copy(Stream input, Stream output, int bufferSize) {
             long totalRead = 0;
-            var buffer = new byte[BufferSize];
+            var buffer = new byte[bufferSize];
 
             int bytesRead;
-            while ((bytesRead = input.Read(buffer, 0, BufferSize)) != 0) {
+            while ((bytesRead = input.Read(buffer, 0, bufferSize)) != 0) {
                 output.Write(buffer, 0, bytesRead);
                 totalRead += bytesRead;
             }
@@ -153,31 +136,26 @@ namespace RemoteFork.Requestes {
             return totalRead;
         }
 
-        public void Copy(Stream input, Stream output, long inputOffset, long length)
-        {
+        public void Copy(Stream input, Stream output, long inputOffset, long length, int bufferSize) {
             long totalRead = 0;
 
-            if (length > 0)
-            {
-                var buffer = new byte[BufferSize];
+            if (length > 0) {
+                var buffer = new byte[bufferSize];
 
-                if (inputOffset > 0)
-                {
+                if (inputOffset > 0) {
                     input.Seek(inputOffset, SeekOrigin.Begin);
                 }
 
-                var bufferLength = buffer.Length;
-                var bytesToRead = bufferLength;
+                int bufferLength = buffer.Length;
+                int bytesToRead = bufferLength;
 
-                if (length < bufferLength)
-                {
+                if (length < bufferLength) {
                     bytesToRead = Convert.ToInt32(length);
                 }
 
                 int read;
-                while (bytesToRead > 0 && 0 != (read = input.Read(buffer, 0, bytesToRead)))
-                {
-                   // Console.WriteLine("output " + totalRead);
+                while (bytesToRead > 0 && 0 != (read = input.Read(buffer, 0, bytesToRead))) {
+                    // Console.WriteLine("output " + totalRead);
                     output.Write(buffer, 0, read);
 
                     totalRead += read;
@@ -185,20 +163,20 @@ namespace RemoteFork.Requestes {
                     bytesToRead = Convert.ToInt32(Math.Min(length - totalRead, bufferLength));
                 }
             }
-            Console.WriteLine("totalRead " + totalRead);
+            Console.WriteLine($"totalRead {totalRead}");
         }
 
         private static void Copy(string input, Stream output) {
             if (input != null) {
-                byte[] buffer = Encoding.UTF8.GetBytes(input);
+                var buffer = Encoding.UTF8.GetBytes(input);
                 output.Write(buffer, 0, buffer.Length);
             }
         }
 
         private static bool ValidateRanges(FileRequest fileRequest, HttpListenerResponse response) {
-            var fileLength = fileRequest.File.Length;
+            long fileLength = fileRequest.File.Length;
 
-            for (var i = 0; i < fileRequest.RangesStartIndexes.Length; i++) {
+            for (int i = 0; i < fileRequest.RangesStartIndexes.Length; i++) {
                 if ((fileRequest.RangesStartIndexes[i] > fileLength - 1)
                     || (fileRequest.RangesEndIndexes[i] > fileLength - 1)
                     || (fileRequest.RangesStartIndexes[i] < 0)
@@ -215,9 +193,9 @@ namespace RemoteFork.Requestes {
         }
 
         private bool ValidateModificationDate(FileRequest fileRequest, HttpListenerContext context) {
-            var modifiedSinceHeader = context.RequestHeader("If-Modified-Since");
+            string modifiedSinceHeader = context.RequestHeader("If-Modified-Since");
             if (!string.IsNullOrEmpty(modifiedSinceHeader)) {
-                DateTime modifiedSinceDate = FileRequest.ParseHttpDateHeader(context, "If-Modified-Since");
+                var modifiedSinceDate = FileRequest.ParseHttpDateHeader(context, "If-Modified-Since");
 
                 if (fileRequest.File.LastWriteTime <= modifiedSinceDate) {
                     context.Response.StatusCode = HttpStatusCode.NotModified.ToInteger();
@@ -225,14 +203,14 @@ namespace RemoteFork.Requestes {
                 }
             }
 
-            var unmodifiedSinceHeader = context.RequestHeader("If-Unmodified-Since");
+            string unmodifiedSinceHeader = context.RequestHeader("If-Unmodified-Since");
 
             if (string.IsNullOrEmpty(unmodifiedSinceHeader)) {
                 unmodifiedSinceHeader = context.RequestHeader("Unless-Modified-Since");
             }
 
             if (!string.IsNullOrEmpty(unmodifiedSinceHeader)) {
-                DateTime unmodifiedSinceDate = FileRequest.ParseHttpDateHeader(context, "If-Modified-Since");
+                var unmodifiedSinceDate = FileRequest.ParseHttpDateHeader(context, "If-Modified-Since");
 
                 if (fileRequest.File.LastWriteTime > unmodifiedSinceDate) {
                     context.Response.StatusCode = HttpStatusCode.PreconditionFailed.ToInteger();
@@ -243,11 +221,11 @@ namespace RemoteFork.Requestes {
             return true;
         }
 
-        private bool ValidateEntityTag(FileRequest fileRequest, HttpListenerContext context) {
-            var matchHeader = context.RequestHeader("If-Match");
+        private static bool ValidateEntityTag(FileRequest fileRequest, HttpListenerContext context) {
+            string matchHeader = context.RequestHeader("If-Match");
             if (!string.IsNullOrEmpty(matchHeader) && (matchHeader != "*")) {
                 var entitiesTags = matchHeader.Split(FileRequest.CommaSplitArray);
-                var entitieTagIndex = 0;
+                int entitieTagIndex = 0;
 
                 for (; entitieTagIndex < entitiesTags.Length; entitieTagIndex++) {
                     if (fileRequest.EntityTag == entitiesTags[entitieTagIndex]) {
@@ -261,7 +239,7 @@ namespace RemoteFork.Requestes {
                 }
             }
 
-            var noneMatchHeader = context.RequestHeader("If-None-Match");
+            string noneMatchHeader = context.RequestHeader("If-None-Match");
             if (!string.IsNullOrEmpty(noneMatchHeader)) {
                 if (noneMatchHeader == "*") {
                     context.Response.StatusCode = HttpStatusCode.PreconditionFailed.ToInteger();
@@ -269,12 +247,10 @@ namespace RemoteFork.Requestes {
                 }
 
                 var entitiesTags = noneMatchHeader.Split(FileRequest.CommaSplitArray);
-                foreach (var entityTag in entitiesTags) {
-                    if (fileRequest.EntityTag == entityTag) {
-                        context.Response.Headers.Add("ETag", fileRequest.EntityTag);
-                        context.Response.StatusCode = HttpStatusCode.NotModified.ToInteger();
-                        return false;
-                    }
+                if (entitiesTags.Any(entityTag => fileRequest.EntityTag == entityTag)) {
+                    context.Response.Headers.Add("ETag", fileRequest.EntityTag);
+                    context.Response.StatusCode = HttpStatusCode.NotModified.ToInteger();
+                    return false;
                 }
             }
 
@@ -282,14 +258,15 @@ namespace RemoteFork.Requestes {
         }
     }
 
-    sealed class FileRequest {
+    internal sealed class FileRequest {
         private static readonly MD5CryptoServiceProvider Md5 = new MD5CryptoServiceProvider();
 
         private static readonly Dictionary<string, string> MimeTypes = new Dictionary<string, string>();
 
         private const string HeaderIfRange = "If-Range";
 
-        private static readonly string[] HttpDateFormats = {"r", "dddd, dd-MMM-yy HH':'mm':'ss 'GMT'", "ddd MMM d HH':'mm':'ss yyyy"};
+        private static readonly string[] HttpDateFormats =
+            {"r", "dddd, dd-MMM-yy HH':'mm':'ss 'GMT'", "ddd MMM d HH':'mm':'ss yyyy"};
 
         internal static readonly char[] CommaSplitArray = {','};
 
@@ -300,9 +277,9 @@ namespace RemoteFork.Requestes {
         private readonly HttpListenerContext _context;
 
         static FileRequest() {
-           // foreach (var mimeType in Constants.DefaultMimeTypes) {
-           //     MimeTypes[mimeType.Key] = mimeType.Value;
-          //  }
+            // foreach (var mimeType in Constants.DefaultMimeTypes) {
+            //     MimeTypes[mimeType.Key] = mimeType.Value;
+            //  }
 
             foreach (var mimeType in Tools.MimeTypes) {
                 MimeTypes[mimeType.Key] = mimeType.Value;
@@ -329,7 +306,9 @@ namespace RemoteFork.Requestes {
 
         private void Parse() {
             EntityTag = GenerateEntityTag();
-            ContentType = MimeTypes.ContainsKey(File.Extension) ? MimeTypes[File.Extension] : "application/octet-stream";
+            ContentType = MimeTypes.ContainsKey(File.Extension)
+                ? MimeTypes[File.Extension]
+                : "application/octet-stream";
             ParseRanges();
         }
 
@@ -374,9 +353,9 @@ namespace RemoteFork.Requestes {
         }
 
         public long GetContentLength() {
-            var contentLength = 0L;
+            long contentLength = 0L;
 
-            for (var i = 0; i < RangesStartIndexes.Length; i++) {
+            for (int i = 0; i < RangesStartIndexes.Length; i++) {
                 contentLength += Convert.ToInt64(RangesEndIndexes[i] - RangesStartIndexes[i]) + 1;
 
                 if (MultipartRequest) {
@@ -393,7 +372,7 @@ namespace RemoteFork.Requestes {
             if (MultipartRequest) {
                 contentLength += Boundary.Length + 4;
             }
-            Console.WriteLine("LEN=" + contentLength);
+            Console.WriteLine($"LEN={contentLength}");
             return contentLength;
         }
 
@@ -402,15 +381,15 @@ namespace RemoteFork.Requestes {
 
             DateTime ifRangeHeaderDate;
 
-            if (DateTime.TryParseExact(ifRangeHeader, HttpDateFormats, null, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out ifRangeHeaderDate)) {
-                return ifRangeHeaderDate;
-            } else {
-                return DateTime.MinValue;
-            }
+            return DateTime.TryParseExact(ifRangeHeader, HttpDateFormats, null,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out ifRangeHeaderDate)
+                ? ifRangeHeaderDate
+                : DateTime.MinValue;
         }
 
         private string GenerateEntityTag() {
-            return Convert.ToBase64String(Md5.ComputeHash(Encoding.ASCII.GetBytes($"{File.FullName}|{File.LastWriteTime}")));
+            return Convert.ToBase64String(
+                Md5.ComputeHash(Encoding.ASCII.GetBytes($"{File.FullName}|{File.LastWriteTime}")));
         }
 
         public static FileRequest Create(HttpListenerContext context, string file) {

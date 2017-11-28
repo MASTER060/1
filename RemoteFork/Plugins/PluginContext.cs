@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using Common.Logging;
+using NLog;
 using PluginApi.Plugins;
 using RemoteFork.Network;
 using RemoteFork.Requestes;
 using Unosquare.Net;
+using ILogger = PluginApi.Plugins.ILogger;
 
 namespace RemoteFork.Plugins {
     internal class PluginContext : IPluginContext {
@@ -55,34 +56,34 @@ namespace RemoteFork.Plugins {
         }
 
         internal class Logger : ILogger {
-            private readonly ILog _log;
+            private readonly NLog.ILogger _log;
 
             public Logger(string pluginName) {
                 _log = LogManager.GetLogger(pluginName);
             }
 
             public void Info(string message) {
-                _log.Info(m => m(message));
+                _log.Info(message);
             }
 
             public void Info(string format, params object[] args) {
-                _log.Info(m => m(format, args));
+                _log.Info(format, args);
             }
 
             public void Error(string message) {
-                _log.Error(m => m(message));
+                _log.Error(message);
             }
 
             public void Error(string format, params object[] args) {
-                _log.Error(m => m(format, args));
+                _log.Error(format, args);
             }
 
             public void Debug(string message) {
-                _log.Debug(m => m(message));
+                _log.Debug(message);
             }
 
             public void Debug(string format, params object[] args) {
-                _log.Debug(m => m(format, args));
+                _log.Debug(format, args);
             }
         }
     }

@@ -152,7 +152,7 @@
     <value>Неверный файл плейлиста!</value>
   </data>
   <data name="Main_No_Installed_Plugins" xml:space="preserve">
-    <value />
+    <value>Нет установленных плагинов</value>
   </data>
   <data name="Main_THVP_Already_Running" xml:space="preserve">
     <value>THVP BitTorrent уже запущен!</value>

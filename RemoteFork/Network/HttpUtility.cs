@@ -4,13 +4,13 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Common.Logging;
 using RemoteFork.Properties;
 using System.Linq;
+using NLog;
 
 namespace RemoteFork.Network {
     public static class HttpUtility {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(HttpUtility));
+        private static readonly ILogger Log = LogManager.GetLogger("HttpUtility", typeof(HttpUtility));
 
         private static readonly CookieContainer CookieContainer = new CookieContainer();
         private static bool _clearCookies;
@@ -101,7 +101,7 @@ namespace RemoteFork.Network {
                         .GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase)
                         .Substring(6) + "\\log.txt", $"{ex.Message} Error {link}{Environment.NewLine}");
 
-                Log.Error(m => m("HttpUtility->GetRequest: {0}", ex.Message));
+                Log.Error("HttpUtility->GetRequest: {0}", ex.Message);
 
                 //output.OutputStream.Close();
                 using (var writer = new System.IO.StreamWriter(output.OutputStream)) {
@@ -168,7 +168,7 @@ namespace RemoteFork.Network {
                 }
             } catch (Exception ex) {
                 Console.WriteLine($"HttpUtility->GetRequest: {ex}");
-                Log.Error(m => m("HttpUtility->GetRequest: {0}", ex.Message));
+                Log.Error("HttpUtility->GetRequest: {0}", ex.Message);
                 return ex.Message;
             }
         }
@@ -223,7 +223,7 @@ namespace RemoteFork.Network {
                     }
                 }
             } catch (Exception ex) {
-                Log.Error(m => m("HttpUtility->PostRequest: {0}", ex.Message));
+                Log.Error("HttpUtility->PostRequest: {0}", ex.Message);
                 return ex.Message;
             }
         }
@@ -245,11 +245,11 @@ namespace RemoteFork.Network {
                         if (!httpClient.DefaultRequestHeaders.TryAddWithoutValidation(h.Key, h.Value))
                             Console.WriteLine("NOT ADD");
                     } catch (Exception ex) {
-                        Log.Debug(m => m("HttpUtility->AddHeader: {0}", ex.Message));
+                        Log.Debug("HttpUtility->AddHeader: {0}", ex.Message);
                     }
                 }
             } else if (!httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(Settings.Default.UserAgent)) {
-                Log.Debug(m => m("HttpUtility->AddUserAgent: {0}", Settings.Default.UserAgent));
+                Log.Debug("HttpUtility->AddUserAgent: {0}", Settings.Default.UserAgent);
             }
         }
 
@@ -258,6 +258,8 @@ namespace RemoteFork.Network {
             try {
                 return context.ReadAsStringAsync().Result;
             } catch (Exception exception) {
+                Log.Error(exception);
+
                 Log.Info($"charset={context.Headers.ContentType.CharSet}");
                 var result = context.ReadAsByteArrayAsync().Result;
                 try {
@@ -280,7 +282,7 @@ namespace RemoteFork.Network {
                                     var encoding = Encoding.Unicode;
                                     result = Encoding.Convert(encoding, Encoding.Default, result);
                                 } catch (Exception ex) {
-                                    Log.Error(m => m("HttpUtility->ReadContext: {0}", ex.Message));
+                                    Log.Error("HttpUtility->ReadContext: {0}", ex.Message);
                                 }
                             }
                         }

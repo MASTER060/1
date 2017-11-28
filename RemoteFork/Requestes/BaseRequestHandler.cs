@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Text;
 using System.Web;
-using Common.Logging;
+using NLog;
 using RemoteFork.Server;
-using Unosquare.Labs.EmbedIO;
 using Unosquare.Net;
 
 namespace RemoteFork.Requestes {
     internal abstract class BaseRequestHandler : IRequestHandler {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(BaseRequestHandler));
+        private static readonly ILogger Log = LogManager.GetLogger("BaseRequestHandler", typeof(BaseRequestHandler));
 
         public virtual void Handle(HttpListenerContext context) {
             Console.WriteLine("SET DEFAULT HEADERS");
@@ -56,7 +54,7 @@ namespace RemoteFork.Requestes {
         }
 
         internal static void WriteResponse(HttpListenerResponse response, string responseText) {
-            Log.Debug(m => m("Response: {0}", responseText));
+            Log.Debug("Response: {0}", responseText);
 
             using (var writer = new StreamWriter(response.OutputStream)) {
                 writer.Write(responseText);

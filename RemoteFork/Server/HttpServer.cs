@@ -1,51 +1,34 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
 using Unosquare.Labs.EmbedIO;
-using Unosquare.Labs.EmbedIO.Constants;
-using Unosquare.Net;
 
 namespace RemoteFork.Server {
-    internal class HttpServer : IDisposable
-    {
-        // private static readonly ILog Log = LogManager.GetLogger(typeof(HttpServer));
-
+    internal class HttpServer : IDisposable {
+        private const byte TaskCount = 4;
         private WebServer _webServer;
 
-        private CancellationTokenSource _cts;
-        private CancellationTokenSource _cts2;
-        private CancellationTokenSource _cts3;
-        private CancellationTokenSource _cts4;
+        private readonly List<CancellationTokenSource> cancellation = new List<CancellationTokenSource>(TaskCount);
+        private readonly List<Task> tasks = new List<Task>(TaskCount);
 
-        private Task _task;
-        private Task _task2;
-        private Task _task3;
-        private Task _task4;
-
-        public HttpServer(IPAddress ip, int port)
-        {
-            try
-            {
+        public HttpServer(IPAddress ip, int port) {
+            try {
                 //Log.Info(m => m("Server start"));
-                Console.WriteLine(new UriBuilder
-                {
+                Console.WriteLine(new UriBuilder {
                     Scheme = "http",
                     Host = ip.ToString(),
                     Port = port,
                     Path = "/"
                 }.ToString());
-                _cts = new CancellationTokenSource();
-                _cts2 = new CancellationTokenSource();
-                _cts3 = new CancellationTokenSource();
-                _cts4 = new CancellationTokenSource();
+
+                for (int cIndex = 0; cIndex < TaskCount; cIndex++) {
+                    cancellation.Add(new CancellationTokenSource());
+                }
 
                 _webServer = WebServer.Create(
-                    new UriBuilder
-                    {
+                    new UriBuilder {
                         Scheme = "http",
                         Host = ip.ToString(),
                         Port = port,
@@ -54,26 +37,23 @@ namespace RemoteFork.Server {
                 );
                 _webServer.RegisterModule(new RequestDispatcher(_webServer));
 
-                _task = _webServer?.RunAsync(_cts.Token);
-                _task2 = _webServer?.RunAsync(_cts2.Token);
-                _task3 = _webServer?.RunAsync(_cts3.Token);
-                _task4 = _webServer?.RunAsync(_cts4.Token);
-            }
-            catch (Exception ex)
-            {
+                for (int tIndex = 0; tIndex < TaskCount; tIndex++) {
+                    tasks.Add(_webServer?.RunAsync(cancellation[tIndex].Token));
+                }
+            } catch (Exception ex) {
                 Console.WriteLine(ex);
             }
         }
 
-        ~HttpServer()
-        {
+        ~HttpServer() {
             Dispose(false);
         }
 
-        public void Stop()
-        {
+        public void Stop() {
             Console.WriteLine("_cts.Cancel();");
-            _webServer.Dispose();
+            if (_webServer != null) {
+                _webServer.Dispose();
+            }
             /*
             _cts.Cancel();
 
@@ -90,39 +70,36 @@ namespace RemoteFork.Server {
             */
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
+        private void Dispose(bool disposing) {
+            if (!disposing) {
                 return;
             }
 
             Stop();
 
-            if (_webServer != null)
-            {
+            if (_webServer != null) {
                 _webServer.Dispose();
                 _webServer = null;
             }
 
-            if (_cts != null)
-            {
-                _cts.Dispose();
-                _cts = null;
+            foreach (var tokenSource in cancellation) {
+                if (tokenSource != null) {
+                    tokenSource.Dispose();
+                }
             }
+            cancellation.Clear();
 
-            if (_task != null)
-            {
-                _task?.Dispose();
-                _task = null;
+            foreach (var task in tasks) {
+                if (task != null) {
+                    task.Dispose();
+                }
             }
+            tasks.Clear();
         }
-
     }
 }
