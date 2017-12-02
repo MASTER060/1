@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using NLog;
+using RemoteFork.Network;
 using RemoteFork.Plugins;
 using RemoteFork.Properties;
 using RemoteFork.Server;
@@ -35,18 +36,20 @@ namespace RemoteFork.Requestes {
 
                 foreach (var drive in drives.Where(i => Tools.CheckAccessPath(i.Name))) {
                     if (drive.IsReady) {
-                        string mainText = $"{drive.Name} ({Tools.FSize(drive.AvailableFreeSpace)} свободно из {Tools.FSize(drive.TotalSize)})";
+                        string mainText =
+                            $"{drive.Name} ({Tools.FSize(drive.AvailableFreeSpace)} свободно из {Tools.FSize(drive.TotalSize)})";
                         string subText = $"<br>Метка диска: {drive.VolumeLabel}<br>Тип носителя: {drive.DriveType}";
 
                         result.Add(new Item {
-                                       Name = mainText + subText,
-                                       Link = CreateUrl(
-                                           request,
-                                           TreePath,
-                                           new NameValueCollection {[null] = new Uri(drive.Name).AbsoluteUri}
-                                       ),
-                                       Type = ItemType.DIRECTORY
-                                   });
+                            Name = mainText + subText,
+                            Link = CreateUrl(
+                                request,
+                                TreePath,
+                                new NameValueCollection() {
+                                    {string.Empty, new Uri(drive.Name).AbsoluteUri}
+                                }),
+                            Type = ItemType.DIRECTORY
+                        });
 
                         Log.Debug($"Drive: {mainText}{subText}");
                     }
@@ -57,7 +60,10 @@ namespace RemoteFork.Requestes {
                 result.Add(
                     new Item {
                         Name = "Пользовательские ссылки",
-                        Link = CreateUrl(request, TreePath, new NameValueCollection {[null] = UserUrlsRequestHandler.ParamUrls}),
+                        Link = CreateUrl(request, TreePath,
+                            new NameValueCollection() {
+                                {string.Empty, UserUrlsRequestHandler.ParamUrls}
+                            }),
                         Type = ItemType.DIRECTORY
                     }
                 );
@@ -78,7 +84,7 @@ namespace RemoteFork.Requestes {
                 Log.Debug("Plugin: {0}", plugin.Value.Name);
             }
 
-            WriteResponse(response, ResponseSerializer.ToM3U(result.ToArray()));
+            HTTPUtility.WriteResponse(response, ResponseSerializer.ToM3U(result.ToArray()));
         }
     }
 }

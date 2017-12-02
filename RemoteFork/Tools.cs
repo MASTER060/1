@@ -20,7 +20,7 @@ namespace RemoteFork {
         }
 
         public static bool CheckAccessPath(string file) {
-            var result = true;
+            bool result = true;
 
             file = Path.GetFullPath(file);
 
@@ -50,7 +50,7 @@ namespace RemoteFork {
         }
 
         public static bool CheckHiddenFile(FileAttributes attributes) {
-            return Settings.Default.DlnaHiidenFiles &&
+            return !Settings.Default.DlnaHiidenFiles &&
                    (((attributes & FileAttributes.Hidden) == FileAttributes.Hidden) ||
                     ((attributes & FileAttributes.System) == FileAttributes.System));
         }
@@ -69,18 +69,18 @@ namespace RemoteFork {
 
         public static string FSize(long len) {
             float num = len;
-            var str = "Байт";
-            var flag = num > 102f;
+            string str = "Байт";
+            bool flag = num > 102f;
             if (flag) {
                 num /= 1024f;
                 str = "КБ";
             }
-            var flag2 = num > 102f;
+            bool flag2 = num > 102f;
             if (flag2) {
                 num /= 1024f;
                 str = "МБ";
             }
-            var flag3 = num > 102f;
+            bool flag3 = num > 102f;
             if (flag3) {
                 num /= 1024f;
                 str = "ГБ";
@@ -88,7 +88,7 @@ namespace RemoteFork {
             return Math.Round(num, 2) + str;
         }
 
-        #region File extensions
+        /*#region File extensions
 
         public static readonly IDictionary<string, string> MimeTypes =
             new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase) {
@@ -324,12 +324,11 @@ namespace RemoteFork {
             return extension.Value;
         }
 
-        #endregion File extensions
+        #endregion File extensions*/
 
         public static T Clamp<T>(this T val, T min, T max) where T : IComparable<T> {
             if (val.CompareTo(min) < 0) return min;
-            else if (val.CompareTo(max) > 0) return max;
-            else return val;
+            return val.CompareTo(max) > 0 ? max : val;
         }
     }
 }

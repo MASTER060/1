@@ -27,9 +27,9 @@
             this.mbSave = new MetroFramework.Controls.MetroButton();
             this.mbAddLink = new MetroFramework.Controls.MetroButton();
             this.mlvLinks = new MetroFramework.Controls.MetroListView();
-            this.mtbNewLink = new MetroFramework.Controls.MetroTextBox();
             this.metroContextMenu1 = new MetroFramework.Controls.MetroContextMenu(this.components);
             this.tsmiDelete = new System.Windows.Forms.ToolStripMenuItem();
+            this.mtbNewLink = new MetroFramework.Controls.MetroTextBox();
             this.mbCancel = new MetroFramework.Controls.MetroButton();
             this.metroContextMenu1.SuspendLayout();
             this.SuspendLayout();
@@ -73,6 +73,20 @@
             this.mlvLinks.UseSelectable = true;
             this.mlvLinks.View = System.Windows.Forms.View.List;
             // 
+            // metroContextMenu1
+            // 
+            this.metroContextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiDelete});
+            this.metroContextMenu1.Name = "metroContextMenu1";
+            this.metroContextMenu1.Size = new System.Drawing.Size(119, 26);
+            // 
+            // tsmiDelete
+            // 
+            this.tsmiDelete.Name = "tsmiDelete";
+            this.tsmiDelete.Size = new System.Drawing.Size(118, 22);
+            this.tsmiDelete.Text = "Удалить";
+            this.tsmiDelete.Click += new System.EventHandler(this.tsmiDelete_Click);
+            // 
             // mtbNewLink
             // 
             this.mtbNewLink.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
@@ -81,7 +95,7 @@
             // 
             // 
             this.mtbNewLink.CustomButton.Image = null;
-            this.mtbNewLink.CustomButton.Location = new System.Drawing.Point(310, 1);
+            this.mtbNewLink.CustomButton.Location = new System.Drawing.Point(618, 1);
             this.mtbNewLink.CustomButton.Name = "";
             this.mtbNewLink.CustomButton.Size = new System.Drawing.Size(21, 21);
             this.mtbNewLink.CustomButton.Style = MetroFramework.MetroColorStyle.Blue;
@@ -105,20 +119,6 @@
             this.mtbNewLink.WaterMarkColor = System.Drawing.Color.FromArgb(((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
             this.mtbNewLink.WaterMarkFont = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Pixel);
             // 
-            // metroContextMenu1
-            // 
-            this.metroContextMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiDelete});
-            this.metroContextMenu1.Name = "metroContextMenu1";
-            this.metroContextMenu1.Size = new System.Drawing.Size(119, 26);
-            // 
-            // tsmiDelete
-            // 
-            this.tsmiDelete.Name = "tsmiDelete";
-            this.tsmiDelete.Size = new System.Drawing.Size(118, 22);
-            this.tsmiDelete.Text = "Удалить";
-            this.tsmiDelete.Click += new System.EventHandler(this.tsmiDelete_Click);
-            // 
             // mbCancel
             // 
             this.mbCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -141,7 +141,6 @@
             this.Controls.Add(this.mbCancel);
             this.Controls.Add(this.mbSave);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "PlayUrl";
             this.ShowIcon = false;

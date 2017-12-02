@@ -9,10 +9,11 @@ using System.Windows.Forms;
 using RemoteFork.Network;
 using RemoteFork.Plugins;
 using RemoteFork.Properties;
-using RemoteFork.Server;
 using System.Text.RegularExpressions;
+using System.Web;
 using MetroFramework;
 using NLog;
+using RemoteFork.Server;
 
 namespace RemoteFork.Forms {
     internal partial class Main : MetroFramework.Forms.MetroForm {
@@ -25,23 +26,21 @@ namespace RemoteFork.Forms {
         #region SERVER
 
         private void StartServer() {
-            _httpServer = new HttpServer((IPAddress) mcbServerIp.SelectedItem, int.Parse(mtbServerPort.Text));
+            _httpServer = new HttpServer(mcbServerIp.SelectedItem.ToString(),
+                int.Parse(mtbServerPort.Text));
+            _httpServer.Start();
 
             ServerRegistration();
         }
 
-        private string urlnewversion = "";
-        private string newversion = "";
+        private string urlnewversion = string.Empty;
+        private string newversion = string.Empty;
 
         private void ServerRegistration() {
             toolStripStatusLabel1.Text = $"{Resources.Main_ServerRegistration}...";
-            var result = HttpUtility.GetRequest(
-                string.Format(
-                    "http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}&proxy={3}",
-                    Assembly.GetExecutingAssembly().GetName().Version,
-                    mcbServerIp.SelectedItem,
-                    mtbServerPort.Text, mcbUseProxy.Checked));
-            Console.WriteLine("http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}&proxy={3}",
+            string result = HTTPUtility.GetRequest(
+                $"http://getlist2.obovse.ru/remote/index.php?v={Assembly.GetExecutingAssembly().GetName().Version}&do=list&localip={mcbServerIp.SelectedItem}:{mtbServerPort.Text}&proxy={mcbUseProxy.Checked}");
+            Log.Debug("http://getlist2.obovse.ru/remote/index.php?v={0}&do=list&localip={1}:{2}&proxy={3}",
                 Assembly.GetExecutingAssembly().GetName().Version, mcbServerIp.SelectedItem, mtbServerPort.Text,
                 mcbUseProxy.Checked);
             if (result.Split('|')[0] == "new_version") {
@@ -158,34 +157,34 @@ namespace RemoteFork.Forms {
             toolStripStatusLabel1.Text += "...";
             //Console.WriteLine("timer");
             string result =
-                HttpUtility.GetRequest(
+                HTTPUtility.GetRequest(
                     "http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&direct&proxy=1&v=get");
             //  Console.WriteLine(result);
-            if (result.IndexOf("/parserlink") == 0) {
+            if (result.StartsWith("/parserlink")) {
                 Console.WriteLine("parserlink remote");
                 var result2 = string.Empty;
 
-                var requestStrings = System.Web.HttpUtility.UrlDecode(result.Substring(12)).Split('|');
-                var Handle = new Requestes.ParseLinkRequestHandler();
+                var requestStrings = HttpUtility.UrlDecode(result.Substring(12)).Split('|');
+                var handle = new Requestes.ParseLinkRequestHandler();
                 if (requestStrings != null) {
                     Console.WriteLine("Parsing: {0}", requestStrings[0]);
 
                     string curlResponse = requestStrings[0].StartsWith("curl")
-                        ? Handle.CurlRequest(System.Web.HttpUtility.UrlDecode(requestStrings[0]))
-                        : HttpUtility.GetRequest(requestStrings[0]);
+                        ? handle.CurlRequest(HttpUtility.UrlDecode(requestStrings[0]))
+                        : HTTPUtility.GetRequest(requestStrings[0]);
                     //Console.WriteLine("Response original " + curlResponse);
                     if (requestStrings.Length == 1) {
                         result2 = curlResponse;
                     } else {
-                        requestStrings[1] = System.Web.HttpUtility.UrlDecode(requestStrings[1]);
-                        requestStrings[2] = System.Web.HttpUtility.UrlDecode(requestStrings[2]);
+                        requestStrings[1] = HttpUtility.UrlDecode(requestStrings[1]);
+                        requestStrings[2] = HttpUtility.UrlDecode(requestStrings[2]);
                         Console.WriteLine("1: {0}", requestStrings[1]);
                         Console.WriteLine("2: {0}", requestStrings[2]);
                         if (!requestStrings[1].Contains(".*?")) {
                             if (string.IsNullOrEmpty(requestStrings[1]) && string.IsNullOrEmpty(requestStrings[2])) {
                                 result2 = curlResponse;
                             } else {
-                                var num1 = curlResponse.IndexOf(requestStrings[1], StringComparison.Ordinal);
+                                int num1 = curlResponse.IndexOf(requestStrings[1], StringComparison.Ordinal);
                                 if (num1 == -1) {
                                     result2 = string.Empty;
                                 } else {
@@ -206,10 +205,10 @@ namespace RemoteFork.Forms {
                     }
                     //Console.WriteLine("result="+result2);
                     string xu = "http://195.88.208.101/obovse.ru/smarttv/api.php?do=xhrremote2&proxy=1&v=post&u=" +
-                                System.Web.HttpUtility.UrlEncode(result);
+                                HttpUtility.UrlEncode(result);
                     Console.WriteLine(xu);
                     Console.WriteLine(
-                        $"answ={HttpUtility.PostRequest(xu, "s=" + System.Web.HttpUtility.UrlEncode(result2))}");
+                        $"answ={HTTPUtility.PostRequest(xu, "s=" + HttpUtility.UrlEncode(result2))}");
                 }
             }
 
@@ -290,13 +289,10 @@ namespace RemoteFork.Forms {
 
                 mbStartServer.Enabled = false;
                 mbStopServer.Enabled = true;
-                toolStripStatusLabel1.Text = $"{Resources.Main_Starting_Server}: OK";
-
-
-
-            } catch (Exception ex) {
+                toolStripStatusLabel1.Text = $"{Resources.Main_Starting_Server}: OK"; 
+            } catch (Exception exception) {
                 toolStripStatusLabel1.Text = Resources.Main_Error;
-                Log.Error(ex, "StartServer->Error");
+                Log.Error(exception);
             }
         }
 
@@ -308,9 +304,9 @@ namespace RemoteFork.Forms {
                 mbStartServer.Enabled = true;
                 mbStopServer.Enabled = false;
                 toolStripStatusLabel1.Text = $"{Resources.Main_Stopping_Server}: OK";
-            } catch (Exception ex) {
+            } catch (Exception exception) {
                 toolStripStatusLabel1.Text = Resources.Main_Error;
-                Log.Error(ex, "StopServer->Error");
+                Log.Error(exception);
             }
         }
 
@@ -519,7 +515,7 @@ namespace RemoteFork.Forms {
             Settings.Default.LogLevel = (byte)cb.SelectedIndex;
             Settings.Default.Save();
 
-            NLog.LogManager.GlobalThreshold = AppLogLevel.FromOrdinal(cb.SelectedIndex);
+            LogManager.GlobalThreshold = AppLogLevel.FromOrdinal(cb.SelectedIndex);
         }
 
         private void mtbFileBufferSize_ValueChanged(object sender, EventArgs e) {
@@ -574,8 +570,8 @@ namespace RemoteFork.Forms {
                     var url = "http://forkplayer.tv/remote/index.php?do=uploadfile&fname=" + openFileDialog1.FileName +
                               "&initial=" + clickedItem.Tag;
 
-                    var data = "text=" + System.Web.HttpUtility.UrlEncode(text);
-                    var text2 = HttpUtility.PostRequest(url, data);
+                    var data = "text=" + HttpUtility.UrlEncode(text);
+                    var text2 = HTTPUtility.PostRequest(url, data);
 
                     MetroMessageBox.Show(this, text2);
                 } else {

@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Web;
 using RemoteFork.Forms;
+using RemoteFork.Network;
 using Unosquare.Net;
 
 namespace RemoteFork.Requestes {
@@ -8,18 +9,19 @@ namespace RemoteFork.Requestes {
         internal static readonly string UrlPath = "/test";
 
         public override void Handle(HttpListenerRequest request, HttpListenerResponse response) {
-            var rawUrl = HttpUtility.UrlDecode(request.RawUrl);
+            //string rawUrl = HttpUtility.UrlDecode(request.Url.PathAndQuery);
 
-            if (rawUrl != null && rawUrl.IndexOf('|') > 0) {
+            if (HttpUtility.UrlDecode(request.Url.Query).Contains("|")) {
                 Properties.Settings.Default.proxy = false;
-                var device = rawUrl.Replace("/test?", "");
+                string device = request.Url.Query.Substring(1);
 
                 if (!Main.Devices.Contains(device)) {
                     Main.Devices.Add(device);
                 }
             }
 
-            WriteResponse(response, $"<html><h1>ForkPlayer DLNA Work!</h1><br><b>RemoteFork Server. v. {Assembly.GetExecutingAssembly().GetName().Version}</b> with Ace Stream</html>");
+            HTTPUtility.WriteResponse(response,
+                $"<html><h1>ForkPlayer DLNA Work!</h1><br><b>RemoteFork Server. v. {Assembly.GetExecutingAssembly().GetName().Version}</b> with Ace Stream</html>");
         }
     }
 }

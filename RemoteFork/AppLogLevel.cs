@@ -1,20 +1,21 @@
 ﻿using NLog;
 
 namespace RemoteFork {
-    class AppLogLevel {
-        private const int None = 0,
-                          Info = 1,
-                          Error = 2,
-                          Debug = 3;
+    internal class AppLogLevel {
+        private const int NONE = 0,
+                          INFO = 1,
+                          ERROR = 2,
+                          DEBUG = 3;
 
         public static LogLevel FromOrdinal(int ordinal) {
             switch (ordinal) {
-                case Info:
+                case INFO:
                     return LogLevel.Info;
-                case Error:
+                case ERROR:
                     return LogLevel.Error;
-                case Debug:
+                case DEBUG:
                     return LogLevel.Debug;
+                case NONE:
                 default:
                     return LogLevel.Off;
             }

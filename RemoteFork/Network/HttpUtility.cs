@@ -1,25 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Net;
-using System.Net.Http;
+using System.IO;
 using System.Text;
 using RemoteFork.Properties;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web;
 using NLog;
+using HttpListenerResponse = Unosquare.Net.HttpListenerResponse;
 
 namespace RemoteFork.Network {
-    public static class HttpUtility {
-        private static readonly ILogger Log = LogManager.GetLogger("HttpUtility", typeof(HttpUtility));
+    public static class HTTPUtility {
+        private static readonly ILogger Log = LogManager.GetLogger("HttpUtility", typeof(HTTPUtility));
 
         private static readonly CookieContainer CookieContainer = new CookieContainer();
         private static bool _clearCookies;
-        private static System.IO.StreamReader stream;
+        private static StreamReader stream;
 
-        public static void GetByteRequest(Unosquare.Net.HttpListenerResponse output, string link,
+        public static void GetByteRequest(HttpListenerResponse response, string link,
             Dictionary<string, string> header = null, bool wcc = false) {
             try {
-                Console.WriteLine("GetByteRequest");
+                Log.Debug("HttpUtility->GetByteRequest");
                 HttpWebRequest wc = null;
                 if (wcc) {
                     wc = (HttpWebRequest) WebRequest.Create(link);
@@ -29,7 +32,6 @@ namespace RemoteFork.Network {
                 if (header != null) {
                     foreach (var h in header) {
                         try {
-                            Console.WriteLine($"{h.Key} set={h.Value}");
                             if (h.Key == "Cookie") {
                                 _clearCookies = true;
                                 CookieContainer.SetCookies(new Uri(link), h.Value.Replace(";", ","));
@@ -40,35 +42,25 @@ namespace RemoteFork.Network {
                                     if (x.Length == 1) wc.AddRange(Convert.ToInt64(x[0]));
                                     else if (x.Length == 2) {
                                         if (string.IsNullOrEmpty(x[1])) {
-                                            Console.WriteLine(x[0]);
                                             if (Convert.ToInt64(x[0]) > 0) wc.AddRange(Convert.ToInt64(x[0]));
                                         } else wc.AddRange(Convert.ToInt64(x[0]), Convert.ToInt64(x[1]));
                                     }
                                 } else wc.Headers.Add(h.Key, h.Value);
                             }
                         } catch (Exception ex) {
-                            Console.WriteLine($"Er getbyte h {ex}");
-                            string directoryName = System.IO.Path
-                                .GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName()
-                                    .CodeBase);
-                            if (directoryName != null)
-                                System.IO.File.AppendAllText(
-                                    directoryName.Substring(6) + "\\log.txt",
-                                    $"{ex.Message} Error h {link}{Environment.NewLine}");
+                            Log.Error(ex);
                         }
                     }
                 }
                 if (wcc) {
-                    var resp = (HttpWebResponse) wc.GetResponse();
-                    Console.WriteLine(resp.Headers);
-                    if (!string.IsNullOrEmpty(resp.Headers["Content-Length"]))
-                        output.ContentLength64 = Convert.ToInt64(resp.Headers["Content-Length"]);
+                    var response1 = (HttpWebResponse) wc.GetResponse();
+                    Log.Debug(response1.Headers);
+                    if (!string.IsNullOrEmpty(response1.Headers["Content-Length"]))
+                        response.ContentLength64 = Convert.ToInt64(response1.Headers["Content-Length"]);
 
-                    Console.WriteLine("wc stream");
-                    stream = new System.IO.StreamReader(resp.GetResponseStream());
-                    stream.BaseStream.CopyTo(output.OutputStream);
+                    stream = new StreamReader(response1.GetResponseStream());
+                    stream.BaseStream.CopyTo(response.OutputStream);
                 } else {
-                    Console.WriteLine("HttpClientHandler stream");
                     using (var handler = new HttpClientHandler()) {
                         SetHandler(handler);
                         using (var httpClient = new HttpClient(handler)) {
@@ -77,38 +69,39 @@ namespace RemoteFork.Network {
                             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                             ServicePointManager.ServerCertificateValidationCallback +=
                                 (sender, cert, chain, sslPolicyErrors) => { return true; };
-                            var response = httpClient.GetAsync(link).Result;
-                            var r = response.Content.ReadAsByteArrayAsync().Result;
-                            Console.WriteLine($"Len {r.Length}");
-                            //  Console.WriteLine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase).Substring(6) + "\\log.txt");
-                            // System.IO.File.AppendAllText(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase).Substring(6)+"\\log.txt", r.Length +"byte  "+ link+Environment.NewLine);
+                            var response2 = httpClient.GetAsync(link).Result;
+                            var r = response2.Content.ReadAsByteArrayAsync().Result;
 
                             if (r.Length > 0) {
-                                output.ContentLength64 = r.Length;
-                                output.OutputStream.Write(r, 0, r.Length);
-
+                                response.ContentLength64 = r.Length;
+                                response.OutputStream.Write(r, 0, r.Length);
                             }
-
                         }
                     }
                 }
+            } catch (Exception exception) {
+                Log.Error(exception);
 
-
-            } catch (Exception ex) {
-                Console.WriteLine($"Er getbyte{ex}");
-                System.IO.File.AppendAllText(
-                    System.IO.Path
-                        .GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase)
-                        .Substring(6) + "\\log.txt", $"{ex.Message} Error {link}{Environment.NewLine}");
-
-                Log.Error("HttpUtility->GetRequest: {0}", ex.Message);
-
-                //output.OutputStream.Close();
-                using (var writer = new System.IO.StreamWriter(output.OutputStream)) {
-                    writer.Write(ex.ToString());
-                }
-
+                WriteResponse(response, exception.ToString());
             }
+        }
+
+        internal static void WriteResponse(HttpListenerResponse response, string data) {
+            Log.Debug("Response: {0}", data);
+
+            try {
+                using (var writer = new StreamWriter(response.OutputStream)) {
+                    writer.Write(data);
+                    writer.Flush();
+                }
+            } catch (Exception exception) {
+                Log.Error(exception);
+            }
+        }
+
+        internal static void WriteResponse(HttpListenerResponse response, HttpStatusCode status, string responseText) {
+            response.StatusCode = (int) status;
+            WriteResponse(response, responseText);
         }
 
         public static string GetRequest(string link, Dictionary<string, string> header = null, bool verbose = false,
@@ -132,7 +125,7 @@ namespace RemoteFork.Network {
                         Console.WriteLine($"Get {link}");
                         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                         ServicePointManager.ServerCertificateValidationCallback +=
-                            (sender, cert, chain, sslPolicyErrors) => { return true; };
+                            (sender, cert, chain, sslPolicyErrors) => true;
                         var response = httpClient.GetAsync(link).Result;
 
                         if (_clearCookies) {
@@ -157,8 +150,8 @@ namespace RemoteFork.Network {
                                     }
 
                                 }
-                            } catch (Exception e) {
-                                Console.WriteLine($"Err get headers: {e}");
+                            } catch (Exception exception) {
+                                Log.Error(exception);
                             }
                             return string.Format("{0}\n{1}", sh, ReadContext(response.Content));
                         } else {
@@ -166,10 +159,10 @@ namespace RemoteFork.Network {
                         }
                     }
                 }
-            } catch (Exception ex) {
-                Console.WriteLine($"HttpUtility->GetRequest: {ex}");
-                Log.Error("HttpUtility->GetRequest: {0}", ex.Message);
-                return ex.Message;
+            } catch (Exception exception) {
+                Console.WriteLine($"HttpUtility->GetRequest: {exception}");
+                Log.Error("HttpUtility->GetRequest: {0}", exception.Message);
+                return exception.Message;
             }
         }
 
@@ -192,12 +185,11 @@ namespace RemoteFork.Network {
                     using (var httpClient = new HttpClient(handler)) {
                         AddHeader(httpClient, header);
 
-                        //HttpContent content = new FormUrlEncodedContent(data);
                         var queryString =
                             new StringContent(data, Encoding.UTF8, "application/x-www-form-urlencoded");
                         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                         ServicePointManager.ServerCertificateValidationCallback +=
-                            (sender, cert, chain, sslPolicyErrors) => { return true; };
+                            (sender, cert, chain, sslPolicyErrors) => true;
                         var response = httpClient.PostAsync(link, queryString).Result;
                         if (_clearCookies) {
                             var cookies = handler.CookieContainer.GetCookies(new Uri(link));
@@ -214,17 +206,16 @@ namespace RemoteFork.Network {
                                     Console.WriteLine($"{i.Key}: {j}");
                                     sh += i.Key + ": " + j + "\n";
                                 }
-
                             }
-                            return string.Format("{0}\n{1}", sh, ReadContext(response.Content));
+                            return $"{sh}\n{ReadContext(response.Content)}";
                         } else {
                             return ReadContext(response.Content);
                         }
                     }
                 }
-            } catch (Exception ex) {
-                Log.Error("HttpUtility->PostRequest: {0}", ex.Message);
-                return ex.Message;
+            } catch (Exception exception) {
+                Log.Error(exception);
+                return exception.Message;
             }
         }
 
@@ -242,8 +233,9 @@ namespace RemoteFork.Network {
                         Console.WriteLine($"{h.Key} set={h.Value}");
                         //if(h.Key== "Content-Type") httpClient.DefaultRequestHeaders.Add(h.Key, h.Value);
                         // else 
-                        if (!httpClient.DefaultRequestHeaders.TryAddWithoutValidation(h.Key, h.Value))
+                        if (!httpClient.DefaultRequestHeaders.TryAddWithoutValidation(h.Key, h.Value)) {
                             Console.WriteLine("NOT ADD");
+                        }
                     } catch (Exception ex) {
                         Log.Debug("HttpUtility->AddHeader: {0}", ex.Message);
                     }
@@ -257,8 +249,8 @@ namespace RemoteFork.Network {
 
             try {
                 return context.ReadAsStringAsync().Result;
-            } catch (Exception exception) {
-                Log.Error(exception);
+            } catch (Exception exception1) {
+                Log.Error(exception1);
 
                 Log.Info($"charset={context.Headers.ContentType.CharSet}");
                 var result = context.ReadAsByteArrayAsync().Result;
@@ -281,8 +273,8 @@ namespace RemoteFork.Network {
                                 try {
                                     var encoding = Encoding.Unicode;
                                     result = Encoding.Convert(encoding, Encoding.Default, result);
-                                } catch (Exception ex) {
-                                    Log.Error("HttpUtility->ReadContext: {0}", ex.Message);
+                                } catch (Exception exception2) {
+                                    Log.Error("HttpUtility->ReadContext: {0}", exception2.Message);
                                 }
                             }
                         }
@@ -292,38 +284,14 @@ namespace RemoteFork.Network {
             }
         }
 
-        public static string QueryParametersToString(NameValueCollection query) {
-            if ((query == null) || (query.Count == 0)) {
+        public static string QueryParametersToString(NameValueCollection queries) {
+            if ((queries == null) || (queries.Count == 0)) {
                 return string.Empty;
             }
 
-            var sb = new StringBuilder();
+            string query = string.Join("&", queries.AllKeys.Select(a => a + "=" + HttpUtility.UrlEncode(queries[a])));
 
-            for (int i = 0; i < query.Count; i++) {
-                string key = System.Web.HttpUtility.UrlEncode(query.GetKey(i));
-                string keyPrefix = key != null ? key + "=" : string.Empty;
-                var values = query.GetValues(i);
-
-                if (sb.Length > 0) {
-                    sb.Append('&');
-                }
-
-                if ((values == null) || (values.Length == 0)) {
-                    sb.Append(keyPrefix);
-                } else if (values.Length == 1) {
-                    sb.Append(keyPrefix).Append(System.Web.HttpUtility.UrlEncode(values[0]));
-                } else {
-                    for (int j = 0; j < values.Length; j++) {
-                        if (j > 0) {
-                            sb.Append('&');
-                        }
-
-                        sb.Append(keyPrefix).Append(System.Web.HttpUtility.UrlEncode(values[j]));
-                    }
-                }
-            }
-
-            return sb.ToString();
+            return query;
         }
     }
 }

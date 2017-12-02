@@ -3,17 +3,22 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Net;
 using NLog;
+using RemoteFork.Network;
 using RemoteFork.Plugins;
 using RemoteFork.Server;
-using Unosquare.Net;
+using HttpListenerRequest = Unosquare.Net.HttpListenerRequest;
+using HttpListenerResponse = Unosquare.Net.HttpListenerResponse;
 
 namespace RemoteFork.Requestes {
     internal class DlnaDirectoryRequestHandler : BaseRequestHandler {
-        private static readonly ILogger Log = LogManager.GetLogger("DlnaDirectoryRequestHandler", typeof(DlnaDirectoryRequestHandler));
+        private static readonly ILogger Log =
+            LogManager.GetLogger("DlnaDirectoryRequestHandler", typeof(DlnaDirectoryRequestHandler));
 
         public override void Handle(HttpListenerRequest request, HttpListenerResponse response) {
-            string rootDirectory = request.QueryString.GetValues(null)?.FirstOrDefault(s => s.StartsWith(Uri.UriSchemeFile));
+            string rootDirectory = request.QueryString.GetValues(string.Empty)
+                ?.FirstOrDefault(s => s.StartsWith(Uri.UriSchemeFile));
 
             if (!string.IsNullOrEmpty(rootDirectory)) {
                 rootDirectory = new Uri(rootDirectory).LocalPath;
@@ -37,7 +42,9 @@ namespace RemoteFork.Requestes {
                         new Item {
                             Name = $"{file.Name} ({Tools.FSize(file.Length)})",
                             Link = CreateUrl(request, RootRequestHandler.RootPath,
-                                new NameValueCollection { [null] = new Uri(file.FullName).AbsoluteUri }),
+                                new NameValueCollection() {
+                                    {string.Empty, new Uri(file.FullName).AbsoluteUri}
+                                }),
                             Type = ItemType.FILE
                         }
                     );
@@ -45,11 +52,11 @@ namespace RemoteFork.Requestes {
                     Log.Debug("File: {0}", file);
                 }
 
-                WriteResponse(response, ResponseSerializer.ToM3U(result.ToArray()));
+                HTTPUtility.WriteResponse(response, ResponseSerializer.ToM3U(result.ToArray()));
             } else {
                 Log.Debug("Directory Not Found: {0}", rootDirectory);
 
-                WriteResponse(response, HttpStatusCode.NotFound, $"Directory Not Found: {rootDirectory}");
+                HTTPUtility.WriteResponse(response, HttpStatusCode.NotFound, $"Directory Not Found: {rootDirectory}");
             }
         }
 
@@ -64,7 +71,9 @@ namespace RemoteFork.Requestes {
                 Link = CreateUrl(
                     request,
                     RootRequestHandler.TreePath,
-                    new NameValueCollection {[null] = new Uri(directory.FullName + Path.DirectorySeparatorChar).AbsoluteUri}
+                    new NameValueCollection() {
+                        {string.Empty, new Uri(directory.FullName + Path.DirectorySeparatorChar).AbsoluteUri}
+                    }
                 ),
                 Type = ItemType.DIRECTORY
             };

@@ -10,7 +10,7 @@ using ILogger = PluginApi.Plugins.ILogger;
 
 namespace RemoteFork.Plugins {
     internal class PluginContext : IPluginContext {
-        private readonly IHTTPClient _httpClient = new HttpClient();
+        private readonly HttpClient _httpClient = new HttpClient();
 
         private readonly ILogger _logger;
 
@@ -33,25 +33,25 @@ namespace RemoteFork.Plugins {
             return PluginRequestHandler.CreatePluginUrl(_request, _pluginName, parameters);
         }
 
-        public void ConsoleLog(string s)
-        {
+        public void ConsoleLog(string s) {
             Console.WriteLine(s);
         }
 
-        public IHTTPClient GetHttpClient() {
+        public IHttpClient GetHttpClient() {
             return _httpClient;
         }
+
         public ILogger GetLogger() {
             return _logger;
         }
 
-        internal class HttpClient : IHTTPClient {
+        internal class HttpClient : IHttpClient {
             public string GetRequest(string link, Dictionary<string, string> header = null) {
-                return HttpUtility.GetRequest(link, header);
+                return HTTPUtility.GetRequest(link, header);
             }
 
             public string PostRequest(string link, string data, Dictionary<string, string> header = null) {
-                return HttpUtility.PostRequest(link, data, header);
+                return HTTPUtility.PostRequest(link, data, header);
             }
         }
 

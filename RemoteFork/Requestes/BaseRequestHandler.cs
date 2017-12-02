@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.IO;
 using System.Web;
 using NLog;
-using RemoteFork.Server;
 using Unosquare.Net;
 
 namespace RemoteFork.Requestes {
@@ -16,21 +14,22 @@ namespace RemoteFork.Requestes {
 
             Handle(context.Request, context.Response);
         }
-        public virtual void Handle(HttpListenerContext context,bool datatype) {                
-            if (!datatype)
-            {
+
+        public virtual void Handle(HttpListenerContext context, bool datatype) {
+            if (!datatype) {
                 SetDefaultReponseHeaders(context.Response);
-            }
-            else Console.WriteLine("NO DEFAULT HEADERS");
+            } else Console.WriteLine("NO DEFAULT HEADERS");
             Handle(context.Request, context.Response);
         }
-        public virtual void Handle(HttpListenerRequest request, HttpListenerResponse response) { }
+
+        public virtual void Handle(HttpListenerRequest request, HttpListenerResponse response) {
+        }
 
         protected virtual void SetDefaultReponseHeaders(HttpListenerResponse response) {
-            response.SendChunked = false;
+            //response.SendChunked = false;
             //response.ContentEncoding = Encoding.UTF8;
 
-           // response.Headers.Add("Connection", "Close");
+            //response.Headers.Add("Connection", "Close");
             response.ContentType = "text/html";
         }
 
@@ -49,22 +48,8 @@ namespace RemoteFork.Requestes {
                 Host = request.Url.Host,
                 Port = request.Url.Port,
                 Path = HttpUtility.UrlPathEncode(path),
-                Query = Network.HttpUtility.QueryParametersToString(query)
+                Query = Network.HTTPUtility.QueryParametersToString(query)
             }.ToString();
-        }
-
-        internal static void WriteResponse(HttpListenerResponse response, string responseText) {
-            Log.Debug("Response: {0}", responseText);
-
-            using (var writer = new StreamWriter(response.OutputStream)) {
-                writer.Write(responseText);
-            }
-        }
-
-        internal static void WriteResponse(HttpListenerResponse response, HttpStatusCode status, string responseText) {
-            response.StatusCode = status.ToInteger();
-
-            WriteResponse(response, responseText);
         }
     }
 }

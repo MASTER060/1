@@ -240,5 +240,17 @@ namespace RemoteFork.Properties {
                 this["AutoStartServer"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("6878")]
+        public short AceStreamPort {
+            get {
+                return ((short)(this["AceStreamPort"]));
+            }
+            set {
+                this["AceStreamPort"] = value;
+            }
+        }
     }
 }

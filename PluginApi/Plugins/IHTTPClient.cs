@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace PluginApi.Plugins
 {
-    public interface IHTTPClient
+    public interface IHttpClient
     {
         string GetRequest(string link, Dictionary<string, string> header = null);
 

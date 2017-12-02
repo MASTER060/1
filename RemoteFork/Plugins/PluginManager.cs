@@ -10,27 +10,22 @@ using Microsoft.VisualBasic;
 using NLog;
 using RemoteFork.Properties;
 
-namespace RemoteFork.Plugins
-{
-    internal class PluginManager
-    {
+namespace RemoteFork.Plugins {
+    internal class PluginManager {
         private static readonly ILogger Log = LogManager.GetLogger("PluginManager", typeof(PluginManager));
 
         public static readonly PluginManager Instance = new PluginManager();
 
         private readonly Dictionary<string, PluginInstance> plugins = new Dictionary<string, PluginInstance>();
 
-        private PluginManager()
-        {
+        private PluginManager() {
             LoadPlugins();
         }
 
-        public static Assembly CompileAssemblyCS(string sourceFile)
-        {
+        public static Assembly CompileAssemblyCS(string sourceFile) {
             var codeProvider = new CSharpCodeProvider();
 
-            var compilerParameters = new CompilerParameters
-            {
+            var compilerParameters = new CompilerParameters {
                 GenerateExecutable = false,
                 GenerateInMemory = true,
                 IncludeDebugInformation = true
@@ -44,31 +39,29 @@ namespace RemoteFork.Plugins
 
             var result = codeProvider.CompileAssemblyFromFile(compilerParameters, sourceFile);
 
-            var hasCompileErrors = false;
-            foreach (CompilerError ce in result.Errors)
-            {
-                if(!ce.IsWarning) Console.WriteLine(ce.FileName + ce.Line + ce.Column + ce.IsWarning + ce.ErrorNumber + ce.ErrorText);
-                Log.Debug("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column, ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText);
-
+            bool hasCompileErrors = false;
+            foreach (CompilerError ce in result.Errors) {
                 if (!ce.IsWarning)
-                {
+                    Console.WriteLine(ce.FileName + ce.Line + ce.Column + ce.IsWarning + ce.ErrorNumber + ce.ErrorText);
+                Log.Debug("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column,
+                    ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText);
+
+                if (!ce.IsWarning) {
                     hasCompileErrors = true;
                 }
             }
 
-            if (hasCompileErrors)
-            {
+            if (hasCompileErrors) {
                 throw new ApplicationException("Compile errors occured, see debug log for more details.");
             }
 
             return result.CompiledAssembly;
         }
-        public static Assembly CompileAssemblyVB(string sourceFile)
-        {
+
+        public static Assembly CompileAssemblyVB(string sourceFile) {
             var codeProvider = new VBCodeProvider();
 
-            var compilerParameters = new CompilerParameters
-            {
+            var compilerParameters = new CompilerParameters {
                 GenerateExecutable = false,
                 GenerateInMemory = true,
                 IncludeDebugInformation = true
@@ -82,102 +75,80 @@ namespace RemoteFork.Plugins
 
             var result = codeProvider.CompileAssemblyFromFile(compilerParameters, sourceFile);
 
-            var hasCompileErrors = false;
-            foreach (CompilerError ce in result.Errors)
-            {
-                Log.Debug("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column, ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText);
+            bool hasCompileErrors = false;
+            foreach (CompilerError ce in result.Errors) {
+                Log.Debug("{0}({1},{2}): {3} {4}: {5}", ce.FileName, ce.Line, ce.Column,
+                    ce.IsWarning ? "warning" : "error", ce.ErrorNumber, ce.ErrorText);
 
-                if (!ce.IsWarning)
-                {
+                if (!ce.IsWarning) {
                     hasCompileErrors = true;
                 }
             }
 
-            if (hasCompileErrors)
-            {
+            if (hasCompileErrors) {
                 throw new ApplicationException("Compile errors occured, see debug log for more details.");
             }
 
             return result.CompiledAssembly;
         }
-        private void LoadPlugins()
-        {
-            var pathPlugins = Path.Combine(Environment.CurrentDirectory, "Plugins");
 
-            if (Directory.Exists(pathPlugins))
-            {
+        private void LoadPlugins() {
+            string pathPlugins = Path.Combine(Environment.CurrentDirectory, "Plugins");
+
+            if (Directory.Exists(pathPlugins)) {
                 LoadScriptsCS(pathPlugins);
                 LoadScriptsVB(pathPlugins);
                 LoadAssemblies(pathPlugins);
             }
         }
 
-        private void LoadAssemblies(string pathPlugins)
-        {
+        private void LoadAssemblies(string pathPlugins) {
             var dir = new DirectoryInfo(pathPlugins);
 
-            foreach (var file in dir.GetFiles("*.dll"))
-            {
-                try
-                {
+            foreach (var file in dir.GetFiles("*.dll")) {
+                try {
                     LoadAssembly(Assembly.LoadFrom(file.FullName), GetChecksum(file.FullName));
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Log.Error("LoadPlugins->{0}: {1}", file, e);
                 }
             }
         }
 
-        private void LoadScriptsCS(string pathPlugins)
-        {
+        private void LoadScriptsCS(string pathPlugins) {
             var files = Directory.GetFiles(pathPlugins, "*.cs");
 
-            foreach (var file in files)
-            {
-                try
-                {
+            foreach (string file in files) {
+                try {
                     LoadAssembly(CompileAssemblyCS(file), GetChecksum(file));
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     Log.Error("LoadPlugins->{0}: {1}", file, ex);
                 }
             }
         }
 
-   private void LoadScriptsVB(string pathPlugins)
-        {
+        private void LoadScriptsVB(string pathPlugins) {
             var files = Directory.GetFiles(pathPlugins, "*.vb");
 
-            foreach (var file in files)
-            {
-                try
-                {
-                  LoadAssembly(CompileAssemblyVB(file), GetChecksum(file));
-                }
-                catch (Exception ex)
-                {
+            foreach (string file in files) {
+                try {
+                    LoadAssembly(CompileAssemblyVB(file), GetChecksum(file));
+                } catch (Exception ex) {
                     Log.Error("LoadPlugins->{0}: {1}", file, ex);
                 }
             }
         }
-        private void LoadAssembly(Assembly assembly, string hash)
-        {
-            foreach (var type in assembly.GetExportedTypes())
-            {
-                if (typeof(IPlugin).IsAssignableFrom(type) && (type.IsAbstract == false))
-                {
+
+        private void LoadAssembly(Assembly assembly, string hash) {
+            foreach (var type in assembly.GetExportedTypes()) {
+                if (typeof(IPlugin).IsAssignableFrom(type) && (type.IsAbstract == false)) {
                     var attributes = type.GetCustomAttributes(true);
 
-                    if (attributes.Length > 0)
-                    {
-                        var attribute = (PluginAttribute)attributes.FirstOrDefault(i => i.GetType() == typeof(PluginAttribute));
-                        if (attribute != null)
-                        {
+                    if (attributes.Length > 0) {
+                        var attribute =
+                            (PluginAttribute) attributes.FirstOrDefault(i => i.GetType() == typeof(PluginAttribute));
+                        if (attribute != null) {
                             var plugin = new PluginInstance(hash, assembly, type, attribute);
-                            if (!plugins.ContainsKey(plugin.Id))
-                            {
+                            if (!plugins.ContainsKey(plugin.Id)) {
                                 plugins.Add(plugin.Id, plugin);
 
                                 Log.Debug("Loaded plugin [id: {0}, name: {1}, type: {2}, version: {3}]",
@@ -193,43 +164,37 @@ namespace RemoteFork.Plugins
             }
         }
 
-        private static string GetChecksum(string file)
-        {
-            using (var stream = File.OpenRead(file))
-            {
+        private static string GetChecksum(string file) {
+            using (var stream = File.OpenRead(file)) {
                 var sha = new SHA256Managed();
                 var checksum = sha.ComputeHash(stream);
                 return BitConverter.ToString(checksum).Replace("-", string.Empty);
             }
         }
 
-        public void ReimportPlugins()
-        {
+        public void ReimportPlugins() {
             plugins.Clear();
             LoadPlugins();
         }
 
-        public void RemovePlugin(string name)
-        {
+        public void RemovePlugin(string name) {
             if (plugins.ContainsKey(name))
                 plugins.Remove(name);
         }
 
-        public Dictionary<string, PluginInstance> GetPlugins(bool filtering = true)
-        {
-            if (filtering)
-            {
+        public Dictionary<string, PluginInstance> GetPlugins(bool filtering = true) {
+            if (filtering) {
                 var dict = new Dictionary<string, PluginInstance>();
 
-                if (Settings.Default.Plugins && (Settings.Default.EnablePlugins != null))
-                {
+                if (Settings.Default.Plugins && (Settings.Default.EnablePlugins != null)) {
 #if DEBUG
                     foreach (var plugin in plugins)
                     {
                         dict.Add(plugin.Key, plugin.Value);
                     }
 #else
-                    foreach (var plugin in plugins.Where(plugin => Settings.Default.EnablePlugins.Contains(plugin.Value.Key))) {
+                    foreach (var plugin in plugins.Where(
+                        plugin => Settings.Default.EnablePlugins.Contains(plugin.Value.Key))) {
                         dict.Add(plugin.Key, plugin.Value);
                     }
 #endif
@@ -240,12 +205,9 @@ namespace RemoteFork.Plugins
             return plugins;
         }
 
-        public PluginInstance GetPlugin(string id)
-        {
-            if (plugins.ContainsKey(id))
-            {
-                if (Settings.Default.Plugins && (Settings.Default.EnablePlugins != null))
-                {
+        public PluginInstance GetPlugin(string id) {
+            if (plugins.ContainsKey(id)) {
+                if (Settings.Default.Plugins && (Settings.Default.EnablePlugins != null)) {
 #if DEBUG
                     return plugins[id];
 #else
