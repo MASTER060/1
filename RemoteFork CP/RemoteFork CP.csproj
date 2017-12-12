@@ -38,10 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\remote_fork_plugins\RemoteFork_Plugins\RemoteFork_Plugins.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -64,6 +60,10 @@
 
   <ItemGroup>
     <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\remote_fork_plugins\RemoteFork_Plugins\RemoteFork_Plugins.csproj" />
   </ItemGroup>
 
 </Project>

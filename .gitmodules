@@ -1,0 +1,3 @@
+[submodule "remote_fork_plugins"]
+	path = remote_fork_plugins
+	url = git@github.com:ShutovPS/remote_fork_plugins.git
