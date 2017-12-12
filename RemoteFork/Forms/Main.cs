@@ -128,9 +128,15 @@ namespace RemoteFork.Forms {
             try {
                 var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
                     @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run\", true);
-                if (key.GetValue("RemoteFork") != null) key.DeleteValue("RemoteFork");
-                if (mcbAutoStartWindows.Checked) {
-                    key.SetValue("RemoteFork", Application.ExecutablePath);
+                if (key != null) {
+                    if (mcbAutoStartWindows.Checked) {
+                        key.SetValue("RemoteFork", Application.ExecutablePath);
+                    } else {
+                        if (key.GetValue("RemoteFork") != null) {
+                            key.DeleteValue("RemoteFork");
+                        }
+                    }
+                    key.Close();
                 }
             } catch (Exception e) {
                 toolStripStatusLabel1.Text = Resources.Main_Start_From_Admin_mini;
