@@ -33,7 +33,7 @@ namespace RemoteFork.Requestes {
                             ValidateModificationDate(fileRequest,
                                 context) && ValidateEntityTag(fileRequest, context)) {
                             context.Response.Headers.Add("Last-Modified", fileRequest.File.LastWriteTime.ToString("r"));
-                            context.Response.Headers.Add("Etag", fileRequest.EntityTag);
+                            context.Response.Headers["Etag"] = fileRequest.EntityTag;
 
                             if (!fileRequest.RangeRequest) {
                                 context.Response.ContentLength = fileRequest.File.Length;
@@ -41,6 +41,7 @@ namespace RemoteFork.Requestes {
                                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                                 
                                 var fileStream = fileRequest.File.OpenRead();
+                                fileStream.Position = 0;
                                 return fileStream;
                             } else {
                                 context.Response.ContentLength = fileRequest.GetContentLength();
@@ -93,7 +94,7 @@ namespace RemoteFork.Requestes {
                     || (fileRequest.RangesEndIndexes[i] < 0)
                     || (fileRequest.RangesEndIndexes[i] < fileRequest.RangesStartIndexes[i])) {
                     fileRequest.RangesEndIndexes[i] = 0;
-                    response.StatusCode = (int) HttpStatusCode.NotAcceptable;
+                    response.StatusCode = (int) HttpStatusCode.NotModified;
                     response.Headers.Add("Content-Range", $"bytes */{fileLength}");
 
                     return false;
@@ -110,7 +111,7 @@ namespace RemoteFork.Requestes {
                     var modifiedSinceDate = FileRequest.ParseHttpDateHeader(context, "If-Modified-Since");
 
                     if (fileRequest.File.LastWriteTime <= modifiedSinceDate) {
-                        context.Response.StatusCode = (int) HttpStatusCode.NotAcceptable;
+                        context.Response.StatusCode = (int) HttpStatusCode.NotModified;
                         return false;
                     }
                 }
@@ -167,9 +168,9 @@ namespace RemoteFork.Requestes {
                     }
 
                     var entitiesTags = noneMatchHeader.Split(FileRequest.CommaSplitArray);
-                    if (entitiesTags.All(entityTag => fileRequest.EntityTag != entityTag)) {
-                        context.Response.Headers.Add("ETag", fileRequest.EntityTag);
-                        context.Response.StatusCode = (int) HttpStatusCode.NotAcceptable;
+                    if (entitiesTags.All(entityTag => fileRequest.EntityTag == entityTag)) {
+                        context.Response.Headers["Etag"] = fileRequest.EntityTag;
+                        context.Response.StatusCode = (int) HttpStatusCode.NotModified;
                         return false;
                     }
                 }

@@ -3,7 +3,7 @@
 namespace RemoteFork {
     public class Settings {
         [JsonProperty(SettingsManager.SettingsKey.IpIPAddress)]
-        public string IpIPAddress { get; set; }
+        public string IpAddress { get; set; }
         [JsonProperty(SettingsManager.SettingsKey.Port)]
         public ushort Port { get; set; }
 
@@ -13,15 +13,15 @@ namespace RemoteFork {
         [JsonProperty(SettingsManager.SettingsKey.UserAgent)]
         public string UserAgent { get; set; }
 
-        [JsonProperty(SettingsManager.SettingsKey.AutoStartWindows)]
-        public bool AutoStartWindows { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.AutoStartServer)]
-        public bool AutoStartServer { get; set; }
+        //[JsonProperty(SettingsManager.SettingsKey.AutoStartWindows)]
+        //public bool AutoStartWindows { get; set; }
+        //[JsonProperty(SettingsManager.SettingsKey.AutoStartServer)]
+        //public bool AutoStartServer { get; set; }
 
         [JsonProperty(SettingsManager.SettingsKey.Dlna)]
         public bool Dlna { get; set; }
         [JsonProperty(SettingsManager.SettingsKey.DlnaFilterType)]
-        public byte DlnaFilterType { get; set; }
+        public SettingsManager.FilterMode DlnaFilterType { get; set; }
         [JsonProperty(SettingsManager.SettingsKey.DlnaDirectories)]
         public string[] DlnaDirectories { get; set; }
         [JsonProperty(SettingsManager.SettingsKey.DlnaFileExtensions)]
@@ -39,8 +39,8 @@ namespace RemoteFork {
         [JsonProperty(SettingsManager.SettingsKey.UserUrls)]
         public string[] UserUrls { get; set; }
 
-        [JsonProperty(SettingsManager.SettingsKey.THVPAutoStart)]
-        public bool THVPAutoStart { get; set; }
+        //[JsonProperty(SettingsManager.SettingsKey.THVPAutoStart)]
+        //public bool THVPAutoStart { get; set; }
         [JsonProperty(SettingsManager.SettingsKey.AceStreamPort)]
         public ushort AceStreamPort { get; set; }
 

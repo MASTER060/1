@@ -5,21 +5,21 @@ using Newtonsoft.Json;
 
 namespace RemoteFork {
     public class SettingsManager {
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<SettingsManager>();
+        //private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<SettingsManager>();
 
         private static Settings defaultSettings { get; } = new Settings() { 
-                IpIPAddress = IPAddress.Any.ToString(),
+                IpAddress = IPAddress.Parse("0.0.0.0").ToString(),
                 Port = ((ushort)8027),
                 UseProxy = false,
 
                 UserAgent =
                 "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
 
-                AutoStartWindows = false,
-                AutoStartServer = true,
+                //AutoStartWindows = false,
+                //AutoStartServer = true,
 
                 Dlna = true,
-                DlnaFilterType = ((byte)0),
+                DlnaFilterType = FilterMode.NONE,
                 DlnaDirectories = (new string[0]),
                 DlnaFileExtensions = (new string[0]),
                 DlnaHiidenFiles = false,
@@ -30,10 +30,10 @@ namespace RemoteFork {
 
                 UserUrls = new string[0],
 
-                THVPAutoStart = true,
+                //THVPAutoStart = true,
                 AceStreamPort = 6878,
 
-                LogLevel = (byte)0,
+                LogLevel = (byte)LogLevel.Critical,
                 CheckUpdate = true
             };
 
@@ -66,6 +66,12 @@ namespace RemoteFork {
             public const string CheckUpdate = "CheckUpdate";
         }
 
+        public enum FilterMode : byte {
+            NONE = 0,
+            INCLUSION = 1,
+            EXCLUSION = 2
+        }
+
         private static Settings _settings;
 
         private const string file = "Settings.json";
@@ -85,30 +91,28 @@ namespace RemoteFork {
 
         public static void Save(string json) {
             try {
-                using (var stream = new StreamWriter(File.OpenWrite(file))) {
+                using (var stream = new StreamWriter(File.Open(file, FileMode.Create))) {
                     stream.Write(json);
                 }
             } catch (IOException exception) {
-                Log.LogError(exception, exception.Message);
+                //Log.LogError(exception, exception.Message);
             } catch (JsonException exception) {
-                Log.LogError(exception, exception.Message);
+                //Log.LogError(exception, exception.Message);
             }
         }
 
         public static Settings Load() {
             try {
                 if (!File.Exists(file)) {
-                    File.Create(file).Close();
-                    
                     Save(JsonConvert.SerializeObject(defaultSettings));
                 }
                 using (var stream = new StreamReader(File.OpenRead(file))) {
                     Settings = JsonConvert.DeserializeObject<Settings>(stream.ReadToEnd());
                 }
             } catch (IOException exception) {
-                Log.LogError(exception, exception.Message);
+                //Log.LogError(exception, exception.Message);
             } catch (JsonException exception) {
-                Log.LogError(exception, exception.Message);
+                //Log.LogError(exception, exception.Message);
             }
             return _settings;
         }

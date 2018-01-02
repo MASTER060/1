@@ -45,8 +45,10 @@ namespace RemoteFork.Controllers {
         public async Task<IActionResult> File(string id) {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
             var stream = new DlnaFileRequestHandler().HandleStream(HttpContext);
-            var response = File(stream, HttpContext.Response.ContentType);
-            return response;
+            if (stream != null) {
+                return new FileStreamResult(stream, HttpContext.Response.ContentType);
+            } 
+            return File(new byte[0], "text/html; charset=utf-8");
         }
 
         [Route("directory")]

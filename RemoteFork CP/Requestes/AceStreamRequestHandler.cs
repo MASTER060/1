@@ -130,7 +130,7 @@ namespace RemoteFork.Requestes {
             wc.Encoding = Encoding.UTF8;
 
             string aceMadiaInfo;
-            string ip = SettingsManager.Settings.IpIPAddress.ToString();
+            string ip = SettingsManager.Settings.IpAddress.ToString();
             string port = SettingsManager.Settings.AceStreamPort.ToString();
             try {
                 aceMadiaInfo = wc.DownloadString("http://" + ip + ":" + port +

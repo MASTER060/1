@@ -7,10 +7,10 @@
     <StartupObject></StartupObject>
     <AssemblyName>RemoteFork CP</AssemblyName>
     <RootNamespace>RemoteFork</RootNamespace>
-    <AssemblyVersion>1.0.40.0</AssemblyVersion>
+    <AssemblyVersion>1.40.0.0</AssemblyVersion>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <OutputType>Exe</OutputType>
-    <RuntimeIdentifiers>win-x86;win-x64;osx-x86;osx-x64;linux-x86;linux-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>android;win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -18,6 +18,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="log-20171212.txt" />
+    <None Remove="log-20180102.txt" />
+    <None Remove="Properties\PublishProfiles\adroid.pubxml" />
     <None Remove="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Remove="Properties\PublishProfiles\osx.10.11-x64.pubxml" />
     <None Remove="Properties\PublishProfiles\win10-x64.pubxml" />

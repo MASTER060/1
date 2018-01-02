@@ -1,0 +1,17 @@
+﻿
+@{
+    ViewData["Title"] = "User links";
+}
+
+@model UserLinksModel
+
+<form asp-controller="Home" asp-action="UserLinks" method="post">
+    <div>
+        <div>
+            <textarea id="Links" rows="20" cols="20" style="width: 100%" asp-for="Links">@ViewData["Links"]</textarea>
+        </div>
+        <div>
+            <input id="ResetSettings" type="reset" value="reset" /><input id="SubmitSettings" type="submit" value="submit" />
+        </div>
+    </div>
+</form>

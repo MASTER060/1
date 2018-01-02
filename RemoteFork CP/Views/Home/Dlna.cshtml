@@ -1,0 +1,31 @@
+﻿
+@{
+    ViewData["Title"] = "DLNA";
+}
+
+@model DlnaModel
+
+<form asp-controller="Home" asp-action="Dlna" method="post">
+    <div>
+        <div>
+            <input id="Enable" type="checkbox" name="Enable" @if ((bool)ViewData["Enable"]) { <text> checked="checked" </text> } /> <label for="Enable">Enable DLNA</label>
+        </div>
+        <hr />
+        <div>
+            <input id="HiidenFiles" type="checkbox" name="HiidenFiles" @if ((bool)ViewData["HiidenFiles"]) { <text> checked="checked" </text> } /> <label for="HiidenFiles">Show hidden files</label>
+        </div>
+        <div>Filter mode:@Html.DropDownList("FilterMode", ViewBag.FilterMode as SelectList)</div>
+        <div>
+            File extensions: <input id="FileExtensions" type="text" value="@ViewData["FileExtensions"]" asp-for="FileExtensions" />
+        </div>
+        <hr />
+        <div>
+            Directories:<br />
+            <textarea id="Directories" rows="20" cols="20" style="width: 100%" asp-for="Directories">@ViewData["Directories"]</textarea>
+        </div>
+        <hr />
+        <div>
+            <input id="ResetSettings" type="reset" value="reset" /><input id="SubmitSettings" type="submit" value="submit" />
+        </div>
+    </div>
+</form>

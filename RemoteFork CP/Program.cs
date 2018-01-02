@@ -1,7 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,29 +7,20 @@ using RemoteFork.Network;
 
 namespace RemoteFork {
     public class Program {
-        [DllImport("kernel32.dll")]
-        private static extern IntPtr GetConsoleWindow();
 
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        private const int SW_HIDE = 0;
-        private const int SW_SHOW = 5;
-
-        public static ILoggerFactory LoggerFactory = new LoggerFactory()
-            .AddConsole(LogLevel.Debug)
-            .AddDebug(LogLevel.Debug)
-            .AddFile("log.txt");
+        public static ILoggerFactory LoggerFactory;
 
         private static Server server;
 
         public static void Main(string[] args) {
-            //var handle = GetConsoleWindow();
-            //ShowWindow(handle, SW_HIDE);
+            LoggerFactory = new LoggerFactory()
+                .AddConsole((LogLevel)SettingsManager.Settings.LogLevel)
+                .AddDebug((LogLevel)SettingsManager.Settings.LogLevel)
+                .AddFile("log.txt");
 
             server = new Server();
             
-            server.Start(SettingsManager.Settings.IpIPAddress, SettingsManager.Settings.Port);
+            server.Start(SettingsManager.Settings.IpAddress, SettingsManager.Settings.Port);
         }
         
         internal class Server {

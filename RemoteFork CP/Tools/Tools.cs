@@ -26,12 +26,12 @@ namespace RemoteFork {
             if (SettingsManager.Settings.DlnaDirectories != null) {
                 var filter = new List<string>(SettingsManager.Settings.DlnaDirectories);
                 switch (SettingsManager.Settings.DlnaFilterType) {
-                    case 1:
+                    case SettingsManager.FilterMode.INCLUSION:
                         if (filter.All(i => !file.StartsWith(i, StringComparison.OrdinalIgnoreCase))) {
                             result = false;
                         }
                         break;
-                    case 2:
+                    case SettingsManager.FilterMode.EXCLUSION:
                         if (filter.Any(file.StartsWith)) {
                             result = false;
                         }

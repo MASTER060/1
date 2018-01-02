@@ -1,0 +1,33 @@
+﻿
+@{
+    ViewData["Title"] = "Plugins";
+}
+
+@model PluginsModel
+
+<form asp-controller="Home" asp-action="Plugins" method="post">
+    <div>
+        <div>
+            <input id="Enable" type="checkbox" name="Enable" @if ((bool)ViewData["Enable"]) { <text> checked="checked" </text> } /> <label for="Enable">Enable Plugins</label>
+        </div>
+        <hr />
+        <div class="container">
+            @using (Html.BeginForm("Index", "Home")) {
+            foreach (var item in Model.Plugins) {
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox"
+                               name="EnablePlugins"
+                               value="@item.Value" 
+                               @if(Model.EnablePlugins.Contains(item.Value)){<text>checked="checked"</text>}/> @item.Text
+                        </label>
+                    </div>
+            }
+        }
+        </div>
+        <hr />
+        <div>
+            <input id="ResetSettings" type="reset" value="reset" /><input id="ReimportPlugins" type="button" value="reimport" onclick="location.href='@Url.Action("Plugins", "Home")?action=reimport'"/><input id="SubmitSettings" type="submit" value="submit" />
+        </div>
+    </div>
+</form>

@@ -19,7 +19,7 @@ namespace RemoteFork.Requestes {
         public override string Handle(HttpRequest request, HttpResponse response) {
             var result = new List<Item>();
 
-            if (SettingsManager.Settings.DlnaFilterType == 1) {
+            if (SettingsManager.Settings.DlnaFilterType == SettingsManager.FilterMode.INCLUSION) {
                 if (SettingsManager.Settings.DlnaDirectories != null) {
                     foreach (var directory in SettingsManager.Settings.DlnaDirectories) {
                         if (Directory.Exists(directory)) {
