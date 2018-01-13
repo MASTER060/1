@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -16,13 +17,17 @@ namespace RemoteFork {
             LoggerFactory = new LoggerFactory()
                 .AddConsole((LogLevel)SettingsManager.Settings.LogLevel)
                 .AddDebug((LogLevel)SettingsManager.Settings.LogLevel)
-                .AddFile("log.txt");
+#if DEBUG
+                .AddFile(Path.Combine(Environment.CurrentDirectory, "Logs/log-{Date}.txt"), isJson: true);
+#else
+                .AddFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs/log-{Date}.txt"), isJson: true);
+#endif
 
             server = new Server();
-            
+
             server.Start(SettingsManager.Settings.IpAddress, SettingsManager.Settings.Port);
         }
-        
+
         internal class Server {
             private static readonly ILogger Log = LoggerFactory.CreateLogger<Server>();
 
@@ -30,7 +35,11 @@ namespace RemoteFork {
                 //.UseEnvironment("Development")
                 .UseStartup<Startup>()
                 .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory());
+#if DEBUG
+                .UseContentRoot(Environment.CurrentDirectory);
+#else
+                .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory);
+#endif
 
             private IWebHost webHost;
 
@@ -54,7 +63,7 @@ namespace RemoteFork {
                 string url =
                     $"http://getlist2.obovse.ru/remote/index.php?v={Assembly.GetExecutingAssembly().GetName().Version}&do=list&localip={ip}:{port}&proxy={SettingsManager.Settings.UseProxy}";
                 string result = HTTPUtility.GetRequest(url);
-                Log.LogInformation(url);
+                Log.LogInformation(result);
                 //Assembly.GetExecutingAssembly().GetName().Version, ip, port, mcbUseProxy.Checked);
                 //if (result.Split('|')[0] == "new_version") {
                 //    if (mcbCheckUpdate.Checked) {

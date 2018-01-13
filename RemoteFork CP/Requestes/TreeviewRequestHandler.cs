@@ -9,11 +9,11 @@ using RemoteFork.Server;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RemoteFork.Requestes {
-    internal class TreeviewRequestHandler : BaseRequestHandler {
+    public class TreeviewRequestHandler : BaseRequestHandler {
+        public const string UrlPath = "treeview";
+
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<TreeviewRequestHandler>();
-
-        internal static readonly string UrlPath = "/treeview";
-
+        
         //internal static readonly string RootPath = "/";
 
         public override string Handle(HttpRequest request, HttpResponse response) {

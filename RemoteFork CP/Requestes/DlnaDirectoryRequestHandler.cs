@@ -11,10 +11,10 @@ using RemoteFork.Server;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RemoteFork.Requestes {
-    internal class DlnaDirectoryRequestHandler : BaseRequestHandler {
+    public class DlnaDirectoryRequestHandler : BaseRequestHandler {
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<DlnaDirectoryRequestHandler>();
 
-        internal static readonly string UrlPath = "/directory";
+        public const string UrlPath = "directory";
         
         public override string Handle(HttpRequest request, HttpResponse response) {
             string rootDirectory = string.Empty;

@@ -116,7 +116,7 @@ namespace RemoteFork.Server {
                     var channel = new XElement("channel");
 
                     channel.Add(new XElement("title", new XCData(item.Name ?? string.Empty)));
-                    channel.Add(new XElement("description", new XCData(item.Description ?? string.Empty)));
+                    channel.Add(new XElement("description", new XCData(item.Description?.ReplaceHexadecimalSymbols() ?? string.Empty)));
                     channel.Add(new XElement("logo_30x30", new XCData(item.ImageLink ?? string.Empty)));
                     if (item.GetInfo != null) {
                         channel.Add(new XElement("get_info", new XCData(item.GetInfo ?? string.Empty)));

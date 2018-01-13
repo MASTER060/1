@@ -1,25 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RemoteFork.Network;
 
 namespace RemoteFork.Requestes {
-    internal class ProxyM3u8RequestHandler : BaseRequestHandler {
+    public class ProxyM3u8RequestHandler : BaseRequestHandler {
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<ProxyM3u8RequestHandler>();
 
-        internal static readonly string UrlPath = "/proxym3u8";
+        public const string UrlPath = "proxym3u8";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             try {
-                string url = System.Web.HttpUtility.UrlDecode(request.QueryString.Value);
+                string url = HttpUtility.UrlDecode(request.QueryString.Value);
                 if (url.Substring(0, 1) == "B") {
                     if (url.Contains("endbase64")) {
                         url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1, url.IndexOf("endbase64") - 1))) + url.Substring(url.IndexOf("endbase64") + 9);
                     } else url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1, url.Length - 2)));
                 }
-                string ts = "";
+                string ts = string.Empty;
                 bool usertype = false;
                 var header = new Dictionary<string, string>();
                 Log.LogDebug("Proxy url: " + url);
@@ -33,7 +34,7 @@ namespace RemoteFork.Requestes {
                     }
                     if (url.Contains("OPEND:/")) url = url.Substring(0, url.IndexOf("OPEND:/"));
                     var headers = url.Substring(url.IndexOf("OPT:") + 4).Replace("--", "|").Split('|');
-                    url = url.Substring(0, url.IndexOf("OPT:"));
+                    url = url.Remove(url.IndexOf("OPT:"));
                     for (int i = 0; i < headers.Length; i++) {
                         if (headers[i] == "ContentType") {
                             if (request.Headers.ContainsKey("Range")) {
@@ -53,8 +54,8 @@ namespace RemoteFork.Requestes {
                     }
                 }
                 if (!usertype) {
-                    if (ts != "") {
-                        url = url.Substring(0, url.LastIndexOf("/") + 1) + ts;
+                    if (!string.IsNullOrEmpty(ts)) {
+                        url = url.Remove(url.LastIndexOf("/") + 1) + ts;
 
                         Log.LogDebug($"Full ts url {url}");
 

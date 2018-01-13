@@ -101,9 +101,10 @@ namespace RemoteFork_CP.Controllers {
 
         [HttpGet]
         public IActionResult UserLinks() {
-            ViewData["Links"] = string.Join(Environment.NewLine, SettingsManager.Settings.UserUrls);
-
-            return View();
+            var model = new UserLinksModel() {
+                Links = string.Join(Environment.NewLine, SettingsManager.Settings.UserUrls)
+            };
+            return View(model);
         }
 
         [HttpPost]
@@ -130,34 +131,31 @@ namespace RemoteFork_CP.Controllers {
                     Value = ((byte) log).ToString()
                 })
                 .ToList();
-            ViewBag.FilterMode = new SelectList(filterList, "Value", "Text",
-                (byte) SettingsManager.Settings.DlnaFilterType);
+            ViewBag.FilterMode = new SelectList(filterList, "Value", "Text", ((byte) SettingsManager.Settings.DlnaFilterType).ToString());
 
-            ViewData["Enable"] = SettingsManager.Settings.Dlna;
-            ViewData["HiidenFiles"] = SettingsManager.Settings.DlnaHiidenFiles;
-            ViewData["Directories"] = string.Join(Environment.NewLine, SettingsManager.Settings.DlnaDirectories);
-            ViewData["FileExtensions"] = string.Join(", ", SettingsManager.Settings.DlnaFileExtensions);
+            //ViewData["Enable"] = SettingsManager.Settings.Dlna;
+            //ViewData["HiidenFiles"] = SettingsManager.Settings.DlnaHiidenFiles;
+            //ViewData["Directories"] = string.Join(Environment.NewLine, SettingsManager.Settings.DlnaDirectories);
+            //ViewData["FileExtensions"] = string.Join(", ", SettingsManager.Settings.DlnaFileExtensions);
 
-            return View();
+            var model = new DlnaModel() {
+                Directories = string.Join(Environment.NewLine, SettingsManager.Settings.DlnaDirectories),
+                Enable = SettingsManager.Settings.Dlna,
+                FileExtensions = string.Join(", ", SettingsManager.Settings.DlnaFileExtensions),
+                FilterMode = ((byte)SettingsManager.Settings.DlnaFilterType).ToString(),
+                HiidenFiles = SettingsManager.Settings.DlnaHiidenFiles
+            };
+
+            return View(model);
         }
 
         [HttpPost]
         public IActionResult Dlna(DlnaModel settings) {
-            if (!string.IsNullOrEmpty(settings.Enable)) {
-                bool value = settings.Enable == "on";
-                if (SettingsManager.Settings.Dlna != value) {
-                    SettingsManager.Settings.Dlna = value;
-                }
-            } else if (SettingsManager.Settings.Dlna) {
-                SettingsManager.Settings.Dlna = false;
+            if (SettingsManager.Settings.Dlna != settings.Enable) {
+                SettingsManager.Settings.Dlna = settings.Enable;
             }
-            if (!string.IsNullOrEmpty(settings.HiidenFiles)) {
-                bool value = settings.HiidenFiles == "on";
-                if (SettingsManager.Settings.DlnaHiidenFiles != value) {
-                    SettingsManager.Settings.DlnaHiidenFiles = value;
-                }
-            } else if (SettingsManager.Settings.DlnaHiidenFiles) {
-                SettingsManager.Settings.DlnaHiidenFiles = false;
+            if (SettingsManager.Settings.DlnaHiidenFiles != settings.HiidenFiles) {
+                SettingsManager.Settings.DlnaHiidenFiles = settings.HiidenFiles;
             }
             if (!string.IsNullOrEmpty(settings.FilterMode)) {
                 Enum.TryParse(settings.FilterMode, out FilterMode value);
@@ -165,16 +163,12 @@ namespace RemoteFork_CP.Controllers {
                     SettingsManager.Settings.DlnaFilterType = value;
                 }
             }
-            if (!string.IsNullOrEmpty(settings.Directories)) {
-                SettingsManager.Settings.DlnaDirectories = settings.Directories.Split(Environment.NewLine);
-            } else {
-                SettingsManager.Settings.DlnaDirectories = new string[0];
-            }
-            if (!string.IsNullOrEmpty(settings.FileExtensions)) {
-                SettingsManager.Settings.DlnaFileExtensions = settings.FileExtensions.Replace(" ", "").Split(",");
-            } else {
-                SettingsManager.Settings.DlnaFileExtensions = new string[0];
-            }
+            SettingsManager.Settings.DlnaDirectories = !string.IsNullOrEmpty(settings.Directories)
+                ? settings.Directories.Split(Environment.NewLine)
+                : new string[0];
+            SettingsManager.Settings.DlnaFileExtensions = !string.IsNullOrEmpty(settings.FileExtensions)
+                ? settings.FileExtensions.Replace(" ", "").Split(",")
+                : new string[0];
 
             Save();
             return Dlna();

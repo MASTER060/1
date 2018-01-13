@@ -4,11 +4,11 @@ namespace RemoteFork_CP.Models {
     public class DlnaModel {
         [Required]
         [Display(Name = "Enable")]
-        public string Enable { get; set; }
+        public bool Enable { get; set; }
 
         [Required]
         [Display(Name = "HiidenFiles")]
-        public string HiidenFiles { get; set; }
+        public bool HiidenFiles { get; set; }
 
         [Required]
         [Display(Name = "FilterMode")]

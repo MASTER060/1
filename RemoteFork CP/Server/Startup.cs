@@ -27,6 +27,7 @@ namespace RemoteFork {
 
             app.UseStaticFiles();
 
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
             app.UseMvc(routes => {
                 routes.MapRoute(

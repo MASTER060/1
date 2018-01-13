@@ -8,20 +8,20 @@
 <form asp-controller="Home" asp-action="Dlna" method="post">
     <div>
         <div>
-            <input id="Enable" type="checkbox" name="Enable" @if ((bool)ViewData["Enable"]) { <text> checked="checked" </text> } /> <label for="Enable">Enable DLNA</label>
+            <input id="Enable" type="checkbox" name="Enable" asp-for="Enable" /> <label for="Enable">Enable DLNA</label>
         </div>
         <hr />
         <div>
-            <input id="HiidenFiles" type="checkbox" name="HiidenFiles" @if ((bool)ViewData["HiidenFiles"]) { <text> checked="checked" </text> } /> <label for="HiidenFiles">Show hidden files</label>
+            <input id="HiidenFiles" type="checkbox" name="HiidenFiles" asp-for="HiidenFiles" /> <label for="HiidenFiles">Show hidden files</label>
         </div>
         <div>Filter mode:@Html.DropDownList("FilterMode", ViewBag.FilterMode as SelectList)</div>
         <div>
-            File extensions: <input id="FileExtensions" type="text" value="@ViewData["FileExtensions"]" asp-for="FileExtensions" />
+            File extensions: <input id="FileExtensions" type="text" asp-for="FileExtensions" />
         </div>
         <hr />
         <div>
             Directories:<br />
-            <textarea id="Directories" rows="20" cols="20" style="width: 100%" asp-for="Directories">@ViewData["Directories"]</textarea>
+            <textarea id="Directories" rows="20" cols="20" style="width: 100%" asp-for="Directories"></textarea>
         </div>
         <hr />
         <div>

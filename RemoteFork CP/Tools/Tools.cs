@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace RemoteFork {
     internal static class Tools {
@@ -56,8 +57,8 @@ namespace RemoteFork {
 
         #endregion CheckAccess
 
-        public static IPAddress[] GetIPAddresses(string hostname = "") {
-            var hostEntry = Dns.GetHostEntry(hostname);
+        public static IPAddress[] GetIPAddresses() {
+            var hostEntry = Dns.GetHostEntry(Dns.GetHostName());
             var addressList = hostEntry.AddressList;
             return (from iPAddress in addressList
                     let flag = iPAddress.AddressFamily == AddressFamily.InterNetwork
@@ -90,6 +91,11 @@ namespace RemoteFork {
         public static T Clamp<T>(this T val, T min, T max) where T : IComparable<T> {
             if (val.CompareTo(min) < 0) return min;
             return val.CompareTo(max) > 0 ? max : val;
+        }
+
+        public static string ReplaceHexadecimalSymbols(this string txt) {
+            const string r = "[\x00-\x08\x0B\x0C\x0E-\x1F\x26]";
+            return Regex.Replace(txt, r, "", RegexOptions.Compiled);
         }
     }
 }

@@ -3,26 +3,27 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using RemoteFork.Network;
 using System.IO;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using RestSharp;
-using HttpResponse = Microsoft.AspNetCore.Http.HttpResponse;
+//using RestSharp;
+//using HttpResponse = Microsoft.AspNetCore.Http.HttpResponse;
 
 namespace RemoteFork.Requestes {
 
-    internal class ParseLinkRequestHandler : BaseRequestHandler {
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<ParseLinkRequestHandler>();
+    public class ParseLinkRequestHandler : BaseRequestHandler {
+        public const string UrlPath = "parserlink";
 
-        internal static readonly string UrlPath = "/parserlink";
+        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<ParseLinkRequestHandler>();
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             string result = string.Empty;
             Log.LogDebug(request.Host.ToUriComponent());
-            var requestStrings = System.Web.HttpUtility.UrlDecode(request.QueryString.Value).Substring(1).Split('|');
+            var requestStrings = HttpUtility.UrlDecode(request.QueryString.Value).Substring(1).Split('|');
             if (request.Method == "POST") {
                 var getPostParam = new StreamReader(request.Body, true);
                 string postData = getPostParam.ReadToEnd();
-                requestStrings = System.Web.HttpUtility.UrlDecode(postData).Substring(2).Split('|');
+                requestStrings = HttpUtility.UrlDecode(postData).Substring(2).Split('|');
             }
             Log.LogDebug("Parsing: {0}", requestStrings[0]);
 
@@ -42,7 +43,7 @@ namespace RemoteFork.Requestes {
                             result = string.Empty;
                         } else {
                             num1 += requestStrings[1].Length;
-                            var num2 = curlResponse.IndexOf(requestStrings[2], num1, StringComparison.Ordinal);
+                            int num2 = curlResponse.IndexOf(requestStrings[2], num1, StringComparison.Ordinal);
                             result = num2 == -1 ? string.Empty : curlResponse.Substring(num1, num2 - num1);
                         }
                     }
@@ -64,11 +65,7 @@ namespace RemoteFork.Requestes {
             if (text.StartsWith("curlorig")) {
                 Log.LogDebug("curlorig " + text.Substring(9));
 
-                var client = new RestClient(text.Substring(9));
-                var request = new RestRequest(Method.GET);
-                var response = client.Execute(request);
-
-                result = response.Content;
+                result = HTTPUtility.GetRequest(text.Substring(9));
             } else {
                 bool verbose = text.IndexOf(" -i", StringComparison.Ordinal) > 0;
                 bool autoredirect = text.IndexOf(" -L", StringComparison.Ordinal) > 0;
@@ -97,7 +94,7 @@ namespace RemoteFork.Requestes {
                 } else {
                     Log.LogInformation(url);
 
-                    result = HTTPUtility.GetRequest(url, header, verbose, false, autoredirect);
+                    result = HTTPUtility.GetRequest(url, header, verbose, autoredirect);
                 }
             }
 

@@ -20,9 +20,9 @@ namespace RemoteFork.Plugins {
 
         private void LoadPlugins() {
 #if DEBUG
-            string pathPlugins = Path.Combine(Environment.CurrentDirectory, "bin\\Debug\\netcoreapp2.0", "Plugins");
+            string pathPlugins = Path.Combine(Environment.CurrentDirectory, "bin", "Debug", "netcoreapp2.0", "Plugins");
 #else
-            string pathPlugins = Path.Combine(Environment.CurrentDirectory, "Plugins");
+            string pathPlugins = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
 #endif
 
             if (Directory.Exists(pathPlugins)) {

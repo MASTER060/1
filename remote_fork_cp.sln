@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteFork CP", "RemoteFork CP\RemoteFork CP.csproj", "{A44C6AB8-F39A-4AE0-921F-69C4E47C2E65}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteForkCP", "RemoteFork CP\RemoteForkCP.csproj", "{A44C6AB8-F39A-4AE0-921F-69C4E47C2E65}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteFork_Plugins", "remote_fork_plugins\RemoteFork_Plugins\RemoteFork_Plugins.csproj", "{F0334D8D-B2CC-498E-B084-D830FE491C8B}"
 EndProject

@@ -5,12 +5,15 @@
     <Authors>fd_crash &amp; forkplayer</Authors>
     <Company>forkplayer</Company>
     <StartupObject></StartupObject>
-    <AssemblyName>RemoteFork CP</AssemblyName>
+    <AssemblyName>RemoteForkCP</AssemblyName>
     <RootNamespace>RemoteFork</RootNamespace>
-    <AssemblyVersion>1.40.0.0</AssemblyVersion>
+    <AssemblyVersion>1.40.0.2</AssemblyVersion>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <OutputType>Exe</OutputType>
     <RuntimeIdentifiers>android;win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
+    <PackageId>RemoteForkCP</PackageId>
+    <Product>RemoteForkCP</Product>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -18,25 +21,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Logs\**" />
+    <Content Remove="Logs\**" />
+    <EmbeddedResource Remove="Logs\**" />
+    <None Remove="Logs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="Settings.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="log-20171212.txt" />
-    <None Remove="log-20180102.txt" />
-    <None Remove="Properties\PublishProfiles\adroid.pubxml" />
-    <None Remove="Properties\PublishProfiles\FolderProfile.pubxml" />
-    <None Remove="Properties\PublishProfiles\osx.10.11-x64.pubxml" />
-    <None Remove="Properties\PublishProfiles\win10-x64.pubxml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="RestSharp" Version="106.1.0" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.3" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.4.0" />
     <PackageReference Include="System.Xml.XDocument" Version="4.3.0" />
   </ItemGroup>
 
@@ -63,10 +67,6 @@
     <None Update="Settings.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 
   <ItemGroup>

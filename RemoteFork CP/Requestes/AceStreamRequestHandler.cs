@@ -2,20 +2,21 @@
 using RemoteFork.Network;
 using System.Collections.Generic;
 using System.Text;
-using System.IO;
+using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RemoteFork.Plugins;
 using RemoteFork.Server;
+using HttpResponse = Microsoft.AspNetCore.Http.HttpResponse;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RemoteFork.Requestes {
-    internal class AceStreamRequestHandler : BaseRequestHandler {
+    public class AceStreamRequestHandler : BaseRequestHandler {
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<AceStreamRequestHandler>();
 
-        internal static readonly string UrlPath = "/acestream";
+        public const string UrlPath = "acestream";
 
         //public struct TorrentPlayList {
         //    public string IDX;
@@ -29,17 +30,17 @@ namespace RemoteFork.Requestes {
             try {
                 string url = System.Web.HttpUtility.UrlDecode(request.QueryString.Value);
                 if (request.Method == "POST") {
-                    var getPostParam = new StreamReader(request.Body, true);
-                    string postData = getPostParam.ReadToEnd();
-                    url = postData.Substring(2);
+                    if (request.Form.ContainsKey("s")) {
+                        url = request.Form["s"];
+                    }
                 }
-                string s = "";
-                if (url.StartsWith("B")) {
-                    s = url.Substring(1);
+                string result = "";
+                if (url.StartsWith("B") || url.StartsWith("M")) {
+                    result = url.Substring(1);
                 } else if (url.StartsWith("U")) {
                     url = url.Substring(1);
                     if (url.Contains("?box_mac")) {
-                        url = url.Substring(0, url.IndexOf("?box_mac"));
+                        url = url.Remove(url.IndexOf("?box_mac"));
                     }
                     var header = new Dictionary<string, string>();
                     if (url.Contains("OPT:")) {
@@ -60,18 +61,19 @@ namespace RemoteFork.Requestes {
                         header = null;
                     }
 
-                    var handler = new System.Net.Http.HttpClientHandler() {AllowAutoRedirect = true};
-                    var httpClient = new System.Net.Http.HttpClient(handler);
-                    HTTPUtility.AddHeader(httpClient, header);
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                    ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+                    //var httpClient = new RestClient(url);
+                    //var httpRequest = new RestRequest(Method.GET);
+                    //var httpClient = new System.Net.Http.HttpClient(handler);
+                    HTTPUtility.GetRequest(url, header);
+                    //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                    //ServicePointManager.ServerCertificateValidationCallback +=
+                    //    (sender, cert, chain, sslPolicyErrors) => true;
 
-                    s = Convert.ToBase64String(httpClient.GetAsync(url).Result.Content.ReadAsByteArrayAsync().Result);
-
+                    result = HTTPUtility.GetRequest(url);
                 }
                 response.Headers.Add("Connection", "Close");
 
-                return GetFileList(s, response);
+                return GetFileList(result, response);
 
 
             } catch (Exception exception) {
@@ -91,17 +93,14 @@ namespace RemoteFork.Requestes {
         }
 
         public string GetID(string fileTorrentString64, HttpResponse resp) {
-            var handler = new System.Net.Http.HttpClientHandler() {AllowAutoRedirect = true};
-            var httpClient = new System.Net.Http.HttpClient(handler);
-            HTTPUtility.AddHeader(httpClient, null);
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            ServicePointManager.ServerCertificateValidationCallback +=
-                (sender, cert, chain, sslPolicyErrors) => true;
-            var queryString =
-                new System.Net.Http.StringContent(fileTorrentString64, Encoding.UTF8, "application/octet-stream");
-            string responseFromServer = httpClient.PostAsync("http://api.torrentstream.net/upload/raw", queryString).Result
-                .Content.ReadAsStringAsync().Result;
+            //var httpClient = new RestClient("http://api.torrentstream.net/upload/raw");
+            //var request = new RestRequest(fileTorrentString64, Method.POST);
             
+            //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            //ServicePointManager.ServerCertificateValidationCallback +=
+            //    (sender, cert, chain, sslPolicyErrors) => true;
+            string responseFromServer = HTTPUtility.PostRequest("http://api.torrentstream.net/upload/raw", fileTorrentString64);
+
             var s = JsonConvert.DeserializeObject<AceId>(responseFromServer);
             if (s.error != null) {
                 return "error get content ID: " + s.error;
@@ -170,31 +169,19 @@ namespace RemoteFork.Requestes {
                 (firstPair, nextPair) => firstPair.Value.CompareTo(nextPair.Value)
             );
 
+            result.AddRange(myList.Select(h => new Item {
+                Name = h.Value,
+                Link = "http://" + ip + ":" + port + "/ace/getstream?id=" + id + "&_idx=" + h.Key,
+                Type = ItemType.FILE,
+                ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png"
+            }));
 
-
-            foreach (var h in myList) {
-                result.Add(
-                    new Item {
-                        Name = h.Value,
-                        Link = "http://" + ip + ":" + port + "/ace/getstream?id=" + id +
-                               "&_idx=" + h.Key,
-                        Type = ItemType.FILE,
-                        ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png"
-                    }
-                );
-            }
-
-            foreach (var h in myList) {
-                result.Add(
-                    new Item {
-                        Name = "(hls) " + h.Value,
-                        Link = "http://" + ip + ":" + port + "/ace/manifest.m3u8?id=" +
-                               id + "&_idx=" + h.Key,
-                        Type = ItemType.FILE,
-                        ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png"
-                    }
-                );
-            }
+            result.AddRange(myList.Select(h => new Item {
+                Name = "(hls) " + h.Value,
+                Link = "http://" + ip + ":" + port + "/ace/manifest.m3u8?id=" + id + "&_idx=" + h.Key,
+                Type = ItemType.FILE,
+                ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png"
+            }));
             var playlist = new Playlist {
                 Items = result.ToArray(),
                 IsIptv = "false"

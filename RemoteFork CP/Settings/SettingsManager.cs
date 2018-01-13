@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -73,8 +74,12 @@ namespace RemoteFork {
         }
 
         private static Settings _settings;
-
-        private const string file = "Settings.json";
+        
+#if DEBUG
+        private static readonly string FILE = Path.Combine(Environment.CurrentDirectory, "Settings.json");
+#else
+        private static readonly string FILE = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.json");
+#endif
 
         public static Settings Settings {
             get => _settings ?? (_settings = Load());
@@ -91,7 +96,7 @@ namespace RemoteFork {
 
         public static void Save(string json) {
             try {
-                using (var stream = new StreamWriter(File.Open(file, FileMode.Create))) {
+                using (var stream = new StreamWriter(File.Open(FILE, FileMode.Create))) {
                     stream.Write(json);
                 }
             } catch (IOException exception) {
@@ -103,10 +108,10 @@ namespace RemoteFork {
 
         public static Settings Load() {
             try {
-                if (!File.Exists(file)) {
+                if (!File.Exists(FILE)) {
                     Save(JsonConvert.SerializeObject(defaultSettings));
                 }
-                using (var stream = new StreamReader(File.OpenRead(file))) {
+                using (var stream = new StreamReader(File.OpenRead(FILE))) {
                     Settings = JsonConvert.DeserializeObject<Settings>(stream.ReadToEnd());
                 }
             } catch (IOException exception) {

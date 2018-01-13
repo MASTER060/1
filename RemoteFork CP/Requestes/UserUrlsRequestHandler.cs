@@ -5,9 +5,9 @@ using RemoteFork.Plugins;
 using RemoteFork.Server;
 
 namespace RemoteFork.Requestes {
-    internal class UserUrlsRequestHandler : BaseRequestHandler {
-        internal static readonly string UrlPath = "/userurls";
-        internal static readonly string ParamUrls = "urls.m3u";
+    public class UserUrlsRequestHandler : BaseRequestHandler {
+        public const string UrlPath = "userurls";
+        public const string ParamUrls = "urls.m3u";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             var result = new List<Item>();

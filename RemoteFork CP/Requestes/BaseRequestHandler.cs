@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace RemoteFork.Requestes {
-    internal abstract class BaseRequestHandler : IRequestHandler {
+    public abstract class BaseRequestHandler : IRequestHandler {
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<BaseRequestHandler>();
 
         public virtual string Handle(HttpContext context) {

@@ -15,25 +15,21 @@ namespace RemoteFork.Network {
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger("HTTPUtility");
 
         private static readonly CookieContainer CookieContainer = new CookieContainer();
-        private static bool _clearCookies;
-        private static StreamReader stream;
 
-        public static void GetByteRequest(HttpResponse response, string link,
+        public static void GetByteRequest(HttpResponse response, string url,
             Dictionary<string, string> header = null, bool wcc = false) {
             try {
                 Log.LogDebug("HttpUtility->GetByteRequest");
                 HttpWebRequest wc = null;
                 if (wcc) {
-                    wc = (HttpWebRequest) WebRequest.Create(link);
+                    wc = (HttpWebRequest)WebRequest.Create(url);
                     wc.Proxy = WebRequest.DefaultWebProxy;
                 }
-                _clearCookies = false;
                 if (header != null) {
                     foreach (var h in header) {
                         try {
                             if (h.Key == "Cookie") {
-                                _clearCookies = true;
-                                CookieContainer.SetCookies(new Uri(link), h.Value.Replace(";", ","));
+                                CookieContainer.SetCookies(new Uri(url), h.Value.Replace(";", ","));
                             }
                             if (wcc) {
                                 if (h.Key == "Range") {
@@ -52,13 +48,13 @@ namespace RemoteFork.Network {
                     }
                 }
                 if (wcc) {
-                    var response1 = (HttpWebResponse) wc.GetResponse();
+                    var response1 = (HttpWebResponse)wc.GetResponse();
                     Log.LogDebug(response1.Headers.ToString());
                     if (!string.IsNullOrEmpty(response1.Headers["Content-Length"])) {
                         response.ContentLength = Convert.ToInt64(response1.Headers["Content-Length"]);
                     }
 
-                    stream = new StreamReader(response1.GetResponseStream());
+                    var stream = new StreamReader(response1.GetResponseStream());
                     stream.BaseStream.CopyTo(response.Body);
                 } else {
                     using (var handler = new HttpClientHandler()) {
@@ -68,8 +64,8 @@ namespace RemoteFork.Network {
                             AddHeader(httpClient, header);
                             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                             ServicePointManager.ServerCertificateValidationCallback +=
-                                (sender, cert, chain, sslPolicyErrors) => { return true; };
-                            var response2 = httpClient.GetAsync(link).Result;
+                                (sender, cert, chain, sslPolicyErrors) => true;
+                            var response2 = httpClient.GetAsync(url).Result;
                             var r = response2.Content.ReadAsByteArrayAsync().Result;
 
                             if (r.Length > 0) {
@@ -84,57 +80,23 @@ namespace RemoteFork.Network {
             }
         }
 
-        public static string GetRequest(string link, Dictionary<string, string> header = null, bool verbose = false,
+        public static string GetRequest(string url, Dictionary<string, string> header = null, bool verbose = false,
             bool databyte = false, bool autoredirect = true) {
             try {
-                _clearCookies = false;
-                if (header != null) {
-                    foreach (var entry in header) {
-                        Log.LogInformation(entry.ToString());
-                        if (entry.Key == "Cookie") {
-                            _clearCookies = true;
-                            CookieContainer.SetCookies(new Uri(link), entry.Value.Replace(";", ","));
-                        }
-                    }
-                }
-
-                using (var handler = new HttpClientHandler() {AllowAutoRedirect = autoredirect}) {
+                using (var handler = new HttpClientHandler() { AllowAutoRedirect = autoredirect }) {
 
                     SetHandler(handler);
                     using (var httpClient = new HttpClient(handler)) {
                         AddHeader(httpClient, header);
-                        Log.LogDebug($"Get {link}");
+                        Log.LogDebug($"Get {url}");
+
                         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                         ServicePointManager.ServerCertificateValidationCallback +=
                             (sender, cert, chain, sslPolicyErrors) => true;
-                        var response = httpClient.GetAsync(link).Result;
 
-                        if (_clearCookies) {
-                            var cookies = handler.CookieContainer.GetCookies(new Uri(link));
-                            foreach (Cookie co in cookies) {
-                                co.Expires = DateTime.Now.Subtract(TimeSpan.FromDays(1));
-                            }
-                        }
-                        Log.LogInformation("return get headers=" + verbose);
+                        var response = httpClient.GetAsync(url).Result;
 
-                        if (verbose) {
-                            string sh = string.Empty;
-                            try {
-                                var headers = response.Headers.Concat(response.Content.Headers);
-
-                                foreach (var i in headers) {
-                                    foreach (string j in i.Value) {
-                                        sh += i.Key + ": " + j + "\n";
-                                    }
-
-                                }
-                            } catch (Exception exception) {
-                                Log.LogError(exception, exception.Message);
-                            }
-                            return string.Format("{0}\n{1}", sh, ReadContext(response.Content));
-                        } else {
-                            return ReadContext(response.Content, databyte);
-                        }
+                        return Request(handler, response, url, header, verbose);
                     }
                 }
             } catch (Exception exception) {
@@ -143,56 +105,56 @@ namespace RemoteFork.Network {
             }
         }
 
-        public static string PostRequest(string link, string data,
+        public static string PostRequest(string url, string data,
             Dictionary<string, string> header = null, bool verbose = false, bool autoredirect = true) {
             try {
-                _clearCookies = false;
-                if (header != null) {
-                    foreach (var entry in header) {
-                        Log.LogInformation(entry.ToString());
-                        if (entry.Key == "Cookie") {
-                            _clearCookies = true;
-                            CookieContainer.SetCookies(new Uri(link), entry.Value.Replace(";", ","));
-                        }
-                    }
-                }
-
                 using (var handler = new HttpClientHandler() {AllowAutoRedirect = autoredirect}) {
                     SetHandler(handler);
                     using (var httpClient = new HttpClient(handler)) {
                         AddHeader(httpClient, header);
 
-                        var queryString =
-                            new StringContent(data, Encoding.UTF8, "application/x-www-form-urlencoded");
                         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                         ServicePointManager.ServerCertificateValidationCallback +=
                             (sender, cert, chain, sslPolicyErrors) => true;
-                        var response = httpClient.PostAsync(link, queryString).Result;
-                        if (_clearCookies) {
-                            var cookies = handler.CookieContainer.GetCookies(new Uri(link));
-                            foreach (Cookie co in cookies) {
-                                co.Expires = DateTime.Now.Subtract(TimeSpan.FromDays(1));
-                            }
-                        }
-                        Log.LogInformation("return post headers=" + verbose);
-                        if (verbose) {
-                            var headers = response.Headers.Concat(response.Content.Headers);
-                            string sh = "";
-                            foreach (var i in headers) {
-                                foreach (string j in i.Value) {
-                                    sh += i.Key + ": " + j + "\n";
-                                }
-                            }
-                            return $"{sh}\n{ReadContext(response.Content)}";
-                        } else {
-                            return ReadContext(response.Content);
-                        }
+
+                        var queryString =
+                            new StringContent(data, Encoding.UTF8, "application/x-www-form-urlencoded");
+
+                        var response = httpClient.PostAsync(url, queryString).Result;
+                        return Request(handler, response, url, header, verbose);
                     }
                 }
             } catch (Exception exception) {
                 Log.LogError(exception, exception.Message);
                 return exception.Message;
             }
+        }
+
+        private static string Request(HttpClientHandler handler, HttpResponseMessage response, string url, Dictionary<string, string> header, bool verbose) {
+            string result = string.Empty;
+
+            if (CheckHeader(url, header)) {
+                var cookies = handler.CookieContainer.GetCookies(new Uri(url));
+                foreach (Cookie co in cookies) {
+                    co.Expires = DateTime.Now.Subtract(TimeSpan.FromDays(1));
+                }
+            }
+            Log.LogInformation("return post headers=" + verbose);
+            if (verbose) {
+                var headers = response.Headers.Concat(response.Content.Headers);
+                string sh = "";
+                foreach (var i in headers) {
+                    foreach (string j in i.Value) {
+                        sh += i.Key + ": " + j + Environment.NewLine;
+                    }
+                }
+                result = $"{sh}{Environment.NewLine}{ReadContext(response.Content)}";
+            } else {
+                result = ReadContext(response.Content);
+            }
+
+
+            return result;
         }
 
         private static void SetHandler(HttpClientHandler handler) {
@@ -258,6 +220,20 @@ namespace RemoteFork.Network {
                 }
                 return Encoding.Default.GetString(result);
             }
+        }
+
+        private static bool CheckHeader(string url, Dictionary<string, string> header = null) {
+            bool result = false;
+            if (header != null) {
+                foreach (var entry in header) {
+                    Log.LogInformation(entry.ToString());
+                    if (entry.Key == "Cookie") {
+                        result = true;
+                        CookieContainer.SetCookies(new Uri(url), entry.Value.Replace(";", ","));
+                    }
+                }
+            }
+            return result;
         }
 
         public static string QueryParametersToString(NameValueCollection queries) {

@@ -241,3 +241,5 @@ _Pvt_Extensions
 /packages
 /RemoteFork CP/log-*.txt
 /RemoteFork CP/Settings.json
+/RemoteFork CP/Logs
+/publish.bat

@@ -9,8 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace RemoteFork.Requestes {
-    internal class DlnaFileRequestHandler : BaseRequestHandler {
-        internal static readonly string UrlPath = "/file";
+    public class DlnaFileRequestHandler : BaseRequestHandler {
+        public const string UrlPath = "file";
+
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<DlnaFileRequestHandler>();
 
         public Stream HandleStream(HttpContext context) {

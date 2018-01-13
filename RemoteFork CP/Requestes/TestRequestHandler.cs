@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Http;
 using RemoteFork.Server;
 
 namespace RemoteFork.Requestes {
-    internal class TestRequestHandler : BaseRequestHandler {
-        internal static readonly string UrlPath = "/test";
+    public class TestRequestHandler : BaseRequestHandler {
+        public const string UrlPath = "test";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             //string rawUrl = HttpUtility.UrlDecode(request.Url.PathAndQuery);
