@@ -6,8 +6,8 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using RemoteFork.Plugins;
 
-namespace RemoteFork.Server {
-    internal class ResponseSerializer {
+namespace RemoteFork.Requestes {
+    public class ResponseSerializer {
         public static string ToM3U(Item[] items) {
             var sb = new StringBuilder("#EXTM3U");
 

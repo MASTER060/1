@@ -5,23 +5,21 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RemoteFork.Plugins;
-using RemoteFork.Server;
+using RemoteFork.Settings;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RemoteFork.Requestes {
-    public class TreeviewRequestHandler : BaseRequestHandler {
-        public const string UrlPath = "treeview";
+    public class TreeviewRequestHandler : BaseRequestHandler<string> {
+        public const string URL_PATH = "treeview";
 
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<TreeviewRequestHandler>();
-        
-        //internal static readonly string RootPath = "/";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             var result = new List<Item>();
 
-            if (SettingsManager.Settings.DlnaFilterType == SettingsManager.FilterMode.INCLUSION) {
-                if (SettingsManager.Settings.DlnaDirectories != null) {
-                    foreach (var directory in SettingsManager.Settings.DlnaDirectories) {
+            if (ProgramSettings.Settings.DlnaFilterType == FilterMode.INCLUSION) {
+                if (ProgramSettings.Settings.DlnaDirectories != null) {
+                    foreach (var directory in ProgramSettings.Settings.DlnaDirectories) {
                         if (Directory.Exists(directory)) {
                             result.Add(DlnaDirectoryRequestHandler.CreateDirectoryItem(request, directory));
 
@@ -49,19 +47,19 @@ namespace RemoteFork.Requestes {
                 }
             }
 
-            if ((SettingsManager.Settings.UserUrls != null) && (SettingsManager.Settings.UserUrls.Length > 0)) {
+            if ((ProgramSettings.Settings.UserUrls != null) && (ProgramSettings.Settings.UserUrls.Length > 0)) {
                 result.Add(
                     new Item {
                         Name = "Пользовательские ссылки",
-                        Link = CreateUrl(request, UserUrlsRequestHandler.UrlPath,
+                        Link = CreateUrl(request, UserUrlsRequestHandler.URL_PATH,
                             new NameValueCollection() {
-                                {string.Empty, UserUrlsRequestHandler.ParamUrls}
+                                {string.Empty, UserUrlsRequestHandler.PARAM_URLS}
                             }),
                         Type = ItemType.DIRECTORY
                     }
                 );
 
-                Log.LogDebug("User urls: {0}", SettingsManager.Settings.UserUrls.Length);
+                Log.LogDebug("User urls: {0}", ProgramSettings.Settings.UserUrls.Length);
             }
 
             foreach (var plugin in PluginManager.Instance.GetPlugins()) {

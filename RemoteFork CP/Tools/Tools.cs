@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
+using Microsoft.AspNetCore.Http;
+using RemoteFork.Settings;
 
 namespace RemoteFork {
     internal static class Tools {
+        //private static readonly ILogger Log = Program.LoggerFactory.CreateLogger("Tools");
 
         #region CheckAccess
 
@@ -24,15 +30,15 @@ namespace RemoteFork {
 
             file = Path.GetFullPath(file);
 
-            if (SettingsManager.Settings.DlnaDirectories != null) {
-                var filter = new List<string>(SettingsManager.Settings.DlnaDirectories);
-                switch (SettingsManager.Settings.DlnaFilterType) {
-                    case SettingsManager.FilterMode.INCLUSION:
+            if (ProgramSettings.Settings.DlnaDirectories != null) {
+                var filter = new List<string>(ProgramSettings.Settings.DlnaDirectories);
+                switch (ProgramSettings.Settings.DlnaFilterType) {
+                    case FilterMode.INCLUSION:
                         if (filter.All(i => !file.StartsWith(i, StringComparison.OrdinalIgnoreCase))) {
                             result = false;
                         }
                         break;
-                    case SettingsManager.FilterMode.EXCLUSION:
+                    case FilterMode.EXCLUSION:
                         if (filter.Any(file.StartsWith)) {
                             result = false;
                         }
@@ -41,8 +47,9 @@ namespace RemoteFork {
             }
 
             if (File.Exists(file)) {
-                if ((SettingsManager.Settings.DlnaFileExtensions != null) && (SettingsManager.Settings.DlnaFileExtensions.Length > 0)) {
-                    result = SettingsManager.Settings.DlnaFileExtensions.Any(file.EndsWith);
+                if ((ProgramSettings.Settings.DlnaFileExtensions != null) &&
+                    (ProgramSettings.Settings.DlnaFileExtensions.Length > 0)) {
+                    result = ProgramSettings.Settings.DlnaFileExtensions.Any(file.EndsWith);
                 }
             }
 
@@ -50,7 +57,7 @@ namespace RemoteFork {
         }
 
         public static bool CheckHiddenFile(FileAttributes attributes) {
-            return !SettingsManager.Settings.DlnaHiidenFiles &&
+            return !ProgramSettings.Settings.DlnaHiidenFiles &&
                    (((attributes & FileAttributes.Hidden) == FileAttributes.Hidden) ||
                     ((attributes & FileAttributes.System) == FileAttributes.System));
         }
@@ -96,6 +103,38 @@ namespace RemoteFork {
         public static string ReplaceHexadecimalSymbols(this string txt) {
             const string r = "[\x00-\x08\x0B\x0C\x0E-\x1F\x26]";
             return Regex.Replace(txt, r, "", RegexOptions.Compiled);
+        }
+
+        public static NameValueCollection ConvertToNameValue(this IQueryCollection queries) {
+            var result = new NameValueCollection();
+
+            if ((queries != null) && (queries.Count != 0)) {
+                foreach (var query in queries) {
+                    result.Add(query.Key, query.Value);
+                }
+            }
+
+            return result;
+        }
+
+        public static string QueryParametersToString(NameValueCollection queries) {
+            if ((queries == null) || (queries.Count == 0)) {
+                return string.Empty;
+            }
+
+            string query = string.Join("&", queries.AllKeys.Select(a => a + "=" + HttpUtility.UrlEncode(queries[a])));
+
+            return query;
+        }
+
+        public static string EncodeTo(this string text, string from, string to) {
+            var fromEncoding = Encoding.GetEncoding(from);
+            var toEncoding = Encoding.GetEncoding(to);
+
+            var fromBytes = fromEncoding.GetBytes(text);
+            var toBytes = Encoding.Convert(fromEncoding, toEncoding, fromBytes);
+
+            return toEncoding.GetString(toBytes);
         }
     }
 }

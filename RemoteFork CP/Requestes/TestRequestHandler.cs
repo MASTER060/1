@@ -4,14 +4,11 @@ using Microsoft.AspNetCore.Http;
 using RemoteFork.Server;
 
 namespace RemoteFork.Requestes {
-    public class TestRequestHandler : BaseRequestHandler {
+    public class TestRequestHandler : BaseRequestHandler<string> {
         public const string UrlPath = "test";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
-            //string rawUrl = HttpUtility.UrlDecode(request.Url.PathAndQuery);
-
             if (HttpUtility.UrlDecode(request.QueryString.Value).Contains("|")) {
-                //Settings.UseProxy = false;
                 string device = request.QueryString.Value.Substring(1);
 
                 if (!Devices.Contains(device)) {

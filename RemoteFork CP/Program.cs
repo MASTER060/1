@@ -5,6 +5,8 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using RemoteFork.Network;
+using RemoteFork.Server;
+using RemoteFork.Settings;
 
 namespace RemoteFork {
     public class Program {
@@ -15,8 +17,8 @@ namespace RemoteFork {
 
         public static void Main(string[] args) {
             LoggerFactory = new LoggerFactory()
-                .AddConsole((LogLevel)SettingsManager.Settings.LogLevel)
-                .AddDebug((LogLevel)SettingsManager.Settings.LogLevel)
+                .AddConsole((LogLevel)ProgramSettings.Settings.LogLevel)
+                .AddDebug((LogLevel)ProgramSettings.Settings.LogLevel)
 #if DEBUG
                 .AddFile(Path.Combine(Environment.CurrentDirectory, "Logs/log-{Date}.txt"), isJson: true);
 #else
@@ -25,7 +27,7 @@ namespace RemoteFork {
 
             server = new Server();
 
-            server.Start(SettingsManager.Settings.IpAddress, SettingsManager.Settings.Port);
+            server.Start(ProgramSettings.Settings.IpAddress, ProgramSettings.Settings.Port);
         }
 
         internal class Server {
@@ -61,10 +63,9 @@ namespace RemoteFork {
             private void ServerRegistration() {
                 //toolStripStatusLabel1.Text = $"{Resources.Main_ServerRegistration}...";
                 string url =
-                    $"http://getlist2.obovse.ru/remote/index.php?v={Assembly.GetExecutingAssembly().GetName().Version}&do=list&localip={ip}:{port}&proxy={SettingsManager.Settings.UseProxy}";
+                    $"http://getlist2.obovse.ru/remote/index.php?v={Assembly.GetExecutingAssembly().GetName().Version}&do=list&localip={ip}:{port}&proxy=false";
                 string result = HTTPUtility.GetRequest(url);
                 Log.LogInformation(result);
-                //Assembly.GetExecutingAssembly().GetName().Version, ip, port, mcbUseProxy.Checked);
                 //if (result.Split('|')[0] == "new_version") {
                 //    if (mcbCheckUpdate.Checked) {
                 //        MenuItemNewVersion.Text = result.Split('|')[1];

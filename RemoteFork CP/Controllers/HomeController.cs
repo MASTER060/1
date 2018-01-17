@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using RemoteFork;
 using RemoteFork.Plugins;
+using RemoteFork.Settings;
 using RemoteFork_CP.Models;
-using static RemoteFork.SettingsManager;
 
 namespace RemoteFork_CP.Controllers {
     public class HomeController : Controller {
@@ -31,67 +31,67 @@ namespace RemoteFork_CP.Controllers {
                 })
                 .ToList();
 
-            ViewBag.Ips = new SelectList(ipList, "Value", "Text", SettingsManager.Settings.IpAddress);
-            ViewBag.logs = new SelectList(logList, "Value", "Text", SettingsManager.Settings.LogLevel);
+            ViewBag.Ips = new SelectList(ipList, "Value", "Text", ProgramSettings.Settings.IpAddress);
+            ViewBag.logs = new SelectList(logList, "Value", "Text", ProgramSettings.Settings.LogLevel);
 
-            ViewData["Port"] = SettingsManager.Settings.Port;
-            ViewData["UseProxy"] = SettingsManager.Settings.UseProxy;
-            //ViewData["THVPAutoStart"] = SettingsManager.Settings.THVPAutoStart;
-            ViewData["AceStreamPort"] = SettingsManager.Settings.AceStreamPort;
-            ViewData["LogLevel"] = SettingsManager.Settings.LogLevel;
-            ViewData["CheckUpdate"] = SettingsManager.Settings.CheckUpdate;
-            ViewData["UserAgent"] = SettingsManager.Settings.UserAgent;
+            ViewData["Port"] = ProgramSettings.Settings.Port;
+            ViewData["UseProxy"] = false;
+            //ViewData["THVPAutoStart"] = ProgramSettings.Settings.THVPAutoStart;
+            ViewData["AceStreamPort"] = ProgramSettings.Settings.AceStreamPort;
+            ViewData["LogLevel"] = ProgramSettings.Settings.LogLevel;
+            ViewData["CheckUpdate"] = ProgramSettings.Settings.CheckUpdate;
+            ViewData["UserAgent"] = ProgramSettings.Settings.UserAgent;
             return View();
         }
 
         [HttpPost]
         public IActionResult Index(SettingsModel settings) {
             if (!string.IsNullOrEmpty(settings.IP)) {
-                if (SettingsManager.Settings.IpAddress != settings.IP) {
-                    SettingsManager.Settings.IpAddress = settings.IP;
+                if (ProgramSettings.Settings.IpAddress != settings.IP) {
+                    ProgramSettings.Settings.IpAddress = settings.IP;
+                }
+                if (!string.IsNullOrEmpty(settings.UserAgent)) {
+                    if (ProgramSettings.Settings.UserAgent != settings.UserAgent) {
+                        ProgramSettings.Settings.UserAgent = settings.UserAgent;
+                    }
+                }
+                if (!string.IsNullOrEmpty(settings.Port)) {
+                    ushort.TryParse(settings.Port, out ushort value);
+                    if (ProgramSettings.Settings.Port != value) {
+                        ProgramSettings.Settings.Port = value;
+                    }
+                }
+                if (!string.IsNullOrEmpty(settings.CheckUpdate)) {
+                    bool value = settings.CheckUpdate == "on";
+                    if (ProgramSettings.Settings.CheckUpdate != value) {
+                        ProgramSettings.Settings.CheckUpdate = value;
+                    }
+                } else if (ProgramSettings.Settings.CheckUpdate) {
+                    ProgramSettings.Settings.CheckUpdate = false;
                 }
             }
-            if (!string.IsNullOrEmpty(settings.UserAgent)) {
-                if (SettingsManager.Settings.UserAgent != settings.UserAgent) {
-                    SettingsManager.Settings.UserAgent = settings.UserAgent;
-                }
-            }
-            if (!string.IsNullOrEmpty(settings.Port)) {
-                ushort.TryParse(settings.Port, out ushort value);
-                if (SettingsManager.Settings.Port != value) {
-                    SettingsManager.Settings.Port = value;
-                }
-            }
-            if (!string.IsNullOrEmpty(settings.CheckUpdate)) {
-                bool value = settings.CheckUpdate == "on";
-                if (SettingsManager.Settings.CheckUpdate != value) {
-                    SettingsManager.Settings.CheckUpdate = value;
-                }
-            } else if (SettingsManager.Settings.CheckUpdate) {
-                SettingsManager.Settings.CheckUpdate = false;
-            }
-            if (!string.IsNullOrEmpty(settings.UseProxy)) {
-                bool value = settings.UseProxy == "on";
-                if (SettingsManager.Settings.UseProxy != value) {
-                    SettingsManager.Settings.UseProxy = value;
-                }
-            } else if (SettingsManager.Settings.UseProxy) {
-                SettingsManager.Settings.UseProxy = false;
-            }
+            //if (!string.IsNullOrEmpty(settings.UseProxy)) {
+            //    bool value = settings.UseProxy == "on";
+            //    if (ProgramSettings.Settings.UseProxy != value) {
+            //        ProgramSettings.Settings.UseProxy = value;
+            //    }
+            //} else if (ProgramSettings.Settings.UseProxy) {
+            //    ProgramSettings.Settings.UseProxy = false;
+            //}
             if (!string.IsNullOrEmpty(settings.AceStreamPort)) {
                 ushort.TryParse(settings.AceStreamPort, out ushort value);
-                if (SettingsManager.Settings.AceStreamPort != value) {
-                    SettingsManager.Settings.AceStreamPort = value;
+                if (ProgramSettings.Settings.AceStreamPort != value) {
+                    ProgramSettings.Settings.AceStreamPort = value;
                 }
             }
             if (!string.IsNullOrEmpty(settings.Log)) {
                 byte value;
                 byte.TryParse(settings.Log, out value);
-                if (SettingsManager.Settings.LogLevel != value) {
-                    SettingsManager.Settings.LogLevel = value;
+                if (ProgramSettings.Settings.LogLevel != value) {
+                    ProgramSettings.Settings.LogLevel = value;
                 }
             }
-            Save();
+            ProgramSettings.SettingsManager.Save();
             return Index();
         }
 
@@ -102,20 +102,18 @@ namespace RemoteFork_CP.Controllers {
         [HttpGet]
         public IActionResult UserLinks() {
             var model = new UserLinksModel() {
-                Links = string.Join(Environment.NewLine, SettingsManager.Settings.UserUrls)
+                Links = string.Join(Environment.NewLine, ProgramSettings.Settings.UserUrls)
             };
             return View(model);
         }
 
         [HttpPost]
         public IActionResult UserLinks(UserLinksModel settings) {
-            if (!string.IsNullOrEmpty(settings.Links)) {
-                SettingsManager.Settings.UserUrls = settings.Links.Split(Environment.NewLine);
-            } else {
-                SettingsManager.Settings.UserUrls = new string[0];
-            }
+            ProgramSettings.Settings.UserUrls = !string.IsNullOrEmpty(settings.Links) 
+                ? settings.Links.Split(Environment.NewLine) 
+                : new string[0];
 
-            Save();
+            ProgramSettings.SettingsManager.Save();
             return UserLinks();
         }
 
@@ -131,19 +129,19 @@ namespace RemoteFork_CP.Controllers {
                     Value = ((byte) log).ToString()
                 })
                 .ToList();
-            ViewBag.FilterMode = new SelectList(filterList, "Value", "Text", ((byte) SettingsManager.Settings.DlnaFilterType).ToString());
+            ViewBag.FilterMode = new SelectList(filterList, "Value", "Text", ((byte) ProgramSettings.Settings.DlnaFilterType).ToString());
 
-            //ViewData["Enable"] = SettingsManager.Settings.Dlna;
-            //ViewData["HiidenFiles"] = SettingsManager.Settings.DlnaHiidenFiles;
-            //ViewData["Directories"] = string.Join(Environment.NewLine, SettingsManager.Settings.DlnaDirectories);
-            //ViewData["FileExtensions"] = string.Join(", ", SettingsManager.Settings.DlnaFileExtensions);
+            //ViewData["Enable"] = ProgramSettings.Settings.Dlna;
+            //ViewData["HiidenFiles"] = ProgramSettings.Settings.DlnaHiidenFiles;
+            //ViewData["Directories"] = string.Join(Environment.NewLine, ProgramSettings.Settings.DlnaDirectories);
+            //ViewData["FileExtensions"] = string.Join(", ", ProgramSettings.Settings.DlnaFileExtensions);
 
             var model = new DlnaModel() {
-                Directories = string.Join(Environment.NewLine, SettingsManager.Settings.DlnaDirectories),
-                Enable = SettingsManager.Settings.Dlna,
-                FileExtensions = string.Join(", ", SettingsManager.Settings.DlnaFileExtensions),
-                FilterMode = ((byte)SettingsManager.Settings.DlnaFilterType).ToString(),
-                HiidenFiles = SettingsManager.Settings.DlnaHiidenFiles
+                Directories = string.Join(Environment.NewLine, ProgramSettings.Settings.DlnaDirectories),
+                Enable = ProgramSettings.Settings.Dlna,
+                FileExtensions = string.Join(", ", ProgramSettings.Settings.DlnaFileExtensions),
+                FilterMode = ((byte)ProgramSettings.Settings.DlnaFilterType).ToString(),
+                HiidenFiles = ProgramSettings.Settings.DlnaHiidenFiles
             };
 
             return View(model);
@@ -151,26 +149,26 @@ namespace RemoteFork_CP.Controllers {
 
         [HttpPost]
         public IActionResult Dlna(DlnaModel settings) {
-            if (SettingsManager.Settings.Dlna != settings.Enable) {
-                SettingsManager.Settings.Dlna = settings.Enable;
+            if (ProgramSettings.Settings.Dlna != settings.Enable) {
+                ProgramSettings.Settings.Dlna = settings.Enable;
             }
-            if (SettingsManager.Settings.DlnaHiidenFiles != settings.HiidenFiles) {
-                SettingsManager.Settings.DlnaHiidenFiles = settings.HiidenFiles;
+            if (ProgramSettings.Settings.DlnaHiidenFiles != settings.HiidenFiles) {
+                ProgramSettings.Settings.DlnaHiidenFiles = settings.HiidenFiles;
             }
             if (!string.IsNullOrEmpty(settings.FilterMode)) {
                 Enum.TryParse(settings.FilterMode, out FilterMode value);
-                if (SettingsManager.Settings.DlnaFilterType != value) {
-                    SettingsManager.Settings.DlnaFilterType = value;
+                if (ProgramSettings.Settings.DlnaFilterType != value) {
+                    ProgramSettings.Settings.DlnaFilterType = value;
                 }
             }
-            SettingsManager.Settings.DlnaDirectories = !string.IsNullOrEmpty(settings.Directories)
+            ProgramSettings.Settings.DlnaDirectories = !string.IsNullOrEmpty(settings.Directories)
                 ? settings.Directories.Split(Environment.NewLine)
                 : new string[0];
-            SettingsManager.Settings.DlnaFileExtensions = !string.IsNullOrEmpty(settings.FileExtensions)
+            ProgramSettings.Settings.DlnaFileExtensions = !string.IsNullOrEmpty(settings.FileExtensions)
                 ? settings.FileExtensions.Replace(" ", "").Split(",")
                 : new string[0];
 
-            Save();
+            ProgramSettings.SettingsManager.Save();
             return Dlna();
         }
 
@@ -187,8 +185,8 @@ namespace RemoteFork_CP.Controllers {
                     }
                 }
             }
-            ViewData["Enable"] = SettingsManager.Settings.Plugins;
-            ViewData["Plugins"] = string.Join(Environment.NewLine, SettingsManager.Settings.EnablePlugins);
+            ViewData["Enable"] = ProgramSettings.Settings.Plugins;
+            ViewData["Plugins"] = string.Join(Environment.NewLine, ProgramSettings.Settings.EnablePlugins);
             var pluginsList = new List<SelectListItem> ();
             var allPlugins = PluginManager.Instance.GetPlugins(false);
             foreach (var plugin in allPlugins) {
@@ -199,7 +197,7 @@ namespace RemoteFork_CP.Controllers {
             }
             return View(new PluginsModel() {
                 Plugins = pluginsList,
-                EnablePlugins = SettingsManager.Settings.EnablePlugins
+                EnablePlugins = ProgramSettings.Settings.EnablePlugins
             });
         }
 
@@ -207,19 +205,19 @@ namespace RemoteFork_CP.Controllers {
         public IActionResult Plugins(PluginsModel settings) {
             if (!string.IsNullOrEmpty(settings.Enable)) {
                 bool value = settings.Enable == "on";
-                if (SettingsManager.Settings.Plugins != value) {
-                    SettingsManager.Settings.Plugins = value;
+                if (ProgramSettings.Settings.Plugins != value) {
+                    ProgramSettings.Settings.Plugins = value;
                 }
-            } else if (SettingsManager.Settings.Plugins) {
-                SettingsManager.Settings.Plugins = false;
+            } else if (ProgramSettings.Settings.Plugins) {
+                ProgramSettings.Settings.Plugins = false;
             }
             if (settings.EnablePlugins != null && settings.EnablePlugins.Any()) {
-                SettingsManager.Settings.EnablePlugins = settings.EnablePlugins.ToArray();
+                ProgramSettings.Settings.EnablePlugins = settings.EnablePlugins.ToArray();
             } else {
-                SettingsManager.Settings.EnablePlugins = new string[0];
+                ProgramSettings.Settings.EnablePlugins = new string[0];
             }
 
-            Save();
+            ProgramSettings.SettingsManager.Save();
             return Plugins();
         }
 

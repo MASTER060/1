@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RemoteFork.Server
-{
+namespace RemoteFork.Server {
     public static class Devices {
         private static readonly HashSet<string> devices = new HashSet<string>();
 

@@ -6,19 +6,17 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using RemoteFork.Network;
 using RemoteFork.Plugins;
-using RemoteFork.Server;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RemoteFork.Requestes {
-    public class PluginRequestHandler : BaseRequestHandler {
+    public class PluginRequestHandler : BaseRequestHandler<string> {
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<PluginRequestHandler>();
 
-        public const string UrlPath = "plugin";
-        public const string ParamPluginKey = "plugin";
+        public const string URL_PATH = "plugin";
+        public const string PARAM_PLUGIN_KEY = "plugin";
 
-        internal static readonly Regex PluginParamRegex = new Regex($@"{ParamPluginKey}(\w+)[\\]?", RegexOptions.Compiled);
+        internal static readonly Regex PluginParamRegex = new Regex($@"{PARAM_PLUGIN_KEY}(\w+)[\\]?", RegexOptions.Compiled);
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             string pluginKey = ParsePluginKey(request);
@@ -30,9 +28,9 @@ namespace RemoteFork.Requestes {
                     Log.LogDebug("Execute: {0}", plugin.Name);
 
                     try {
-                        var pluginResponse =
-                            plugin.Instance.GetList(new PluginContext(pluginKey, request,
-                                request.Query.ConvertToNameValue()));
+                        var query = request.Query.ConvertToNameValue();
+                        var context = new PluginContext(pluginKey, request, query);
+                        var pluginResponse = plugin.Instance.GetList(context);
 
                         if (pluginResponse != null) {
                             if (pluginResponse.source != null) {
@@ -68,7 +66,7 @@ namespace RemoteFork.Requestes {
 
         internal static string CreatePluginUrl(HttpRequest request, string pluginName, NameValueCollection parameters = null) {
             var query = new NameValueCollection {
-                {string.Empty, string.Concat(ParamPluginKey, pluginName, Path.DirectorySeparatorChar, ".xml")},
+                {string.Empty, string.Concat(PARAM_PLUGIN_KEY, pluginName, Path.DirectorySeparatorChar, ".xml")},
                 {"host", request.Host.ToUriComponent()}
             };
 
@@ -78,7 +76,7 @@ namespace RemoteFork.Requestes {
                 }
             }
 
-            return CreateUrl(request, UrlPath, query);
+            return CreateUrl(request, URL_PATH, query);
         }
     }
 }

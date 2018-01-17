@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Text;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RemoteFork {
+namespace RemoteFork.Server {
     public class Startup {
         public Startup(IConfiguration configuration) {
             Configuration = configuration;
@@ -18,6 +19,8 @@ namespace RemoteFork {
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
@@ -26,8 +29,6 @@ namespace RemoteFork {
             }
 
             app.UseStaticFiles();
-
-            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
             app.UseMvc(routes => {
                 routes.MapRoute(

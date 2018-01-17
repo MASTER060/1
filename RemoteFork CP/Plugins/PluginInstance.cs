@@ -3,17 +3,17 @@ using System.Reflection;
 
 namespace RemoteFork.Plugins {
     internal class PluginInstance {
-        private readonly Assembly assembly;
         public readonly string Author;
         public readonly string Description;
         public readonly string Id;
         public readonly string ImageLink;
         public readonly string Key;
         public readonly string Name;
-        private readonly Type type;
         public readonly string Version;
+        private readonly Assembly _assembly;
+        private readonly Type _type;
 
-        private IPlugin instance;
+        private IPlugin _instance;
 
         public PluginInstance(string key, Assembly assembly, Type type, PluginAttribute attribute) {
             Key = key;
@@ -23,11 +23,11 @@ namespace RemoteFork.Plugins {
             ImageLink = attribute.ImageLink;
             Version = attribute.Version;
             Author = attribute.Author;
-            this.assembly = assembly;
-            this.type = type;
+            _assembly = assembly;
+            _type = type;
         }
 
-        public IPlugin Instance => instance ?? (instance = assembly.CreateInstance(type.FullName) as IPlugin);
+        public IPlugin Instance => _instance ?? (_instance = _assembly.CreateInstance(_type.FullName) as IPlugin);
 
         public override string ToString() {
             return $"{Name} {Version} ({Author})";

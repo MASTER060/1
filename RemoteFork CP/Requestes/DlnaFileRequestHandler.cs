@@ -9,54 +9,54 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace RemoteFork.Requestes {
-    public class DlnaFileRequestHandler : BaseRequestHandler {
-        public const string UrlPath = "file";
+    public class DlnaFileRequestHandler : BaseRequestHandler<Stream> {
+        public const string URL_PATH = "file";
 
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<DlnaFileRequestHandler>();
 
-        public Stream HandleStream(HttpContext context) {
+        public override Stream Handle(HttpRequest request, HttpResponse response) {
             Log.LogDebug("HandleStream get file");
 
             string file = string.Empty;
 
-            if (context.Request.Query.ContainsKey(string.Empty)) {
-                file = context.Request.Query[string.Empty].FirstOrDefault(s => s.StartsWith(Uri.UriSchemeFile));
+            if (request.Query.ContainsKey(string.Empty)) {
+                file = request.Query[string.Empty].FirstOrDefault(s => s.StartsWith(Uri.UriSchemeFile));
             }
 
             if (!string.IsNullOrEmpty(file)) {
                 try {
-                    var fileRequest = FileRequest.Create(context, file);
+                    var fileRequest = FileRequest.Create(request, file);
 
                     if (fileRequest.File.Exists && Tools.CheckAccessPath(fileRequest.File.FullName)) {
 
-                        context.Response.Headers.Add("Accept-Ranges", "bytes");
-                        if (ValidateRanges(fileRequest, context.Response) &&
-                            ValidateModificationDate(fileRequest,
-                                context) && ValidateEntityTag(fileRequest, context)) {
-                            context.Response.Headers.Add("Last-Modified", fileRequest.File.LastWriteTime.ToString("r"));
-                            context.Response.Headers["Etag"] = fileRequest.EntityTag;
+                        response.Headers.Add("Accept-Ranges", "bytes");
+                        if (ValidateRanges(response, fileRequest) &&
+                            ValidateModificationDate(request, response, fileRequest) &&
+                            ValidateEntityTag(request, response, fileRequest)) {
+                            response.Headers.Add("Last-Modified", fileRequest.File.LastWriteTime.ToString("r"));
+                            response.Headers["Etag"] = fileRequest.EntityTag;
 
                             if (!fileRequest.RangeRequest) {
-                                context.Response.ContentLength = fileRequest.File.Length;
-                                context.Response.ContentType = fileRequest.ContentType;
-                                context.Response.StatusCode = (int)HttpStatusCode.OK;
-                                
+                                response.ContentLength = fileRequest.File.Length;
+                                response.ContentType = fileRequest.ContentType;
+                                response.StatusCode = (int) HttpStatusCode.OK;
+
                                 var fileStream = fileRequest.File.OpenRead();
                                 fileStream.Position = 0;
                                 return fileStream;
                             } else {
-                                context.Response.ContentLength = fileRequest.GetContentLength();
+                                response.ContentLength = fileRequest.GetContentLength();
 
                                 if (!fileRequest.MultipartRequest) {
-                                    context.Response.Headers.Add("Content-Range",
+                                    response.Headers.Add("Content-Range",
                                         $"bytes {fileRequest.RangesStartIndexes[0]}-{fileRequest.RangesEndIndexes[0]}/{fileRequest.File.Length}");
-                                    context.Response.ContentType = fileRequest.ContentType;
+                                    response.ContentType = fileRequest.ContentType;
                                 } else {
-                                    context.Response.ContentType =
+                                    response.ContentType =
                                         $"multipart/byteranges; boundary={fileRequest.Boundary}";
                                 }
 
-                                context.Response.StatusCode = (int)HttpStatusCode.PartialContent;
+                                response.StatusCode = (int) HttpStatusCode.PartialContent;
                                 var fileStream = fileRequest.File.OpenRead();
                                 fileStream.Position = fileRequest.RangesStartIndexes[0];
                                 return fileStream;
@@ -64,28 +64,22 @@ namespace RemoteFork.Requestes {
                         }
                     } else {
                         Log.LogDebug("File not found: {0}", file);
-                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        //return $"File not found: {file}";
+                        response.StatusCode = (int) HttpStatusCode.NotFound;
                     }
                 } catch (Exception exception) {
                     Log.LogError(exception, exception.Message);
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    response.StatusCode = (int) HttpStatusCode.NotFound;
                 }
             } else {
                 Log.LogDebug("Incorrect parameter: {0}", file);
 
-                context.Response.StatusCode = (int)HttpStatusCode.NoContent;
+                response.StatusCode = (int) HttpStatusCode.NoContent;
             }
 
             return null;
         }
 
-        public override string Handle(HttpContext context) {
-            Log.LogDebug("Handle get file");
-            return string.Empty;
-        }
-
-        private static bool ValidateRanges(FileRequest fileRequest, HttpResponse response) {
+        private static bool ValidateRanges(HttpResponse response, FileRequest fileRequest) {
             long fileLength = fileRequest.File.Length;
 
             for (int i = 0; i < fileRequest.RangesStartIndexes.Length; i++) {
@@ -105,33 +99,34 @@ namespace RemoteFork.Requestes {
             return true;
         }
 
-        private static bool ValidateModificationDate(FileRequest fileRequest, HttpContext context) {
-            if (context.Request.Headers.ContainsKey("If-Modified-Since")) {
-                string modifiedSinceHeader = context.Request.Headers["If-Modified-Since"];
+        private static bool ValidateModificationDate(HttpRequest request, HttpResponse response,
+            FileRequest fileRequest) {
+            if (request.Headers.ContainsKey("If-Modified-Since")) {
+                string modifiedSinceHeader = request.Headers["If-Modified-Since"];
                 if (!string.IsNullOrEmpty(modifiedSinceHeader)) {
-                    var modifiedSinceDate = FileRequest.ParseHttpDateHeader(context, "If-Modified-Since");
+                    var modifiedSinceDate = FileRequest.ParseHttpDateHeader(request, "If-Modified-Since");
 
                     if (fileRequest.File.LastWriteTime <= modifiedSinceDate) {
-                        context.Response.StatusCode = (int) HttpStatusCode.NotModified;
+                        response.StatusCode = (int) HttpStatusCode.NotModified;
                         return false;
                     }
                 }
             }
 
-            if (context.Request.Headers.ContainsKey("If-Unmodified-Since")) {
-                string unmodifiedSinceHeader = context.Request.Headers["If-Unmodified-Since"];
+            if (request.Headers.ContainsKey("If-Unmodified-Since")) {
+                string unmodifiedSinceHeader = request.Headers["If-Unmodified-Since"];
 
                 if (string.IsNullOrEmpty(unmodifiedSinceHeader)) {
-                    if (context.Request.Headers.ContainsKey("Unless-Modified-Since")) {
-                        unmodifiedSinceHeader = context.Request.Headers["Unless-Modified-Since"];
+                    if (request.Headers.ContainsKey("Unless-Modified-Since")) {
+                        unmodifiedSinceHeader = request.Headers["Unless-Modified-Since"];
                     }
                 }
 
                 if (!string.IsNullOrEmpty(unmodifiedSinceHeader)) {
-                    var unmodifiedSinceDate = FileRequest.ParseHttpDateHeader(context, "If-Modified-Since");
+                    var unmodifiedSinceDate = FileRequest.ParseHttpDateHeader(request, "If-Modified-Since");
 
                     if (fileRequest.File.LastWriteTime > unmodifiedSinceDate) {
-                        context.Response.StatusCode = (int) HttpStatusCode.PreconditionFailed;
+                        response.StatusCode = (int) HttpStatusCode.PreconditionFailed;
                         return false;
                     }
                 }
@@ -140,9 +135,9 @@ namespace RemoteFork.Requestes {
             return true;
         }
 
-        private static bool ValidateEntityTag(FileRequest fileRequest, HttpContext context) {
-            if (context.Request.Headers.ContainsKey("If-Match")) {
-                string matchHeader = context.Request.Headers["If-Match"];
+        private static bool ValidateEntityTag(HttpRequest request, HttpResponse response, FileRequest fileRequest) {
+            if (request.Headers.ContainsKey("If-Match")) {
+                string matchHeader = request.Headers["If-Match"];
                 if (matchHeader != "*") {
                     var entitiesTags = matchHeader.Split(FileRequest.CommaSplitArray);
                     int entitieTagIndex = 0;
@@ -154,24 +149,24 @@ namespace RemoteFork.Requestes {
                     }
 
                     if (entitieTagIndex >= entitiesTags.Length) {
-                        context.Response.StatusCode = (int) HttpStatusCode.PreconditionFailed;
+                        response.StatusCode = (int) HttpStatusCode.PreconditionFailed;
                         return false;
                     }
                 }
             }
 
-            if (context.Request.Headers.ContainsKey("If-None-Match")) {
-                string noneMatchHeader = context.Request.Headers["If-None-Match"];
+            if (request.Headers.ContainsKey("If-None-Match")) {
+                string noneMatchHeader = request.Headers["If-None-Match"];
                 if (!string.IsNullOrEmpty(noneMatchHeader)) {
                     if (noneMatchHeader == "*") {
-                        context.Response.StatusCode = (int) HttpStatusCode.PreconditionFailed;
+                        response.StatusCode = (int) HttpStatusCode.PreconditionFailed;
                         return false;
                     }
 
                     var entitiesTags = noneMatchHeader.Split(FileRequest.CommaSplitArray);
                     if (entitiesTags.All(entityTag => fileRequest.EntityTag == entityTag)) {
-                        context.Response.Headers["Etag"] = fileRequest.EntityTag;
-                        context.Response.StatusCode = (int) HttpStatusCode.NotModified;
+                        response.Headers["Etag"] = fileRequest.EntityTag;
+                        response.StatusCode = (int) HttpStatusCode.NotModified;
                         return false;
                     }
                 }
@@ -181,41 +176,37 @@ namespace RemoteFork.Requestes {
         }
     }
 
-    internal sealed class FileRequest {
+    public sealed class FileRequest {
+        private const string HEADER_IF_RANGE = "If-Range";
+
         private static readonly MD5CryptoServiceProvider Md5 = new MD5CryptoServiceProvider();
-
-        //private static readonly Dictionary<string, string> MimeTypes = new Dictionary<string, string>();
-
-        private const string HeaderIfRange = "If-Range";
 
         private static readonly string[] HttpDateFormats =
             {"r", "dddd, dd-MMM-yy HH':'mm':'ss 'GMT'", "ddd MMM d HH':'mm':'ss yyyy"};
 
-        internal static readonly char[] CommaSplitArray = {','};
+        private readonly HttpRequest _request;
 
         private static readonly char[] DashSplitArray = {'-'};
 
+        public static readonly char[] CommaSplitArray = {','};
+
         public string Boundary { get; } = "---------------------------" + DateTime.Now.Ticks.ToString("x");
-
-        private readonly HttpContext _context;
-
-        private FileRequest(HttpContext context, string file) {
-            _context = context;
-            File = new FileInfo(new Uri(file).LocalPath);
-        }
 
         public FileInfo File { get; }
 
         public bool RangeRequest { get; private set; }
-
         public bool MultipartRequest { get; private set; }
 
         public string EntityTag { get; private set; }
-
         public string ContentType { get; private set; }
 
         public long[] RangesStartIndexes { get; private set; }
         public long[] RangesEndIndexes { get; private set; }
+
+        private FileRequest(HttpRequest request, string file) {
+            _request = request;
+            File = new FileInfo(new Uri(file).LocalPath);
+        }
 
         private void Parse() {
             EntityTag = GenerateEntityTag();
@@ -226,10 +217,10 @@ namespace RemoteFork.Requestes {
         }
 
         private void ParseRanges() {
-            if (_context.Request.Headers.ContainsKey("Range")) {
-                string rangesHeader = _context.Request.Headers["Range"];
-                string ifRangeHeader = _context.Request.Headers[HeaderIfRange];
-                var ifRangeHeaderDate = ParseHttpDateHeader(_context, HeaderIfRange);
+            if (_request.Headers.ContainsKey("Range")) {
+                string rangesHeader = _request.Headers["Range"];
+                string ifRangeHeader = _request.Headers[HEADER_IF_RANGE];
+                var ifRangeHeaderDate = ParseHttpDateHeader(_request, HEADER_IF_RANGE);
 
                 if (string.IsNullOrEmpty(rangesHeader)
                     || (!string.IsNullOrEmpty(ifRangeHeader)
@@ -295,9 +286,9 @@ namespace RemoteFork.Requestes {
             return contentLength;
         }
 
-        internal static DateTime ParseHttpDateHeader(HttpContext context, string headerName) {
-            if (context.Request.Headers.ContainsKey("headerName")) {
-                string ifRangeHeader = context.Request.Headers[headerName];
+        internal static DateTime ParseHttpDateHeader(HttpRequest request, string headerName) {
+            if (request.Headers.ContainsKey("headerName")) {
+                string ifRangeHeader = request.Headers[headerName];
                 if (DateTime.TryParseExact(ifRangeHeader, HttpDateFormats, null,
                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
                     out DateTime ifRangeHeaderDate))
@@ -312,8 +303,8 @@ namespace RemoteFork.Requestes {
                 Md5.ComputeHash(Encoding.ASCII.GetBytes($"{File.FullName}|{File.LastWriteTime}")));
         }
 
-        public static FileRequest Create(HttpContext context, string file) {
-            var fr = new FileRequest(context, file);
+        public static FileRequest Create(HttpRequest request, string file) {
+            var fr = new FileRequest(request, file);
 
             fr.Parse();
 

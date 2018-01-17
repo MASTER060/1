@@ -13,21 +13,21 @@ namespace RemoteFork.Controllers {
             return View();
         }
 
-        [Route(TreeviewRequestHandler.UrlPath)]
+        [Route(TreeviewRequestHandler.URL_PATH)]
         public ActionResult Treeview() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
             ViewData["Message"] = new TreeviewRequestHandler().Handle(HttpContext);
             return View();
         }
 
-        [Route(ParseLinkRequestHandler.UrlPath)]
+        [Route(ParseLinkRequestHandler.URL_PATH)]
         public ActionResult Parserlink() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
             ViewData["Message"] = new ParseLinkRequestHandler().Handle(HttpContext);
             return View();
         }
         
-        [Route(AceStreamRequestHandler.UrlPath)]
+        [Route(AceStreamRequestHandler.URL_PATH)]
         public ActionResult Acestream() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
             ViewData["Message"] = new AceStreamRequestHandler().Handle(HttpContext);
@@ -35,37 +35,36 @@ namespace RemoteFork.Controllers {
         }
 
         [Route(ProxyM3u8RequestHandler.UrlPath)]
-        public ActionResult ProxyM3U8() {
+        public byte[] ProxyM3U8() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
-            ViewData["Message"] = new ProxyM3u8RequestHandler().Handle(HttpContext);
-            return View();
+            return new ProxyM3u8RequestHandler().Handle(HttpContext);
         }
 
-        [Route(DlnaFileRequestHandler.UrlPath)]
+        [Route(DlnaFileRequestHandler.URL_PATH)]
         public async Task<IActionResult> File(string id) {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
-            var stream = new DlnaFileRequestHandler().HandleStream(HttpContext);
+            var stream = new DlnaFileRequestHandler().Handle(HttpContext);
             if (stream != null) {
                 return new FileStreamResult(stream, HttpContext.Response.ContentType);
             } 
             return File(new byte[0], "text/html; charset=utf-8");
         }
 
-        [Route(DlnaDirectoryRequestHandler.UrlPath)]
+        [Route(DlnaDirectoryRequestHandler.URL_PATH)]
         public ActionResult Directory() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
             ViewData["Message"] = new DlnaDirectoryRequestHandler().Handle(HttpContext);
             return View();
         }
 
-        [Route(UserUrlsRequestHandler.UrlPath)]
+        [Route(UserUrlsRequestHandler.URL_PATH)]
         public ActionResult UserUrls() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
             ViewData["Message"] = new UserUrlsRequestHandler().Handle(HttpContext);
             return View();
         }
 
-        [Route(PluginRequestHandler.UrlPath)]
+        [Route(PluginRequestHandler.URL_PATH)]
         public ActionResult Plugin() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
             ViewData["Message"] = new PluginRequestHandler().Handle(HttpContext);

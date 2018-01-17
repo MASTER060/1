@@ -1,16 +1,16 @@
 ﻿using Newtonsoft.Json;
 
-namespace RemoteFork {
+namespace RemoteFork.Settings {
     public class Settings {
-        [JsonProperty(SettingsManager.SettingsKey.IpIPAddress)]
+        [JsonProperty(SettingsKey.IP_ADDRESS)]
         public string IpAddress { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.Port)]
+        [JsonProperty(SettingsKey.PORT)]
         public ushort Port { get; set; }
 
-        [JsonProperty(SettingsManager.SettingsKey.UseProxy)]
-        public bool UseProxy { get; set; }
+        //[JsonProperty(SettingsManager.SettingsKey.UseProxy)]
+        //public bool UseProxy { get; set; }
 
-        [JsonProperty(SettingsManager.SettingsKey.UserAgent)]
+        [JsonProperty(SettingsKey.USER_AGENT)]
         public string UserAgent { get; set; }
 
         //[JsonProperty(SettingsManager.SettingsKey.AutoStartWindows)]
@@ -18,35 +18,35 @@ namespace RemoteFork {
         //[JsonProperty(SettingsManager.SettingsKey.AutoStartServer)]
         //public bool AutoStartServer { get; set; }
 
-        [JsonProperty(SettingsManager.SettingsKey.Dlna)]
+        [JsonProperty(SettingsKey.DLNA)]
         public bool Dlna { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.DlnaFilterType)]
-        public SettingsManager.FilterMode DlnaFilterType { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.DlnaDirectories)]
+        [JsonProperty(SettingsKey.DLNA_FILTER_TYPE)]
+        public FilterMode DlnaFilterType { get; set; }
+        [JsonProperty(SettingsKey.DLNA_DIRECTORIES)]
         public string[] DlnaDirectories { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.DlnaFileExtensions)]
+        [JsonProperty(SettingsKey.DLNA_FILE_EXTENSIONS)]
         public string[] DlnaFileExtensions { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.DlnaHiidenFiles)]
+        [JsonProperty(SettingsKey.DLNA_HIIDEN_FILES)]
         public bool DlnaHiidenFiles { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.FileBufferSize)]
+        [JsonProperty(SettingsKey.FILE_BUFFER_SIZE)]
         public int FileBufferSize { get; set; }
 
-        [JsonProperty(SettingsManager.SettingsKey.Plugins)]
+        [JsonProperty(SettingsKey.PLUGINS)]
         public bool Plugins { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.EnablePlugins)]
+        [JsonProperty(SettingsKey.ENABLE_PLUGINS)]
         public string[] EnablePlugins { get; set; }
 
-        [JsonProperty(SettingsManager.SettingsKey.UserUrls)]
+        [JsonProperty(SettingsKey.USER_URLS)]
         public string[] UserUrls { get; set; }
 
         //[JsonProperty(SettingsManager.SettingsKey.THVPAutoStart)]
         //public bool THVPAutoStart { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.AceStreamPort)]
+        [JsonProperty(SettingsKey.ACE_STREAM_PORT)]
         public ushort AceStreamPort { get; set; }
 
-        [JsonProperty(SettingsManager.SettingsKey.LogLevel)]
+        [JsonProperty(SettingsKey.LOG_LEVEL)]
         public byte LogLevel { get; set; }
-        [JsonProperty(SettingsManager.SettingsKey.CheckUpdate)]
+        [JsonProperty(SettingsKey.CHECK_UPDATE)]
         public bool CheckUpdate { get; set; }
 
         public class StringArray {

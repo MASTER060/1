@@ -1,41 +1,32 @@
-﻿using System;
+using System;
 using RemoteFork.Network;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using System.Net;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RemoteFork.Plugins;
-using RemoteFork.Server;
+using RemoteFork.Settings;
 using HttpResponse = Microsoft.AspNetCore.Http.HttpResponse;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RemoteFork.Requestes {
-    public class AceStreamRequestHandler : BaseRequestHandler {
+    public class AceStreamRequestHandler : BaseRequestHandler<string> {
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<AceStreamRequestHandler>();
 
-        public const string UrlPath = "acestream";
-
-        //public struct TorrentPlayList {
-        //    public string IDX;
-        //    public string Name;
-        //    public string Link;
-        //    public string Description;
-        //    public string ImageLink;
-        //}
+        public const string URL_PATH = "acestream";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             try {
-                string url = System.Web.HttpUtility.UrlDecode(request.QueryString.Value);
+                string url = HttpUtility.UrlDecode(request.QueryString.Value);
                 if (request.Method == "POST") {
                     if (request.Form.ContainsKey("s")) {
                         url = request.Form["s"];
                     }
                 }
                 string result = "";
-                if (url.StartsWith("B") || url.StartsWith("M")) {
+                if (url.StartsWith("B")) {
                     result = url.Substring(1);
                 } else if (url.StartsWith("U")) {
                     url = url.Substring(1);
@@ -61,57 +52,32 @@ namespace RemoteFork.Requestes {
                         header = null;
                     }
 
-                    //var httpClient = new RestClient(url);
-                    //var httpRequest = new RestRequest(Method.GET);
-                    //var httpClient = new System.Net.Http.HttpClient(handler);
                     HTTPUtility.GetRequest(url, header);
-                    //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                    //ServicePointManager.ServerCertificateValidationCallback +=
-                    //    (sender, cert, chain, sslPolicyErrors) => true;
 
                     result = HTTPUtility.GetRequest(url);
                 }
                 response.Headers.Add("Connection", "Close");
 
-                return GetFileList(result, response);
-
-
+                return GetFileList(result);
             } catch (Exception exception) {
                 Log.LogError(exception, exception.Message);
                 return exception.Message;
             }
         }
 
-        public class AceFile {
-            public string error { get; set; }
-            public Dictionary<string, string> result { get; set; }
-        }
-
-        public class AceId {
-            public string error { get; set; }
-            public string contentID { get; set; }
-        }
-
-        public string GetID(string fileTorrentString64, HttpResponse resp) {
-            //var httpClient = new RestClient("http://api.torrentstream.net/upload/raw");
-            //var request = new RestRequest(fileTorrentString64, Method.POST);
-            
-            //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            //ServicePointManager.ServerCertificateValidationCallback +=
-            //    (sender, cert, chain, sslPolicyErrors) => true;
+        public string GetID(string fileTorrentString64) {
             string responseFromServer = HTTPUtility.PostRequest("http://api.torrentstream.net/upload/raw", fileTorrentString64);
 
             var s = JsonConvert.DeserializeObject<AceId>(responseFromServer);
-            if (s.error != null) {
-                return "error get content ID: " + s.error;
+            if (s.Error != null) {
+                return "error get content ID: " + s.Error;
             }
-            return s.contentID;
+            return s.ContentID;
         }
 
-
-        public string GetFileList(string fileTorrentString64, HttpResponse response) {
+        public string GetFileList(string fileTorrentString64) {
             var result = new List<Item>();
-            string id = GetID(fileTorrentString64, response);
+            string id = GetID(fileTorrentString64);
             if (id.StartsWith("error")) {
                 result.Add(
                     new Item {
@@ -123,23 +89,17 @@ namespace RemoteFork.Requestes {
                 );
                 return ResponseSerializer.ToXml(result.ToArray());
             }
-            var wc = new WebClient();
-            wc.Headers.Add("user-agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36");
-            wc.Encoding = Encoding.UTF8;
 
             string aceMadiaInfo;
-            string ip = SettingsManager.Settings.IpAddress.ToString();
-            string port = SettingsManager.Settings.AceStreamPort.ToString();
+            string ip = ProgramSettings.Settings.IpAddress;
+            string port = ProgramSettings.Settings.AceStreamPort.ToString();
+            string url = string.Concat("http://", ip, ":", port, "/server/api?method=get_media_files&content_id=", id);
             try {
-                aceMadiaInfo = wc.DownloadString("http://" + ip + ":" + port +
-                                                 "/server/api?method=get_media_files&content_id=" + id);
-                wc.Dispose();
-            } catch (Exception ex) {
+                aceMadiaInfo = HTTPUtility.GetRequest(url);
+            } catch (Exception exception) {
                 result.Add(
                     new Item {
-                        Name = ex.Message + " " + "http://" + ip + ":" + port +
-                               "/server/api?method=get_media_files&content_id=" + id,
+                        Name = exception.Message + " " + url,
                         Link = "",
                         Description =
                             "<div id=\"poster\" style=\"float:left;padding:4px;	background-color:#EEEEEE;margin:0px 13px 1px 0px;\"><img src=\"http://static.torrentstream.org/sites/org/img/wiki-logo.png\" style=\"width:180px;float:left;\" /></div>http://" +
@@ -153,7 +113,7 @@ namespace RemoteFork.Requestes {
                 return ResponseSerializer.ToXml(result.ToArray());
             }
             var s = JsonConvert.DeserializeObject<AceFile>(aceMadiaInfo);
-            if (s.result == null) {
+            if (s.Result == null) {
                 result.Add(
                     new Item {
                         Name = aceMadiaInfo,
@@ -164,7 +124,7 @@ namespace RemoteFork.Requestes {
                 );
                 return ResponseSerializer.ToXml(result.ToArray());
             }
-            var myList = new List<KeyValuePair<string, string>>(s.result);
+            var myList = new List<KeyValuePair<string, string>>(s.Result);
             myList.Sort(
                 (firstPair, nextPair) => firstPair.Value.CompareTo(nextPair.Value)
             );
@@ -187,6 +147,18 @@ namespace RemoteFork.Requestes {
                 IsIptv = "false"
             };
             return ResponseSerializer.ToXml(playlist);
+        }
+
+        [Serializable]
+        public class AceFile {
+            public string Error { get; set; }
+            public Dictionary<string, string> Result { get; set; }
+        }
+
+        [Serializable]
+        public class AceId {
+            public string Error { get; set; }
+            public string ContentID { get; set; }
         }
     }
 }

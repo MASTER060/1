@@ -7,15 +7,14 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RemoteFork.Plugins;
-using RemoteFork.Server;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RemoteFork.Requestes {
-    public class DlnaDirectoryRequestHandler : BaseRequestHandler {
+    public class DlnaDirectoryRequestHandler : BaseRequestHandler<string> {
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<DlnaDirectoryRequestHandler>();
 
-        public const string UrlPath = "directory";
-        
+        public const string URL_PATH = "directory";
+
         public override string Handle(HttpRequest request, HttpResponse response) {
             string rootDirectory = string.Empty;
             if (request.Query.ContainsKey(string.Empty)) {
@@ -23,7 +22,9 @@ namespace RemoteFork.Requestes {
             }
 
             if (!string.IsNullOrEmpty(rootDirectory)) {
-                rootDirectory = new Uri(rootDirectory.Remove(rootDirectory.IndexOf(".xml", StringComparison.InvariantCulture))).LocalPath;
+                rootDirectory =
+                    new Uri(rootDirectory.Remove(rootDirectory.IndexOf(".xml", StringComparison.InvariantCulture)))
+                        .LocalPath;
 
                 var directories = Directory.GetDirectories(rootDirectory).OrderBy(d => d);
                 var directoriesInfo = directories.Select(directory => new DirectoryInfo(directory)).ToList();
@@ -43,7 +44,7 @@ namespace RemoteFork.Requestes {
                     result.Add(
                         new Item {
                             Name = $"{file.Name} ({Tools.FSize(file.Length)})",
-                            Link = CreateUrl(request, DlnaFileRequestHandler.UrlPath,
+                            Link = CreateUrl(request, DlnaFileRequestHandler.URL_PATH,
                                 new NameValueCollection() {
                                     {string.Empty, new Uri(file.FullName).AbsoluteUri}
                                 }),
@@ -51,7 +52,7 @@ namespace RemoteFork.Requestes {
                         }
                     );
 
-                   Log.LogDebug("File: {0}", file);
+                    Log.LogDebug("File: {0}", file);
                 }
 
                 return ResponseSerializer.ToXml(result.ToArray());
@@ -72,7 +73,7 @@ namespace RemoteFork.Requestes {
                 Name = directory.Name,
                 Link = CreateUrl(
                     request,
-                    UrlPath,
+                    URL_PATH,
                     new NameValueCollection() {
                         {
                             string.Empty,
@@ -92,7 +93,7 @@ namespace RemoteFork.Requestes {
                 }
             };
 
-            return CreateUrl(request, UrlPath, query);
+            return CreateUrl(request, URL_PATH, query);
         }
     }
 }

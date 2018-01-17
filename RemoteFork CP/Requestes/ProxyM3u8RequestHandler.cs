@@ -7,15 +7,15 @@ using Microsoft.Extensions.Logging;
 using RemoteFork.Network;
 
 namespace RemoteFork.Requestes {
-    public class ProxyM3u8RequestHandler : BaseRequestHandler {
+    public class ProxyM3u8RequestHandler : BaseRequestHandler<byte[]> {
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<ProxyM3u8RequestHandler>();
 
         public const string UrlPath = "proxym3u8";
 
-        public override string Handle(HttpRequest request, HttpResponse response) {
+        public override byte[] Handle(HttpRequest request, HttpResponse response) {
             try {
-                string url = HttpUtility.UrlDecode(request.QueryString.Value);
-                if (url.Substring(0, 1) == "B") {
+                string url = HttpUtility.UrlDecode(request.Path.Value.Replace("/" + UrlPath, ""));
+                if (url.StartsWith("B")) {
                     if (url.Contains("endbase64")) {
                         url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1, url.IndexOf("endbase64") - 1))) + url.Substring(url.IndexOf("endbase64") + 9);
                     } else url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1, url.Length - 2)));
@@ -59,10 +59,10 @@ namespace RemoteFork.Requestes {
 
                         Log.LogDebug($"Full ts url {url}");
 
-                        response.Headers.Add("Content-Type", "video/mp2t");
+                        response.ContentType = "video/mp2t";
 
                     } else {
-                        response.Headers.Add("Content-Type", "application/vnd.apple.mpegurl");
+                        response.ContentType = "application/vnd.apple.mpegurl";
                     }
                 }
                 //response.Headers.Remove("Tranfer-Encoding");
@@ -72,13 +72,12 @@ namespace RemoteFork.Requestes {
                 // response.AddHeader("Accept-Ranges", "bytes");
                 Log.LogDebug($"Real url:{url}");
                 Log.LogDebug($"usertype:{usertype}");
-                HTTPUtility.GetByteRequest(response, url, header, usertype);
+                var data = HTTPUtility.GetBytesRequest(url, header, usertype);
+                return data;
             } catch (Exception exception) {
                 Log.LogDebug($"ParseRq={exception}");
-                return exception.ToString();
+                return Encoding.UTF8.GetBytes(exception.ToString());
             }
-            //
-            return string.Empty;
         }
     }
 }

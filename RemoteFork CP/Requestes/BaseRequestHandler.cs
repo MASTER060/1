@@ -5,17 +5,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace RemoteFork.Requestes {
-    public abstract class BaseRequestHandler : IRequestHandler {
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<BaseRequestHandler>();
+    public abstract class BaseRequestHandler<T> {
+        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<BaseRequestHandler<T>>();
 
-        public virtual string Handle(HttpContext context) {
+        public virtual T Handle(HttpContext context) {
             Log.LogDebug("SET DEFAULT HEADERS");
             SetDefaultReponseHeaders(context.Response);
 
             return Handle(context.Request, context.Response);
         }
 
-        public virtual string Handle(HttpContext context, bool datatype) {
+        public virtual T Handle(HttpContext context, bool datatype) {
             if (!datatype) {
                 SetDefaultReponseHeaders(context.Response);
             } else {
@@ -24,15 +24,9 @@ namespace RemoteFork.Requestes {
             return Handle(context.Request, context.Response);
         }
 
-        public virtual string Handle(HttpRequest request, HttpResponse response) {
-            return string.Empty;
-        }
+        public abstract T Handle(HttpRequest request, HttpResponse response);
 
         protected virtual void SetDefaultReponseHeaders(HttpResponse response) {
-            //response.SendChunked = false;
-            //response.ContentEncoding = Encoding.UTF8;
-
-            //response.Headers.Add("Connection", "Close");
             response.ContentType = "text/html";
         }
 
@@ -51,7 +45,7 @@ namespace RemoteFork.Requestes {
                 Host = request.Host.Host,
                 Port = request.Host.Port.Value,
                 Path = HttpUtility.UrlPathEncode(path),
-                Query = Network.HTTPUtility.QueryParametersToString(query)
+                Query = Tools.QueryParametersToString(query)
             }.ToString();
         }
     }

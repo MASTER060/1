@@ -6,54 +6,54 @@ using System.IO;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-//using RestSharp;
-//using HttpResponse = Microsoft.AspNetCore.Http.HttpResponse;
 
 namespace RemoteFork.Requestes {
 
-    public class ParseLinkRequestHandler : BaseRequestHandler {
-        public const string UrlPath = "parserlink";
+    public class ParseLinkRequestHandler : BaseRequestHandler<string> {
+        public const string URL_PATH = "parserlink";
 
         private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<ParseLinkRequestHandler>();
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             string result = string.Empty;
             Log.LogDebug(request.Host.ToUriComponent());
-            var requestStrings = HttpUtility.UrlDecode(request.QueryString.Value).Substring(1).Split('|');
+            var requestStrings = HttpUtility.UrlDecode(request.QueryString.Value)?.Substring(1).Split('|');
             if (request.Method == "POST") {
                 var getPostParam = new StreamReader(request.Body, true);
                 string postData = getPostParam.ReadToEnd();
                 requestStrings = HttpUtility.UrlDecode(postData).Substring(2).Split('|');
             }
-            Log.LogDebug("Parsing: {0}", requestStrings[0]);
+            if (requestStrings != null) {
+                Log.LogDebug("Parsing: {0}", requestStrings[0]);
 
-            string curlResponse = requestStrings[0].StartsWith("curl")
-                ? CurlRequest(requestStrings[0])
-                : HTTPUtility.GetRequest(requestStrings[0]);
+                string curlResponse = requestStrings[0].StartsWith("curl")
+                    ? CurlRequest(requestStrings[0])
+                    : HTTPUtility.GetRequest(requestStrings[0]);
 
-            if (requestStrings.Length == 1) {
-                result = curlResponse;
-            } else {
-                if (!requestStrings[1].Contains(".*?")) {
-                    if (string.IsNullOrEmpty(requestStrings[1]) && string.IsNullOrEmpty(requestStrings[2])) {
-                        result = curlResponse;
-                    } else {
-                        int num1 = curlResponse.IndexOf(requestStrings[1], StringComparison.Ordinal);
-                        if (num1 == -1) {
-                            result = string.Empty;
-                        } else {
-                            num1 += requestStrings[1].Length;
-                            int num2 = curlResponse.IndexOf(requestStrings[2], num1, StringComparison.Ordinal);
-                            result = num2 == -1 ? string.Empty : curlResponse.Substring(num1, num2 - num1);
-                        }
-                    }
+                if (requestStrings.Length == 1) {
+                    result = curlResponse;
                 } else {
-                    Log.LogDebug("ParseLinkRequest: {0}", requestStrings[1] + "(.*?)" + requestStrings[2]);
+                    if (!requestStrings[1].Contains(".*?")) {
+                        if (string.IsNullOrEmpty(requestStrings[1]) && string.IsNullOrEmpty(requestStrings[2])) {
+                            result = curlResponse;
+                        } else {
+                            int num1 = curlResponse.IndexOf(requestStrings[1], StringComparison.Ordinal);
+                            if (num1 == -1) {
+                                result = string.Empty;
+                            } else {
+                                num1 += requestStrings[1].Length;
+                                int num2 = curlResponse.IndexOf(requestStrings[2], num1, StringComparison.Ordinal);
+                                result = num2 == -1 ? string.Empty : curlResponse.Substring(num1, num2 - num1);
+                            }
+                        }
+                    } else {
+                        Log.LogDebug("ParseLinkRequest: {0}", requestStrings[1] + "(.*?)" + requestStrings[2]);
 
-                    string pattern = requestStrings[1] + "(.*?)" + requestStrings[2];
-                    var regex = new Regex(pattern, RegexOptions.Multiline);
-                    var match = regex.Match(curlResponse);
-                    if (match.Success) result = match.Groups[1].Captures[0].ToString();
+                        string pattern = requestStrings[1] + "(.*?)" + requestStrings[2];
+                        var regex = new Regex(pattern, RegexOptions.Multiline);
+                        var match = regex.Match(curlResponse);
+                        if (match.Success) result = match.Groups[1].Captures[0].ToString();
+                    }
                 }
             }
 
