@@ -92,8 +92,8 @@ namespace RemoteFork.Plugins {
                         dict.Add(plugin.Key, plugin.Value);
                     }
 #else
-                    foreach (var plugin in plugins.Where(
-                        plugin => SettingsManager.Settings.EnablePlugins.Contains(plugin.Value.Key))) {
+                    foreach (var plugin in _plugins.Where(
+                        plugin => ProgramSettings.Settings.EnablePlugins.Contains(plugin.Value.Key))) {
                         dict.Add(plugin.Key, plugin.Value);
                     }
 #endif
@@ -110,8 +110,8 @@ namespace RemoteFork.Plugins {
 #if DEBUG
                     return _plugins[id];
 #else
-                    if (SettingsManager.Settings.EnablePlugins.Contains(plugins[id].Key)) {
-                        return plugins[id];
+                    if (ProgramSettings.Settings.EnablePlugins.Contains(_plugins[id].Key)) {
+                        return _plugins[id];
                     }
 #endif
                 }
