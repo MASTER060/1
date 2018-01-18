@@ -5,14 +5,11 @@ using RemoteFork.Network;
 using System.IO;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 namespace RemoteFork.Requestes {
 
     public class ParseLinkRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "parserlink";
-
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<ParseLinkRequestHandler>();
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             string result = string.Empty;

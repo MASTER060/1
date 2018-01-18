@@ -5,14 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using RemoteFork.Plugins;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RemoteFork.Requestes {
     public class DlnaDirectoryRequestHandler : BaseRequestHandler<string> {
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<DlnaDirectoryRequestHandler>();
-
         public const string URL_PATH = "directory";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
@@ -31,7 +27,7 @@ namespace RemoteFork.Requestes {
 
                 var result = new List<Item>();
 
-                foreach (var directory in directoriesInfo.Where(Tools.CheckAccessPath)) {
+                foreach (var directory in directoriesInfo.Where(Tools.Tools.CheckAccessPath)) {
                     result.Add(CreateDirectoryItem(request, directory));
 
                     Log.LogDebug("Directory: {0}", directory);
@@ -40,10 +36,10 @@ namespace RemoteFork.Requestes {
                 var files = Directory.GetFiles(rootDirectory).OrderBy(f => f);
                 var filesInfo = files.Select(file => new FileInfo(file)).ToList();
 
-                foreach (var file in filesInfo.Where(Tools.CheckAccessPath)) {
+                foreach (var file in filesInfo.Where(Tools.Tools.CheckAccessPath)) {
                     result.Add(
                         new Item {
-                            Name = $"{file.Name} ({Tools.FSize(file.Length)})",
+                            Name = $"{file.Name} ({Tools.Tools.FSize(file.Length)})",
                             Link = CreateUrl(request, DlnaFileRequestHandler.URL_PATH,
                                 new NameValueCollection() {
                                     {string.Empty, new Uri(file.FullName).AbsoluteUri}

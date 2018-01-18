@@ -5,14 +5,11 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using RemoteFork.Plugins;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
+using RemoteFork.Tools;
 
 namespace RemoteFork.Requestes {
     public class PluginRequestHandler : BaseRequestHandler<string> {
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<PluginRequestHandler>();
-
         public const string URL_PATH = "plugin";
         public const string PARAM_PLUGIN_KEY = "plugin";
 

@@ -2,11 +2,11 @@
 using System.Collections.Specialized;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using RemoteFork.Log;
 
 namespace RemoteFork.Requestes {
     public abstract class BaseRequestHandler<T> {
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<BaseRequestHandler<T>>();
+        protected static readonly Logger Log = new Logger(typeof(BaseRequestHandler<T>));
 
         public virtual T Handle(HttpContext context) {
             Log.LogDebug("SET DEFAULT HEADERS");
@@ -45,7 +45,7 @@ namespace RemoteFork.Requestes {
                 Host = request.Host.Host,
                 Port = request.Host.Port.Value,
                 Path = HttpUtility.UrlPathEncode(path),
-                Query = Tools.QueryParametersToString(query)
+                Query = Tools.Tools.QueryParametersToString(query)
             }.ToString();
         }
     }

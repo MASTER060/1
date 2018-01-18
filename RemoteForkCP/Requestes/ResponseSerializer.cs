@@ -5,6 +5,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using RemoteFork.Plugins;
+using RemoteFork.Tools;
 
 namespace RemoteFork.Requestes {
     public class ResponseSerializer {

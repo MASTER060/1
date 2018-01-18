@@ -6,13 +6,11 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using RemoteFork.Tools;
 
 namespace RemoteFork.Requestes {
     public class DlnaFileRequestHandler : BaseRequestHandler<Stream> {
         public const string URL_PATH = "file";
-
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<DlnaFileRequestHandler>();
 
         public override Stream Handle(HttpRequest request, HttpResponse response) {
             Log.LogDebug("HandleStream get file");
@@ -27,7 +25,7 @@ namespace RemoteFork.Requestes {
                 try {
                     var fileRequest = FileRequest.Create(request, file);
 
-                    if (fileRequest.File.Exists && Tools.CheckAccessPath(fileRequest.File.FullName)) {
+                    if (fileRequest.File.Exists && Tools.Tools.CheckAccessPath(fileRequest.File.FullName)) {
 
                         response.Headers.Add("Accept-Ranges", "bytes");
                         if (ValidateRanges(response, fileRequest) &&

@@ -4,13 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
-using Microsoft.Extensions.Logging;
+using RemoteFork.Log;
 using RemoteFork.Settings;
 
 namespace RemoteFork.Plugins {
     internal class PluginManager {
-        private static readonly Microsoft.Extensions.Logging.ILogger Log =
-            Program.LoggerFactory.CreateLogger<PluginManager>();
+        private static readonly Logger Log = new Logger(typeof(PluginManager));
 
         public static readonly PluginManager Instance = new PluginManager();
 
@@ -39,7 +38,7 @@ namespace RemoteFork.Plugins {
                 try {
                     LoadAssembly(Assembly.LoadFrom(file.FullName), GetChecksum(file.FullName));
                 } catch (Exception exception) {
-                    Log.LogError(exception, "LoadPlugins->{0}: {1}", file, exception.Message);
+                    Log.LogError("LoadPlugins->{0}: {1}", file, exception.Message);
                 }
             }
         }

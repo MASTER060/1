@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using RemoteFork.Network;
 
 namespace RemoteFork.Requestes {
     public class ProxyM3u8RequestHandler : BaseRequestHandler<byte[]> {
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<ProxyM3u8RequestHandler>();
-
         public const string UrlPath = "proxym3u8";
 
         public override byte[] Handle(HttpRequest request, HttpResponse response) {

@@ -4,17 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RemoteFork.Plugins;
 using RemoteFork.Settings;
 using HttpResponse = Microsoft.AspNetCore.Http.HttpResponse;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RemoteFork.Requestes {
     public class AceStreamRequestHandler : BaseRequestHandler<string> {
-        private static readonly ILogger Log = Program.LoggerFactory.CreateLogger<AceStreamRequestHandler>();
-
         public const string URL_PATH = "acestream";
 
         public override string Handle(HttpRequest request, HttpResponse response) {

@@ -14,6 +14,7 @@
     <PackageId>RemoteForkCP</PackageId>
     <Product>RemoteForkCP</Product>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+    <UserSecretsId>d39515d7-26bb-4bf5-88f7-72ae88d9f21c</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -37,7 +38,6 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.4.0" />
@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\remote_fork_plugins\RemoteFork_Plugins\RemoteFork.Plugins.csproj" />
+    <ProjectReference Include="..\RemoteFork.Utility\RemoteFork.Utility\RemoteFork.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
