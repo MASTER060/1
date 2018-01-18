@@ -5,19 +5,18 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using RemoteFork.Models;
 using RemoteFork.Plugins;
 using RemoteFork.Settings;
-using RemoteFork.Tools;
-using RemoteFork_CP.Models;
 
-namespace RemoteFork_CP.Controllers {
+namespace RemoteFork.Controllers {
     public class HomeController : Controller {
 
         #region MAIN_SETTINGS
 
         [HttpGet]
         public IActionResult Index() {
-            var ipAddresses = Tools.GetIPAddresses();
+            var ipAddresses = Tools.Tools.GetIPAddresses();
             var ipList = ipAddresses.Select(ip => new SelectListItem() {
                     Text = ip.ToString(),
                     Value = ip.ToString()

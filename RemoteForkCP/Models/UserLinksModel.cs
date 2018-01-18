@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace RemoteFork_CP.Models {
+namespace RemoteFork.Models {
     public class UserLinksModel {
         [Required]
         [Display(Name = "Links")]

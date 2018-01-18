@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace RemoteFork_CP.Models {
+namespace RemoteFork.Models {
     public class PluginsModel {
         [Required]
         [Display(Name = "Enable")]

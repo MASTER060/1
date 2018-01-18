@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace RemoteFork_CP.Models {
+namespace RemoteFork.Models {
     public class SettingsModel {
         [Required]
         [MaxLength(6)]

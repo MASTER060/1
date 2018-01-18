@@ -23,7 +23,7 @@ namespace RemoteFork.Server {
 
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
+                //app.UseBrowserLink();
             } else {
                 app.UseExceptionHandler("/Home/Error");
             }

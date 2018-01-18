@@ -1,4 +1,4 @@
-namespace RemoteFork_CP.Models {
+namespace RemoteFork.Models {
     public class ErrorViewModel {
         public string RequestId { get; set; }
 

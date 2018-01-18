@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace RemoteFork_CP.Models {
+namespace RemoteFork.Models {
     public class DlnaModel {
         [Required]
         [Display(Name = "Enable")]
