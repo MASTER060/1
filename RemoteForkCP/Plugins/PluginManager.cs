@@ -79,16 +79,17 @@ namespace RemoteFork.Plugins {
                 var dict = new Dictionary<string, PluginInstance>();
 
                 if (ProgramSettings.Settings.Plugins && (ProgramSettings.Settings.EnablePlugins != null)) {
-#if DEBUG
                     foreach (var plugin in _plugins) {
                         dict.Add(plugin.Key, plugin.Value);
                     }
-#else
-                    foreach (var plugin in _plugins.Where(
-                        plugin => ProgramSettings.Settings.EnablePlugins.Contains(plugin.Value.Key))) {
-                        dict.Add(plugin.Key, plugin.Value);
-                    }
+                    foreach (var plugin in _plugins) {
+#if !DEBUG
+                        if (ProgramSettings.Settings.DeveloperMode || ProgramSettings.Settings.EnablePlugins.Contains(plugin.Value.Key))
 #endif
+                        {
+                            dict.Add(plugin.Key, plugin.Value);
+                        }
+                    }
                 }
 
                 return dict;
@@ -99,13 +100,12 @@ namespace RemoteFork.Plugins {
         public PluginInstance GetPlugin(string id) {
             if (_plugins.ContainsKey(id)) {
                 if (ProgramSettings.Settings.Plugins && (ProgramSettings.Settings.EnablePlugins != null)) {
-#if DEBUG
-                    return _plugins[id];
-#else
-                    if (ProgramSettings.Settings.EnablePlugins.Contains(_plugins[id].Key)) {
+#if !DEBUG
+                    if (ProgramSettings.Settings.DeveloperMode ||ProgramSettings.Settings.EnablePlugins.Contains(_plugins[id].Key))
+#endif
+                    {
                         return _plugins[id];
                     }
-#endif
                 }
             }
             return null;

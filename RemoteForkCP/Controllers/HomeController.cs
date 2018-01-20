@@ -42,6 +42,7 @@ namespace RemoteFork.Controllers {
             ViewData["LogLevel"] = ProgramSettings.Settings.LogLevel;
             ViewData["CheckUpdate"] = ProgramSettings.Settings.CheckUpdate;
             ViewData["UserAgent"] = ProgramSettings.Settings.UserAgent;
+            ViewData["DeveloperMode"] = ProgramSettings.Settings.DeveloperMode;
             return View();
         }
 
@@ -69,6 +70,14 @@ namespace RemoteFork.Controllers {
                     }
                 } else if (ProgramSettings.Settings.CheckUpdate) {
                     ProgramSettings.Settings.CheckUpdate = false;
+                }
+                if (!string.IsNullOrEmpty(settings.DeveloperMode)) {
+                    bool value = settings.DeveloperMode == "on";
+                    if (ProgramSettings.Settings.DeveloperMode != value) {
+                        ProgramSettings.Settings.DeveloperMode = value;
+                    }
+                } else if (ProgramSettings.Settings.DeveloperMode) {
+                    ProgramSettings.Settings.DeveloperMode = false;
                 }
             }
             //if (!string.IsNullOrEmpty(settings.UseProxy)) {

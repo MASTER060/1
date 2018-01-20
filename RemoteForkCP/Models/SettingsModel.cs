@@ -29,11 +29,16 @@ namespace RemoteFork.Models {
 
         [Required]
         [MaxLength(3)]
-        [Display(Name = "Check foru pdate")]
+        [Display(Name = "Check for update")]
         public string CheckUpdate { get; set; }
 
         [Required]
         [Display(Name = "UserAgent")]
         public string UserAgent { get; set; }
+
+        [Required]
+        [MaxLength(3)]
+        [Display(Name = "Developer mode")]
+        public string DeveloperMode { get; set; }
     }
 }

@@ -12,19 +12,23 @@
         </div>
         <hr />
         <div>
-            <input id="UseProxy" type="checkbox" name="UseProxy" @if ((bool)ViewData["UseProxy"]) { <text> checked="checked" </text>  } asp-for="UseProxy" /> <label for="UseProxy">Use Proxy</label>
+            <input id="UseProxy" type="checkbox" name="UseProxy" @if ((bool)ViewData["UseProxy"]) { <text> checked="checked" </text> } asp-for="UseProxy" /> <label for="UseProxy">Use Proxy</label>
         </div>
         @*<div>THVP Auto Start <input id="THVPAutoStart" type="checkbox" @if ((bool)ViewData["THVPAutoStart"]){<text>checked="checked"</text>}/></div>*@
         <div>
             AceStream Port: <input id="AceStreamPort" type="text" value="@ViewData["AceStreamPort"]" asp-for="AceStreamPort" /><input id="CheckASButton" type="button" value="Check" OnClick="window.open('@ViewData["AceStreamCheck"]')" />
         </div>
         <div>
-            <input id="CheckUpdate" type="checkbox" name="CheckUpdate" @if ((bool)ViewData["CheckUpdate"]) { <text> checked="checked" </text>  } /> <label for="CheckUpdate">Check for updates</label>
+            <input id="CheckUpdate" type="checkbox" name="CheckUpdate" @if ((bool)ViewData["CheckUpdate"]) { <text> checked="checked" </text> } /> <label for="CheckUpdate">Check for updates</label>
         </div>
         <div>Log Level: @Html.DropDownList("Log", ViewBag.Logs as SelectList)</div>
         <hr />
         <div>
             UserAgent:<br /><input id="UserAgent" type="text" value="@ViewData["UserAgent"]" style="width: 100%" asp-for="UserAgent" />
+        </div>
+        <hr />
+        <div>
+            <input id="DeveloperMode" type="checkbox" name="DeveloperMode" @if ((bool)ViewData["DeveloperMode"]) { <text> checked="checked" </text> } asp-for="DeveloperMode" /> <label for="DeveloperMode">Developer mode</label>
         </div>
         <hr />
         <div>
