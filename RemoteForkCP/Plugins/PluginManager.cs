@@ -79,7 +79,7 @@ namespace RemoteFork.Plugins {
                 var dict = new Dictionary<string, PluginInstance>();
 
                 if (ProgramSettings.Settings.Plugins && (ProgramSettings.Settings.EnablePlugins != null)) {
-#if !DEBUG
+#if DEBUG
                     foreach (var plugin in _plugins) {
                         dict.Add(plugin.Key, plugin.Value);
                     }
