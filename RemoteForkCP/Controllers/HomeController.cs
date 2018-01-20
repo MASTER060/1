@@ -37,6 +37,8 @@ namespace RemoteFork.Controllers {
             ViewData["UseProxy"] = false;
             //ViewData["THVPAutoStart"] = ProgramSettings.Settings.THVPAutoStart;
             ViewData["AceStreamPort"] = ProgramSettings.Settings.AceStreamPort;
+            ViewData["AceStreamCheck"] =
+                $"http://127.0.0.1:{ProgramSettings.Settings.AceStreamPort}/webui/api/service?method=get_version&format=jsonp&callback=mycallback";
             ViewData["LogLevel"] = ProgramSettings.Settings.LogLevel;
             ViewData["CheckUpdate"] = ProgramSettings.Settings.CheckUpdate;
             ViewData["UserAgent"] = ProgramSettings.Settings.UserAgent;
@@ -90,7 +92,7 @@ namespace RemoteFork.Controllers {
                     ProgramSettings.Settings.LogLevel = value;
                 }
             }
-            ProgramSettings.SettingsManager.Save();
+            ProgramSettings.Instance.Save();
             return Index();
         }
 
@@ -112,7 +114,7 @@ namespace RemoteFork.Controllers {
                 ? settings.Links.Split(Environment.NewLine) 
                 : new string[0];
 
-            ProgramSettings.SettingsManager.Save();
+            ProgramSettings.Instance.Save();
             return UserLinks();
         }
 
@@ -167,7 +169,7 @@ namespace RemoteFork.Controllers {
                 ? settings.FileExtensions.Replace(" ", "").Split(",")
                 : new string[0];
 
-            ProgramSettings.SettingsManager.Save();
+            ProgramSettings.Instance.Save();
             return Dlna();
         }
 
@@ -216,7 +218,7 @@ namespace RemoteFork.Controllers {
                 ProgramSettings.Settings.EnablePlugins = new string[0];
             }
 
-            ProgramSettings.SettingsManager.Save();
+            ProgramSettings.Instance.Save();
             return Plugins();
         }
 
