@@ -78,10 +78,7 @@ namespace RemoteFork.Plugins {
             if (filtering) {
                 var dict = new Dictionary<string, PluginInstance>();
 
-                if (ProgramSettings.Settings.Plugins && (ProgramSettings.Settings.EnablePlugins != null)) {
-                    foreach (var plugin in _plugins) {
-                        dict.Add(plugin.Key, plugin.Value);
-                    }
+                if (ProgramSettings.Settings.Plugins) {
                     foreach (var plugin in _plugins) {
 #if !DEBUG
                         if (ProgramSettings.Settings.DeveloperMode || ProgramSettings.Settings.EnablePlugins.Contains(plugin.Value.Key))
@@ -99,7 +96,7 @@ namespace RemoteFork.Plugins {
 
         public PluginInstance GetPlugin(string id) {
             if (_plugins.ContainsKey(id)) {
-                if (ProgramSettings.Settings.Plugins && (ProgramSettings.Settings.EnablePlugins != null)) {
+                if (ProgramSettings.Settings.Plugins) {
 #if !DEBUG
                     if (ProgramSettings.Settings.DeveloperMode ||ProgramSettings.Settings.EnablePlugins.Contains(_plugins[id].Key))
 #endif
