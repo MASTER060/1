@@ -20,11 +20,7 @@ namespace RemoteFork.Plugins {
         }
 
         private void LoadPlugins() {
-#if DEBUG
-            string pathPlugins = Path.Combine(Environment.CurrentDirectory, "bin", "Debug", "netcoreapp2.0", "Plugins");
-#else
             string pathPlugins = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
-#endif
 
             if (Directory.Exists(pathPlugins)) {
                 LoadAssemblies(pathPlugins);
@@ -46,19 +42,15 @@ namespace RemoteFork.Plugins {
         private void LoadAssembly(Assembly assembly, string hash) {
             foreach (var type in assembly.GetExportedTypes()) {
                 if (typeof(IPlugin).IsAssignableFrom(type) && (type.IsAbstract == false)) {
-                    var attributes = type.GetCustomAttributes(true);
+                    var attribute = type.GetCustomAttribute<PluginAttribute>();
 
-                    if (attributes.Length > 0) {
-                        var attribute =
-                            (PluginAttribute) attributes.FirstOrDefault(i => i.GetType() == typeof(PluginAttribute));
-                        if (attribute != null) {
-                            var plugin = new PluginInstance(hash, assembly, type, attribute);
-                            if (!_plugins.ContainsKey(plugin.Id)) {
-                                _plugins.Add(plugin.Id, plugin);
+                    if (attribute != null) {
+                        var plugin = new PluginInstance(hash, assembly, type, attribute);
+                        if (!_plugins.ContainsKey(plugin.Id)) {
+                            _plugins.Add(plugin.Id, plugin);
 
-                                Log.LogDebug("Loaded plugin [id: {0}, name: {1}, type: {2}, version: {3}]", plugin.Id,
-                                    plugin.Name, type.FullName, plugin.Version);
-                            }
+                            Log.LogDebug("Loaded plugin [id: {0}, name: {1}, type: {2}, version: {3}]", plugin.Id,
+                                plugin.Name, type.FullName, plugin.Version);
                         }
                     }
                 }
@@ -87,7 +79,7 @@ namespace RemoteFork.Plugins {
                 var dict = new Dictionary<string, PluginInstance>();
 
                 if (ProgramSettings.Settings.Plugins && (ProgramSettings.Settings.EnablePlugins != null)) {
-#if DEBUG
+#if !DEBUG
                     foreach (var plugin in _plugins) {
                         dict.Add(plugin.Key, plugin.Value);
                     }

@@ -13,7 +13,7 @@ namespace RemoteFork {
 
         public static void Main(string[] args) {
             server = new Server();
-
+            
             server.Start(ProgramSettings.Settings.IpAddress, ProgramSettings.Settings.Port);
         }
 
