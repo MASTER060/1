@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using RemoteFork.Requestes;
 using RemoteFork.Models;
 
@@ -34,10 +35,10 @@ namespace RemoteFork.Controllers {
             return View();
         }
 
-        [Route(ProxyM3u8RequestHandler.UrlPath)]
-        public byte[] ProxyM3U8() {
+        [Route("{text:regex(^(" + ProxyM3u8RequestHandler.UrlPath + ").*)}/{params?}")]
+        public ActionResult ProxyM3U8() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
-            return new ProxyM3u8RequestHandler().Handle(HttpContext);
+            return new FileContentResult(new ProxyM3u8RequestHandler().Handle(HttpContext), "text/html");
         }
 
         [Route(DlnaFileRequestHandler.URL_PATH)]

@@ -14,8 +14,12 @@ namespace RemoteFork.Requestes {
                 string url = HttpUtility.UrlDecode(request.Path.Value.Replace("/" + UrlPath, ""));
                 if (url.StartsWith("B")) {
                     if (url.Contains("endbase64")) {
-                        url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1, url.IndexOf("endbase64") - 1))) + url.Substring(url.IndexOf("endbase64") + 9);
-                    } else url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1, url.Length - 2)));
+                        url = Encoding.UTF8.GetString(
+                                  Convert.FromBase64String(url.Substring(1, url.IndexOf("endbase64") - 1))) +
+                              url.Substring(url.IndexOf("endbase64") + 9);
+                    } else {
+                        url = Encoding.UTF8.GetString(Convert.FromBase64String(url.Substring(1, url.Length - 2)));
+                    }
                 }
                 string ts = string.Empty;
                 bool usertype = false;
@@ -29,7 +33,9 @@ namespace RemoteFork.Requestes {
                         ts = url.Substring(url.IndexOf("OPEND:/") + 7);
                         Log.LogDebug("Req m3u8 ts " + ts);
                     }
-                    if (url.Contains("OPEND:/")) url = url.Substring(0, url.IndexOf("OPEND:/"));
+                    if (url.Contains("OPEND:/")) {
+                        url = url.Substring(0, url.IndexOf("OPEND:/"));
+                    }
                     var headers = url.Substring(url.IndexOf("OPT:") + 4).Replace("--", "|").Split('|');
                     url = url.Remove(url.IndexOf("OPT:"));
                     for (int i = 0; i < headers.Length; i++) {
@@ -72,7 +78,7 @@ namespace RemoteFork.Requestes {
                 var data = HTTPUtility.GetBytesRequest(url, header, usertype);
                 return data;
             } catch (Exception exception) {
-                Log.LogDebug($"ParseRq={exception}");
+                Log.LogError(exception, exception.Message);
                 return Encoding.UTF8.GetBytes(exception.ToString());
             }
         }

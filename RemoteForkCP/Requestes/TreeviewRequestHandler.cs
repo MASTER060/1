@@ -15,7 +15,7 @@ namespace RemoteFork.Requestes {
 
             if (ProgramSettings.Settings.DlnaFilterType == FilterMode.INCLUSION) {
                 if (ProgramSettings.Settings.DlnaDirectories != null) {
-                    foreach (var directory in ProgramSettings.Settings.DlnaDirectories) {
+                    foreach (string directory in ProgramSettings.Settings.DlnaDirectories) {
                         if (Directory.Exists(directory)) {
                             result.Add(DlnaDirectoryRequestHandler.CreateDirectoryItem(request, directory));
 

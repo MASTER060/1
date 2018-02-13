@@ -1,160 +1,89 @@
 using System;
 using RemoteFork.Network;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using RemoteFork.Plugins;
-using RemoteFork.Settings;
+using RemoteFork.Torrents;
 using HttpResponse = Microsoft.AspNetCore.Http.HttpResponse;
 
 namespace RemoteFork.Requestes {
     public class AceStreamRequestHandler : BaseRequestHandler<string> {
-        public const string URL_PATH = "acestream";
+        public const string URL_PATH = "acestream/acestream";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             try {
                 string url = HttpUtility.UrlDecode(request.QueryString.Value);
                 if (request.Method == "POST") {
-                    if (request.Form.ContainsKey("s")) {
-                        url = request.Form["s"];
+                    using (var readStream = new StreamReader(request.Body, Encoding.UTF8)) {
+                        url = readStream.ReadToEnd();
                     }
                 }
-                string result = "";
-                if (url.StartsWith("B")) {
-                    result = url.Substring(1);
-                } else if (url.StartsWith("U")) {
-                    url = url.Substring(1);
-                    if (url.Contains("?box_mac")) {
-                        url = url.Remove(url.IndexOf("?box_mac"));
-                    }
-                    var header = new Dictionary<string, string>();
-                    if (url.Contains("OPT:")) {
-                        var headers = url.Substring(url.IndexOf("OPT:") + 4).Replace("--", "|").Split('|');
-                        for (int i = 0; i < headers.Length; i++) {
-                            if (headers[i] == "ContentType") {
-                                if (!string.IsNullOrEmpty(request.Headers["Range"])) {
-                                    header["Range"] = request.Headers["Range"];
-                                }
-                                response.Headers.Add("Accept-Ranges", "bytes");
-                                response.ContentType = headers[++i];
-                                continue;
-                            }
-                            header[headers[i]] = headers[++i];
-                        }
-                        url = url.Substring(0, url.IndexOf("OPT:"));
-                    } else {
-                        header = null;
+
+                if (url.StartsWith("s=B")) {
+                    url = url.Substring(3);
+
+                    string contentId = FileList.GetContentId(url);
+                    return GetFileList(FileList.GetFileList(contentId, "content_id"), contentId, "content_id");
+                } else if (url.StartsWith("torrenturl=")) {
+                    url = url.Substring(11);
+                    url = HttpUtility.UrlDecode(url);
+                    if (url.StartsWith("torrent://")) {
+                        url = url.Substring(10);
                     }
 
-                    HTTPUtility.GetRequest(url, header);
+                    var data = HTTPUtility.GetBytesRequest(url);
+                    string contentId = FileList.GetContentId(data);
+                    return GetFileList(FileList.GetFileList(contentId, "content_id"), contentId, "content_id");
+                } else if (url.StartsWith("magnet=")) {
+                    url = url.Substring(7);
 
-                    result = HTTPUtility.GetRequest(url);
+                    return GetFileList(FileList.GetFileList(url, "magnet"), url, "magnet");
                 }
-                response.Headers.Add("Connection", "Close");
-
-                return GetFileList(result);
+                return string.Empty;
             } catch (Exception exception) {
                 Log.LogError(exception, exception.Message);
                 return exception.Message;
             }
         }
 
-        public string GetID(string fileTorrentString64) {
-            string responseFromServer = HTTPUtility.PostRequest("http://api.torrentstream.net/upload/raw", fileTorrentString64);
+        public string GetFileList(Dictionary<string,string> files, string key, string type) {
+            var items = new List<Item>();
 
-            var s = JsonConvert.DeserializeObject<AceId>(responseFromServer);
-            if (s.Error != null) {
-                return "error get content ID: " + s.Error;
+            if (files.Count > 0) {
+                if (files.Count > 1) {
+                    string stream = string.Format("{0}/ace/getstream?{1}={2}", AceStreamEngine.GetServer, type, key);
+                    return HTTPUtility.GetRequest(stream);
+                } else {
+                    string stream = string.Format("{0}/ace/getstream?{1}={2}", AceStreamEngine.GetServer, type, key);
+                    string name = Path.GetFileName(files.First().Value);
+                    var item = new Item() {
+                        Name = Path.GetFileName(name),
+                        ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png",
+                        Link = stream,
+                        Type = ItemType.FILE
+                    };
+                    items.Add(item);
+
+                    stream = string.Format("{0}/ace/manifest.m3u8?{1}={2}", AceStreamEngine.GetServer, type, key);
+                    item = new Item() {
+                        Name = "(hls) " + Path.GetFileName(name),
+                        ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png",
+                        Link = stream,
+                        Type = ItemType.FILE
+                    };
+                    items.Add(item);
+                }
             }
-            return s.ContentID;
-        }
 
-        public string GetFileList(string fileTorrentString64) {
-            var result = new List<Item>();
-            string id = GetID(fileTorrentString64);
-            if (id.StartsWith("error")) {
-                result.Add(
-                    new Item {
-                        Name = id,
-                        Link = "",
-                        Type = ItemType.FILE,
-                        ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png"
-                    }
-                );
-                return ResponseSerializer.ToXml(result.ToArray());
-            }
-
-            string aceMadiaInfo;
-            string ip = ProgramSettings.Settings.IpAddress;
-            string port = ProgramSettings.Settings.AceStreamPort.ToString();
-            string url = string.Concat("http://", ip, ":", port, "/server/api?method=get_media_files&content_id=", id);
-            try {
-                aceMadiaInfo = HTTPUtility.GetRequest(url);
-            } catch (Exception exception) {
-                result.Add(
-                    new Item {
-                        Name = exception.Message + " " + url,
-                        Link = "",
-                        Description =
-                            "<div id=\"poster\" style=\"float:left;padding:4px;	background-color:#EEEEEE;margin:0px 13px 1px 0px;\"><img src=\"http://static.torrentstream.org/sites/org/img/wiki-logo.png\" style=\"width:180px;float:left;\" /></div>http://" +
-                            ip + ":" + port +
-                            " /server/api ?method=get_media_files &content_id= " + id +
-                            " <br><span style=\"color:#3090F0\">Проверьте, установлен и запущен ли на компьютере Ace Stream!<br>Скачать и установить последнюю версию на компьютер можно по ссылке http://wiki.acestream.org</span>",
-                        Type = ItemType.FILE,
-                        ImageLink = "http://static.torrentstream.org/sites/org/img/wiki-logo.png"
-                    }
-                );
-                return ResponseSerializer.ToXml(result.ToArray());
-            }
-            var s = JsonConvert.DeserializeObject<AceFile>(aceMadiaInfo);
-            if (s.Result == null) {
-                result.Add(
-                    new Item {
-                        Name = aceMadiaInfo,
-                        Link = "",
-                        Type = ItemType.FILE,
-                        ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png"
-                    }
-                );
-                return ResponseSerializer.ToXml(result.ToArray());
-            }
-            var myList = new List<KeyValuePair<string, string>>(s.Result);
-            myList.Sort(
-                (firstPair, nextPair) => firstPair.Value.CompareTo(nextPair.Value)
-            );
-
-            result.AddRange(myList.Select(h => new Item {
-                Name = h.Value,
-                Link = "http://" + ip + ":" + port + "/ace/getstream?id=" + id + "&_idx=" + h.Key,
-                Type = ItemType.FILE,
-                ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png"
-            }));
-
-            result.AddRange(myList.Select(h => new Item {
-                Name = "(hls) " + h.Value,
-                Link = "http://" + ip + ":" + port + "/ace/manifest.m3u8?id=" + id + "&_idx=" + h.Key,
-                Type = ItemType.FILE,
-                ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png"
-            }));
             var playlist = new Playlist {
-                Items = result.ToArray(),
+                Items = items.ToArray(),
                 IsIptv = "false"
             };
             return ResponseSerializer.ToXml(playlist);
-        }
-
-        [Serializable]
-        public class AceFile {
-            public string Error { get; set; }
-            public Dictionary<string, string> Result { get; set; }
-        }
-
-        [Serializable]
-        public class AceId {
-            public string Error { get; set; }
-            public string ContentID { get; set; }
         }
     }
 }
