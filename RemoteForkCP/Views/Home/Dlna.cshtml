@@ -8,24 +8,24 @@
 <form asp-controller="Home" asp-action="Dlna" method="post">
     <div>
         <div>
-            <input id="Enable" type="checkbox" name="Enable" asp-for="Enable" /> <label for="Enable">Enable DLNA</label>
+            <input id="Enable" type="checkbox" name="Enable" asp-for="Enable" /> <label for="Enable">Включить DLNA</label>
         </div>
         <hr />
-        <div>
+        @*<div>
             <input id="HiidenFiles" type="checkbox" name="HiidenFiles" asp-for="HiidenFiles" /> <label for="HiidenFiles">Show hidden files</label>
-        </div>
-        <div>Filter mode:@Html.DropDownList("FilterMode", ViewBag.FilterMode as SelectList)</div>
+        </div>*@
+        <div>Режим фильтрации:@Html.DropDownList("FilterMode", ViewBag.FilterMode as SelectList)</div>
         <div>
-            File extensions: <input id="FileExtensions" type="text" asp-for="FileExtensions" />
+            Расширения файлов: <input id="FileExtensions" type="text" asp-for="FileExtensions" />
         </div>
         <hr />
         <div>
-            Directories:<br />
+            Каталоги:<br />
             <textarea id="Directories" rows="20" cols="20" style="width: 100%" asp-for="Directories"></textarea>
         </div>
         <hr />
         <div>
-            <input id="ResetSettings" type="reset" value="reset" /><input id="SubmitSettings" type="submit" value="submit" />
+            <input id="ResetSettings" type="reset" value="Отмена" /><input id="SubmitSettings" type="submit" value="Сохранить" />
         </div>
     </div>
 </form>

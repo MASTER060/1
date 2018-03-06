@@ -1,4 +1,5 @@
 # RemoteFork
+[![Build status](https://ci.appveyor.com/api/projects/status/incpdeg9j6ibll6g?svg=true)](https://ci.appveyor.com/project/ShutovPS/remotefork)
 Программа является дополнением к приложению для тв ForkPlayer.
 Основное функции:
 - Обработка запросов, недоступных в самом FP.

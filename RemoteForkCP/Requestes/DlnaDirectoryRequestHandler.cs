@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using System.Net;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Plugins;
+using RemoteFork.Server;
 
 namespace RemoteFork.Requestes {
     public class DlnaDirectoryRequestHandler : BaseRequestHandler<string> {
@@ -19,30 +20,28 @@ namespace RemoteFork.Requestes {
 
             if (!string.IsNullOrEmpty(rootDirectory)) {
                 rootDirectory =
-                    new Uri(rootDirectory.Remove(rootDirectory.IndexOf(".xml", StringComparison.InvariantCulture)))
-                        .LocalPath;
+                    new Uri(rootDirectory.Remove(rootDirectory.IndexOf(".xml"))).LocalPath;
 
-                var directories = Directory.GetDirectories(rootDirectory).OrderBy(d => d);
-                var directoriesInfo = directories.Select(directory => new DirectoryInfo(directory)).ToList();
+                var directoriesInfo = FileManager.GetDirectories(rootDirectory);
 
                 var result = new List<Item>();
 
-                foreach (var directory in directoriesInfo.Where(Tools.Tools.CheckAccessPath)) {
-                    result.Add(CreateDirectoryItem(request, directory));
+                foreach (var directory in directoriesInfo.Where(d => Tools.Tools.CheckAccessPath(d.Key))) {
+                    result.Add(CreateDirectoryItem(request, directory.Key, directory.Value));
 
                     Log.LogDebug("Directory: {0}", directory);
                 }
 
-                var files = Directory.GetFiles(rootDirectory).OrderBy(f => f);
-                var filesInfo = files.Select(file => new FileInfo(file)).ToList();
+                var filesInfo = FileManager.GetFiles(rootDirectory);
 
-                foreach (var file in filesInfo.Where(Tools.Tools.CheckAccessPath)) {
+                foreach (var file in filesInfo.Where(f => Tools.Tools.CheckAccessPath(f.Key))) {
                     result.Add(
                         new Item {
-                            Name = $"{file.Name} ({Tools.Tools.FSize(file.Length)})",
+                            //Name = $"{file.Value} ({Tools.Tools.FSize(file.Length)})",
+                            Name = $"{file.Value}",
                             Link = CreateUrl(request, DlnaFileRequestHandler.URL_PATH,
                                 new NameValueCollection() {
-                                    {string.Empty, new Uri(file.FullName).AbsoluteUri}
+                                    {string.Empty, HttpUtility.UrlEncode(file.Key)}
                                 }),
                             Type = ItemType.FILE
                         }
@@ -60,20 +59,20 @@ namespace RemoteFork.Requestes {
         }
 
         internal static Item CreateDirectoryItem(HttpRequest request, string directory) {
-            return CreateDirectoryItem(request, new DirectoryInfo(directory));
+            return CreateDirectoryItem(request, directory, directory);
         }
 
-        internal static Item CreateDirectoryItem(HttpRequest request, DirectoryInfo directory) {
+        internal static Item CreateDirectoryItem(HttpRequest request, string directoryPath, string directoryName) {
 
             return new Item {
-                Name = directory.Name,
+                Name = directoryName,
                 Link = CreateUrl(
                     request,
                     URL_PATH,
                     new NameValueCollection() {
                         {
                             string.Empty,
-                            string.Concat(directory.FullName, ".xml")
+                            string.Concat(directoryPath, ".xml")
                         }
                     }
                 ),
@@ -81,11 +80,11 @@ namespace RemoteFork.Requestes {
             };
         }
 
-        internal static string CreateDriveItem(HttpRequest request, DriveInfo directory) {
+        internal static string CreateDriveItem(HttpRequest request, string directory) {
             var query = new NameValueCollection() {
                 {
                     string.Empty,
-                    string.Concat(directory.Name, ".xml")
+                    string.Concat(directory, ".xml")
                 }
             };
 

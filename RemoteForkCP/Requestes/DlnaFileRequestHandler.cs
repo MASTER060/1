@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Tools;
 
@@ -18,7 +19,8 @@ namespace RemoteFork.Requestes {
             string file = string.Empty;
 
             if (request.Query.ContainsKey(string.Empty)) {
-                file = request.Query[string.Empty].FirstOrDefault(s => s.StartsWith(Uri.UriSchemeFile));
+                file = request.Query[string.Empty][0];
+                file = HttpUtility.UrlDecode(file);
             }
 
             if (!string.IsNullOrEmpty(file)) {

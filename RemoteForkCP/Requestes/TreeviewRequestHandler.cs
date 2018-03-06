@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Plugins;
+using RemoteFork.Server;
 using RemoteFork.Settings;
 
 namespace RemoteFork.Requestes {
@@ -16,7 +16,7 @@ namespace RemoteFork.Requestes {
             if (ProgramSettings.Settings.DlnaFilterType == FilterMode.INCLUSION) {
                 if (ProgramSettings.Settings.DlnaDirectories != null) {
                     foreach (string directory in ProgramSettings.Settings.DlnaDirectories) {
-                        if (Directory.Exists(directory)) {
+                        if (FileManager.DirectoryExists(directory)) {
                             result.Add(DlnaDirectoryRequestHandler.CreateDirectoryItem(request, directory));
 
                             Log.LogDebug($"Filtering directory: {directory}");
@@ -24,7 +24,7 @@ namespace RemoteFork.Requestes {
                     }
                 }
             } else {
-                var drives = DriveInfo.GetDrives();
+                var drives = FileManager.GetDrives();
 
                 foreach (var drive in drives.Where(i => Tools.Tools.CheckAccessPath(i.Name))) {
                     if (drive.IsReady) {
@@ -34,7 +34,7 @@ namespace RemoteFork.Requestes {
 
                         result.Add(new Item {
                             Name = mainText + subText,
-                            Link = DlnaDirectoryRequestHandler.CreateDriveItem(request, drive),
+                            Link = DlnaDirectoryRequestHandler.CreateDriveItem(request, drive.Name),
                             Type = ItemType.DIRECTORY
                         });
 

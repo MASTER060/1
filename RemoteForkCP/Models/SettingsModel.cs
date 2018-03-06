@@ -17,10 +17,10 @@ namespace RemoteFork.Models {
         [Display(Name = "Log")]
         public string Log { get; set; }
 
-        [Required]
-        [MaxLength(3)]
-        [Display(Name = "Use Proxy")]
-        public string UseProxy { get; set; }
+        //[Required]
+        //[MaxLength(3)]
+        //[Display(Name = "Use Proxy")]
+        //public string UseProxy { get; set; }
 
         [Required]
         [MaxLength(6)]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,8 @@ namespace RemoteFork {
         private static Server server;
 
         public static void Main(string[] args) {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             server = new Server();
             
             server.Start(ProgramSettings.Settings.IpAddress, ProgramSettings.Settings.Port);
@@ -43,7 +46,7 @@ namespace RemoteFork {
                 ServerRegistration();
 
                 webHost = builder
-                    .UseUrls($"http://{ip}:{port}")
+                    .UseUrls($"http://{ip}:{port};http://localhost:{port}")
                     .Build();
                 webHost.Run();
             }

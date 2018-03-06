@@ -8,7 +8,7 @@
 <form asp-controller="Home" asp-action="Plugins" method="post">
     <div>
         <div>
-            <input id="Enable" type="checkbox" name="Enable" @if ((bool)ViewData["Enable"]) { <text> checked="checked" </text> } /> <label for="Enable">Enable Plugins</label>
+            <input id="Enable" type="checkbox" name="Enable" @if ((bool)ViewData["Enable"]) { <text> checked="checked" </text> } /> <label for="Enable">Включить плагины</label>
         </div>
         <hr />
         <div class="container">
@@ -27,7 +27,7 @@
         </div>
         <hr />
         <div>
-            <input id="ResetSettings" type="reset" value="reset" /><input id="ReimportPlugins" type="button" value="reimport" onclick="location.href='@Url.Action("Plugins", "Home")?action=reimport'"/><input id="SubmitSettings" type="submit" value="submit" />
+            <input id="ResetSettings" type="reset" value="Отмена" /><input id="ReimportPlugins" type="button" value="Обновить" onclick="location.href='@Url.Action("Plugins", "Home")?action=reimport'"/><input id="SubmitSettings" type="submit" value="Сохранить" />
         </div>
     </div>
 </form>

@@ -38,7 +38,7 @@ namespace RemoteFork.Controllers {
             //ViewData["THVPAutoStart"] = ProgramSettings.Settings.THVPAutoStart;
             ViewData["AceStreamPort"] = ProgramSettings.Settings.AceStreamPort;
             ViewData["AceStreamCheck"] =
-                $"http://127.0.0.1:{ProgramSettings.Settings.AceStreamPort}/webui/api/service?method=get_version&format=jsonp&callback=mycallback";
+                $"http://{ProgramSettings.Settings.IpAddress}:{ProgramSettings.Settings.AceStreamPort}/webui/api/service?method=get_version&format=jsonp&callback=mycallback";
             ViewData["LogLevel"] = ProgramSettings.Settings.LogLevel;
             ViewData["CheckUpdate"] = ProgramSettings.Settings.CheckUpdate;
             ViewData["UserAgent"] = ProgramSettings.Settings.UserAgent;
@@ -151,7 +151,7 @@ namespace RemoteFork.Controllers {
                 Enable = ProgramSettings.Settings.Dlna,
                 FileExtensions = string.Join(", ", ProgramSettings.Settings.DlnaFileExtensions),
                 FilterMode = ((byte)ProgramSettings.Settings.DlnaFilterType).ToString(),
-                HiidenFiles = ProgramSettings.Settings.DlnaHiidenFiles
+                //HiidenFiles = ProgramSettings.Settings.DlnaHiidenFiles
             };
 
             return View(model);
@@ -162,9 +162,9 @@ namespace RemoteFork.Controllers {
             if (ProgramSettings.Settings.Dlna != settings.Enable) {
                 ProgramSettings.Settings.Dlna = settings.Enable;
             }
-            if (ProgramSettings.Settings.DlnaHiidenFiles != settings.HiidenFiles) {
-                ProgramSettings.Settings.DlnaHiidenFiles = settings.HiidenFiles;
-            }
+            //if (ProgramSettings.Settings.DlnaHiidenFiles != settings.HiidenFiles) {
+            //    ProgramSettings.Settings.DlnaHiidenFiles = settings.HiidenFiles;
+            //}
             if (!string.IsNullOrEmpty(settings.FilterMode)) {
                 Enum.TryParse(settings.FilterMode, out FilterMode value);
                 if (ProgramSettings.Settings.DlnaFilterType != value) {
