@@ -30,17 +30,19 @@ namespace RemoteFork.Requestes {
                         var pluginResponse = plugin.Instance.GetList(context);
 
                         if (pluginResponse != null) {
-                            if (pluginResponse.source != null) {
+                            if (!string.IsNullOrEmpty(pluginResponse.source)) {
                                 Log.LogDebug(
                                     "Plugin Playlist.source not null! Write to response Playlist.source and ignore other methods. Plugin: {0}",
                                     pluginKey);
                                 return pluginResponse.source;
+                            //} else if (!string.IsNullOrEmpty(pluginResponse.IsIptv) && pluginResponse.IsIptv == "True") {
+                                //return ResponseSerializer.PlaylistToM3U8(pluginResponse);
                             } else {
-                                return ResponseSerializer.ToXml(pluginResponse);
+                                return ResponseSerializer.PlaylistToXml(pluginResponse);
                             }
                         }
                     } catch (Exception exception) {
-                        Log.LogError(exception, exception.Message);
+                        Log.LogError(exception);
                         response.StatusCode = (int) HttpStatusCode.BadRequest;
                         return $"Plugin: {pluginKey}";
                     }

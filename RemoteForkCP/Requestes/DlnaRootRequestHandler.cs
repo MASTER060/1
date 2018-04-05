@@ -7,41 +7,44 @@ using RemoteFork.Server;
 using RemoteFork.Settings;
 
 namespace RemoteFork.Requestes {
-    public class TreeviewRequestHandler : BaseRequestHandler<string> {
+    public class DlnaRootRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "treeview";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             var result = new List<Item>();
 
-            if (ProgramSettings.Settings.DlnaFilterType == FilterMode.INCLUSION) {
-                if (ProgramSettings.Settings.DlnaDirectories != null) {
-                    foreach (string directory in ProgramSettings.Settings.DlnaDirectories) {
-                        if (FileManager.DirectoryExists(directory)) {
-                            result.Add(DlnaDirectoryRequestHandler.CreateDirectoryItem(request, directory));
+            if (ProgramSettings.Settings.Dlna) {
+                if (ProgramSettings.Settings.DlnaFilterType == FilterMode.INCLUSION) {
+                    if (ProgramSettings.Settings.DlnaDirectories != null) {
+                        foreach (string directory in ProgramSettings.Settings.DlnaDirectories) {
+                            if (FileManager.DirectoryExists(directory)) {
+                                result.Add(DlnaDirectoryRequestHandler.CreateDirectoryItem(request, directory));
 
-                            Log.LogDebug($"Filtering directory: {directory}");
+                                Log.LogDebug($"Filtering directory: {directory}");
+                            }
+                        }
+                    }
+                } else {
+                    var drives = FileManager.GetDrives();
+
+                    foreach (var drive in drives.Where(i => Tools.Tools.CheckAccessPath(i.Name))) {
+                        if (drive.IsReady) {
+                            string mainText =
+                                $"{drive.Name} ({Tools.Tools.FSize(drive.AvailableFreeSpace)} свободно из {Tools.Tools.FSize(drive.TotalSize)})";
+                            string subText = $"<br>Метка диска: {drive.VolumeLabel}<br>Тип носителя: {drive.DriveType}";
+
+                            result.Add(new Item {
+                                Name = mainText + subText,
+                                Link = DlnaDirectoryRequestHandler.CreateDriveItem(request, drive.Name),
+                                Type = ItemType.DIRECTORY
+                            });
+
+                            Log.LogDebug($"Drive: {mainText}{subText}");
                         }
                     }
                 }
-            } else {
-                var drives = FileManager.GetDrives();
-
-                foreach (var drive in drives.Where(i => Tools.Tools.CheckAccessPath(i.Name))) {
-                    if (drive.IsReady) {
-                        string mainText =
-                            $"{drive.Name} ({Tools.Tools.FSize(drive.AvailableFreeSpace)} свободно из {Tools.Tools.FSize(drive.TotalSize)})";
-                        string subText = $"<br>Метка диска: {drive.VolumeLabel}<br>Тип носителя: {drive.DriveType}";
-
-                        result.Add(new Item {
-                            Name = mainText + subText,
-                            Link = DlnaDirectoryRequestHandler.CreateDriveItem(request, drive.Name),
-                            Type = ItemType.DIRECTORY
-                        });
-
-                        Log.LogDebug($"Drive: {mainText}{subText}");
-                    }
-                }
             }
+
 
             if ((ProgramSettings.Settings.UserUrls != null) && (ProgramSettings.Settings.UserUrls.Length > 0)) {
                 result.Add(
@@ -70,8 +73,8 @@ namespace RemoteFork.Requestes {
 
                 Log.LogDebug("Plugin: {0}", plugin.Value.Name);
             }
-            
-            return  ResponseSerializer.ToM3U(result.ToArray());
+
+            return ResponseSerializer.ToM3U(result.ToArray());
         }
     }
 }

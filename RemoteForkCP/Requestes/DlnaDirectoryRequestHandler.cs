@@ -7,10 +7,11 @@ using System.Web;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Plugins;
 using RemoteFork.Server;
+using RemoteFork.Settings;
 
 namespace RemoteFork.Requestes {
     public class DlnaDirectoryRequestHandler : BaseRequestHandler<string> {
-        public const string URL_PATH = "directory";
+        public const string URL_PATH = "dlna_directory";
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             string rootDirectory = string.Empty;
@@ -18,7 +19,7 @@ namespace RemoteFork.Requestes {
                 rootDirectory = request.Query[string.Empty].FirstOrDefault(s => s.EndsWith(".xml"));
             }
 
-            if (!string.IsNullOrEmpty(rootDirectory)) {
+            if (ProgramSettings.Settings.Dlna && !string.IsNullOrEmpty(rootDirectory)) {
                 rootDirectory =
                     new Uri(rootDirectory.Remove(rootDirectory.IndexOf(".xml"))).LocalPath;
 
@@ -50,7 +51,7 @@ namespace RemoteFork.Requestes {
                     Log.LogDebug("File: {0}", file);
                 }
 
-                return ResponseSerializer.ToXml(result.ToArray());
+                return ResponseSerializer.ToXml(result);
             } else {
                 Log.LogDebug("Directory Not Found: {0}", rootDirectory);
                 response.StatusCode = (int) HttpStatusCode.NotFound;

@@ -7,11 +7,12 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Http;
+using RemoteFork.Settings;
 using RemoteFork.Tools;
 
 namespace RemoteFork.Requestes {
     public class DlnaFileRequestHandler : BaseRequestHandler<Stream> {
-        public const string URL_PATH = "file";
+        public const string URL_PATH = "dlna_file";
 
         public override Stream Handle(HttpRequest request, HttpResponse response) {
             Log.LogDebug("HandleStream get file");
@@ -23,7 +24,7 @@ namespace RemoteFork.Requestes {
                 file = HttpUtility.UrlDecode(file);
             }
 
-            if (!string.IsNullOrEmpty(file)) {
+            if (ProgramSettings.Settings.Dlna && !string.IsNullOrEmpty(file)) {
                 try {
                     var fileRequest = FileRequest.Create(request, file);
 
@@ -67,7 +68,7 @@ namespace RemoteFork.Requestes {
                         response.StatusCode = (int) HttpStatusCode.NotFound;
                     }
                 } catch (Exception exception) {
-                    Log.LogError(exception, exception.Message);
+                    Log.LogError(exception);
                     response.StatusCode = (int) HttpStatusCode.NotFound;
                 }
             } else {

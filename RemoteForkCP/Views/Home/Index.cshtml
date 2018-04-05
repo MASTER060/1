@@ -7,34 +7,35 @@
 <form asp-controller="Home" asp-action="Index" method="post">
     <div>
         <div>IP адрес: @Html.DropDownList("IP", ViewBag.Ips as SelectList)</div>
-        <div>
-            Порт: <input id="Port" type="text" value="@ViewData["Port"]" disabled="disabled" asp-for="Port" />
-        </div>
+        <div>Порт: <input id="Port" type="text" disabled="disabled" asp-for="Port" /></div>
+        <div><input id="ListenLocalhost" type="checkbox" name="ListenLocalhost" asp-for="ListenLocalhost" /> <label for="ListenLocalhost">Слушать localhost</label></div>
         <hr />
-        @*<div>
-            <input id="UseProxy" type="checkbox" name="UseProxy" @if ((bool)ViewData["UseProxy"]) { <text> checked="checked" </text> } asp-for="UseProxy" /> <label for="UseProxy">Use Proxy</label>
+        <div>
+            Порт AceStream: <input id="AceStreamPort" type="text" asp-for="AceStreamPort" /> <input id="CheckASButton" type="button" value="Проверить" OnClick="window.open('@ViewData["AceStreamCheck"]')" />
         </div>
         <div>
-            THVP Auto Start <input id="THVPAutoStart" type="checkbox" @if ((bool) ViewData["THVPAutoStart"]) {<text>checked="checked"</text>}/>
-        </div>*@
-        <div>
-            Порт AceStream: <input id="AceStreamPort" type="text" value="@ViewData["AceStreamPort"]" asp-for="AceStreamPort" /><input id="CheckASButton" type="button" value="Проверить" OnClick="window.open('@ViewData["AceStreamCheck"]')" />
-        </div>
-        <div>
-            <input id="CheckUpdate" type="checkbox" name="CheckUpdate" @if ((bool)ViewData["CheckUpdate"]) { <text> checked="checked" </text> } /> <label for="CheckUpdate">Проверять обновления</label>
+            <input id="CheckUpdate" type="checkbox" name="CheckUpdate" asp-for="CheckUpdate" /> <label for="CheckUpdate">Проверять обновления</label>
         </div>
         <div>Режим логирования: @Html.DropDownList("Log", ViewBag.Logs as SelectList)</div>
         <hr />
         <div>
-            User-Agent:<br /><input id="UserAgent" type="text" value="@ViewData["UserAgent"]" style="width: 100%" asp-for="UserAgent" />
+            User-Agent:<br /><input id="UserAgent" type="text" style="width: 100%" asp-for="UserAgent" />
         </div>
         <hr />
         <div>
-            <input id="DeveloperMode" type="checkbox" name="DeveloperMode" @if ((bool)ViewData["DeveloperMode"]) { <text> checked="checked" </text> } asp-for="DeveloperMode" /> <label for="DeveloperMode">Режим разработчика</label>
+            <input id="ProxyEnable" type="checkbox" name="ProxyEnable" asp-for="ProxyEnable" /> <label for="ProxyEnable">Включить Proxy</label><br />
+            Адрес: <input id="ProxyAddress" type="text" style="width: 30%" asp-for="ProxyAddress" /><br /><br />
+            Имя: <input id="ProxyUserName" type="text" asp-for="ProxyUserName" /><br />
+            Пароль: <input id="ProxyPassword" type="text" asp-for="ProxyPassword" /><br />
+            <input id="ProxyNotDefaultEnable" type="checkbox" name="ProxyNotDefaultEnable" asp-for="ProxyNotDefaultEnable" /> <label for="ProxyNotDefaultEnable">Включить Proxy только для специальных запросов</label><br />
         </div>
         <hr />
         <div>
-            <input id="ResetSettings" type="reset" value="Отмена" /><input id="SubmitSettings" type="submit" value="Сохранить" />
+            <input id="DeveloperMode" type="checkbox" name="DeveloperMode" asp-for="DeveloperMode" /> <label for="DeveloperMode">Режим разработчика</label>
+        </div>
+        <hr />
+        <div>
+            <input id="ResetSettings" type="reset" value="Отмена" /><input id="RestartServer" type="button" value="Перезапустить сервер" onclick="location.href='@Url.Action("Index", "Home")?action=restart'" /><input id="SubmitSettings" type="submit" value="Сохранить" />
         </div>
     </div>
 </form>

@@ -14,10 +14,10 @@ namespace RemoteFork.Controllers {
             return View();
         }
 
-        [Route(TreeviewRequestHandler.URL_PATH)]
+        [Route(DlnaRootRequestHandler.URL_PATH)]
         public ActionResult Treeview() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
-            ViewData["Message"] = new TreeviewRequestHandler().Handle(HttpContext);
+            ViewData["Message"] = new DlnaRootRequestHandler().Handle(HttpContext);
             return View();
         }
 

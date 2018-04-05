@@ -45,7 +45,7 @@ namespace RemoteFork.Requestes {
                 }
                 return string.Empty;
             } catch (Exception exception) {
-                Log.LogError(exception, exception.Message);
+                Log.LogError(exception);
                 return exception.Message;
             }
         }
@@ -83,7 +83,7 @@ namespace RemoteFork.Requestes {
                 Items = items.ToArray(),
                 IsIptv = "false"
             };
-            return ResponseSerializer.ToXml(playlist);
+            return ResponseSerializer.PlaylistToXml(playlist);
         }
     }
 }

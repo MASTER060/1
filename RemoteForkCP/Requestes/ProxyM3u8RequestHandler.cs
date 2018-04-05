@@ -78,7 +78,7 @@ namespace RemoteFork.Requestes {
                 var data = HTTPUtility.GetBytesRequest(url, header, usertype);
                 return data;
             } catch (Exception exception) {
-                Log.LogError(exception, exception.Message);
+                Log.LogError(exception);
                 return Encoding.UTF8.GetBytes(exception.ToString());
             }
         }

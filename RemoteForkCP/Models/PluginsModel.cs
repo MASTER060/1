@@ -6,7 +6,7 @@ namespace RemoteFork.Models {
     public class PluginsModel {
         [Required]
         [Display(Name = "Enable")]
-        public string Enable { get; set; }
+        public bool Enable { get; set; }
 
         [Required]
         [Display(Name = "EnablePlugins")]

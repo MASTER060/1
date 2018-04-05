@@ -8,7 +8,7 @@
 <form asp-controller="Home" asp-action="Plugins" method="post">
     <div>
         <div>
-            <input id="Enable" type="checkbox" name="Enable" @if ((bool)ViewData["Enable"]) { <text> checked="checked" </text> } /> <label for="Enable">Включить плагины</label>
+            <input id="Enable" type="checkbox" name="Enable" asp-for="Enable" /> <label for="Enable">Включить плагины</label>
         </div>
         <hr />
         <div class="container">

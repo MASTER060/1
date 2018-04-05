@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -24,7 +25,7 @@ namespace RemoteFork.Requestes {
             return sb.ToString();
         }
 
-        public static string ToJson(Playlist pluginResponse) {
+        /*public static string ToJson(Playlist pluginResponse) {
             var json = new JObject();
 
             if (pluginResponse.Items != null && pluginResponse.Items.Any()) {
@@ -64,18 +65,35 @@ namespace RemoteFork.Requestes {
             }
 
             return json.ToString();
-        }
+        }*/
 
-        public static string ToXml(Playlist pluginResponse) {
+        /*public static string PlaylistToM3U8(Playlist pluginResponse) {
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("#EXTM3U");
+            stringBuilder.AppendLine();
+
+            foreach (var item in pluginResponse.Items) {
+                stringBuilder.AppendLine($"#EXTINF:-1,{item.Name}");
+                stringBuilder.AppendLine(item.Link);
+            }
+            stringBuilder.AppendLine();
+
+            return stringBuilder.ToString();
+        }*/
+
+        public static string PlaylistToXml(Playlist pluginResponse) {
             var items = ItemsToXml(pluginResponse.Items);
-            if (pluginResponse.Timeout != null) {
+
+            if (!string.IsNullOrEmpty(pluginResponse.Timeout)) {
                 items.AddFirst(new XElement("timeout", new XCData(pluginResponse.Timeout ?? string.Empty)));
             }
-            if (pluginResponse.IsIptv != null) {
+
+            if (!string.IsNullOrEmpty(pluginResponse.IsIptv)) {
                 items.AddFirst(new XElement("is_iptv", new XCData(pluginResponse.IsIptv ?? string.Empty)));
             }
+
             items.AddFirst(new XElement("next_page_url", new XCData(pluginResponse.NextPageUrl ?? string.Empty)));
-            if (pluginResponse.GetInfo != null) {
+            if (!string.IsNullOrEmpty(pluginResponse.GetInfo)) {
                 items.AddFirst(new XElement("get_info", new XCData(pluginResponse.GetInfo ?? string.Empty)));
             }
 
@@ -87,7 +105,7 @@ namespace RemoteFork.Requestes {
             );
         }
 
-        public static string ToXml(Item[] items) {
+        public static string ToXml(IReadOnlyCollection<Item> items) {
             return XmlToString(
                 new XDocument(
                     new XDeclaration("1.0", "utf-8", "yes"),
@@ -109,7 +127,7 @@ namespace RemoteFork.Requestes {
             return builder.ToString();
         }
 
-        private static XElement ItemsToXml(Item[] items) {
+        private static XElement ItemsToXml(IReadOnlyCollection<Item> items) {
             var xmlItems = new XElement("items");
 
             if (items != null && items.Any()) {
