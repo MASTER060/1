@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -20,25 +19,12 @@ namespace RemoteFork {
 
             server = new Server(ProgramSettings.Settings.IpAddress, ProgramSettings.Settings.Port);
 
-            Task.Run(server.Start);
-
-            while (true) {
-            }
-        }
-
-        public static void Restart() {
-            if (server != null) {
-                try {
-                    server.Restart();
-                } catch (Exception exception) {
-                    Log.LogError(exception);
-                }
-            }
+            server.Start();
         }
 
         internal class Server {
             private static readonly Logger Log = new Logger(typeof(Server));
-            
+
             private IWebHost _webHost;
 
             private readonly string _ip;
@@ -49,7 +35,7 @@ namespace RemoteFork {
                 this._port = port;
             }
 
-            internal async Task Start() {
+            internal void Start() {
                 var builder = WebHost.CreateDefaultBuilder()
                     //.UseEnvironment("Development")
                     .UseStartup<Startup>()
@@ -59,7 +45,7 @@ namespace RemoteFork {
 #else
                 .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory);
 #endif
-                
+
                 if (ProgramSettings.Settings.UseProxy) {
                     HTTPUtility.CreateProxy(ProgramSettings.Settings.ProxyAddress,
                         ProgramSettings.Settings.ProxyUserName, ProgramSettings.Settings.ProxyPassword);
@@ -80,16 +66,10 @@ namespace RemoteFork {
                     _webHost = builder
                         .UseUrls(listen.ToString())
                         .Build();
-                    
-                    await _webHost.RunAsync(Current.AppCancellationSource.Token);
+
+                    _webHost.Run();
 
                     _webHost.Dispose();
-
-                    if (Current.AppCancellationSource == null) {
-                        Current.AppCancellationSource = new CancellationTokenSource();
-
-                        await server.Start();
-                    }
                 } catch (Exception exception) {
                     Log.LogError(exception);
                 }
@@ -117,21 +97,9 @@ namespace RemoteFork {
 
             internal void Stop() {
                 if (_webHost != null) {
-                    Current.AppCancellationSource.Cancel();
+                    _webHost.StopAsync().Wait();
                 }
             }
-
-            internal void Restart() {
-                if (_webHost != null) {
-                    var token = Current.AppCancellationSource;
-                    Current.AppCancellationSource = null;
-                    token.Cancel();
-                }
-            }
-        }
-
-        public static class Current {
-            public static CancellationTokenSource AppCancellationSource = new CancellationTokenSource();
         }
     }
 }

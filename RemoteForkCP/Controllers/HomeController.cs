@@ -54,14 +54,6 @@ namespace RemoteFork.Controllers {
                 DeveloperMode = ProgramSettings.Settings.DeveloperMode
             };
 
-            if (Request.QueryString.HasValue) {
-                if (Request.Query.ContainsKey("action")) {
-                    if (Request.Query["action"] == "restart") {
-                        Program.Restart();
-                    }
-                }
-            }
-
             return View(model);
         }
 

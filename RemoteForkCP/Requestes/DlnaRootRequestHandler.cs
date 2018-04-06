@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -17,7 +18,9 @@ namespace RemoteFork.Requestes {
                 if (ProgramSettings.Settings.DlnaFilterType == FilterMode.INCLUSION) {
                     if (ProgramSettings.Settings.DlnaDirectories != null) {
                         foreach (string directory in ProgramSettings.Settings.DlnaDirectories) {
+                            Console.WriteLine(directory);
                             if (FileManager.DirectoryExists(directory)) {
+                                Console.WriteLine(true);
                                 result.Add(DlnaDirectoryRequestHandler.CreateDirectoryItem(request, directory));
 
                                 Log.LogDebug($"Filtering directory: {directory}");
