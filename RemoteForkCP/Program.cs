@@ -22,9 +22,8 @@ namespace RemoteFork {
 
             Task.Run(server.Start);
 
-            while (Console.ReadKey().Key != ConsoleKey.Escape) {
+            while (true) {
             }
-            server.Stop();
         }
 
         public static void Restart() {
