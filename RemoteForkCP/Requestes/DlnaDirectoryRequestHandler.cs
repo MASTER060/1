@@ -40,7 +40,7 @@ namespace RemoteFork.Requestes {
                     result.Add(
                         new Item {
                             //Name = $"{file.Value} ({Tools.Tools.FSize(file.Length)})",
-                            Name = $"{file.Value} ({Tools.Tools.FSize(new FileInfo(file.Value).Length)})",
+                            Name = $"{file.Value} ({Tools.Tools.FSize(new FileInfo(file.Key).Length)})",
                             Link = CreateUrl(request, DlnaFileRequestHandler.URL_PATH,
                                 new NameValueCollection() {
                                     {string.Empty, HttpUtility.UrlEncode(file.Key)}
