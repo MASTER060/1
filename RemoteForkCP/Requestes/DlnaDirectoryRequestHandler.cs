@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -21,7 +22,7 @@ namespace RemoteFork.Requestes {
 
             if (ProgramSettings.Settings.Dlna && !string.IsNullOrEmpty(rootDirectory)) {
                 rootDirectory =
-                    new Uri(rootDirectory.Remove(rootDirectory.IndexOf(".xml"))).LocalPath;
+                    new Uri(rootDirectory.Remove(rootDirectory.IndexOf(".xml", StringComparison.Ordinal))).LocalPath;
 
                 var directoriesInfo = FileManager.GetDirectories(rootDirectory);
 
@@ -39,7 +40,7 @@ namespace RemoteFork.Requestes {
                     result.Add(
                         new Item {
                             //Name = $"{file.Value} ({Tools.Tools.FSize(file.Length)})",
-                            Name = $"{file.Value}",
+                            Name = $"{file.Value} ({Tools.Tools.FSize(new FileInfo(file.Value).Length)})",
                             Link = CreateUrl(request, DlnaFileRequestHandler.URL_PATH,
                                 new NameValueCollection() {
                                     {string.Empty, HttpUtility.UrlEncode(file.Key)}
