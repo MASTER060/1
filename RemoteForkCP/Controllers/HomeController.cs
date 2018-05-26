@@ -5,14 +5,15 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using RemoteFork.Log.Analytics;
 using RemoteFork.Models;
 using RemoteFork.Network;
 using RemoteFork.Plugins;
 using RemoteFork.Settings;
 
 namespace RemoteFork.Controllers {
+    [GoogleAnalyticsTrackEvent]
     public class HomeController : Controller {
-
         #region MAIN_SETTINGS
 
         [HttpGet]

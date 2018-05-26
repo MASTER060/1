@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using RemoteFork.Log.Analytics;
 using RemoteFork.Requestes;
 using RemoteFork.Models;
 
 namespace RemoteFork.Controllers {
+    [GoogleAnalyticsTrackEvent]
     public class MainController : Controller {
         [Route(TestRequestHandler.UrlPath)]
         public ActionResult Test() {
