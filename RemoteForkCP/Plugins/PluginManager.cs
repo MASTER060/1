@@ -132,8 +132,7 @@ namespace RemoteFork.Plugins {
                         if (!_plugins.ContainsKey(plugin.Id)) {
                             _plugins.Add(plugin.Id, plugin);
 
-                            Log.LogDebug("Loaded plugin [id: {0}, name: {1}, type: {2}, version: {3}]", plugin.Id,
-                                plugin.Name, type.FullName, plugin.Version);
+                            Log.LogDebug("Loaded plugin [id: {0}, name: {1}]", plugin.Id, plugin.ToString());
                         }
                     }
                 }

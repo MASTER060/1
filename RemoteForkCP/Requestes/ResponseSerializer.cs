@@ -1,12 +1,11 @@
-﻿using System;
+﻿using RemoteFork.Plugins;
+using RemoteFork.Tools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
-using Newtonsoft.Json.Linq;
-using RemoteFork.Plugins;
-using RemoteFork.Tools;
 
 namespace RemoteFork.Requestes {
     public class ResponseSerializer {
@@ -89,7 +88,11 @@ namespace RemoteFork.Requestes {
             }
 
             if (!string.IsNullOrEmpty(pluginResponse.IsIptv)) {
-                items.AddFirst(new XElement("is_iptv", new XCData(pluginResponse.IsIptv ?? string.Empty)));
+                pluginResponse.IptvPlaylist = pluginResponse.IptvPlaylist || pluginResponse.IsIptv.ToLower() == "true";
+            }
+
+            if (pluginResponse.IptvPlaylist) {
+                items.AddFirst(new XElement("is_iptv", new XCData(pluginResponse.IptvPlaylist.ToString())));
             }
 
             items.AddFirst(new XElement("next_page_url", new XCData(pluginResponse.NextPageUrl ?? string.Empty)));

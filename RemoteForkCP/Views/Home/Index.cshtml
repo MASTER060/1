@@ -6,15 +6,28 @@
 
 <form asp-controller="Home" asp-action="Index" method="post">
     <div>
-        <div>IP адрес: @Html.DropDownList("IP", ViewBag.Ips as SelectList)</div>
-        <div>Порт: <input id="Port" type="text" disabled="disabled" asp-for="Port" /></div>
-        <div><input id="ListenLocalhost" type="checkbox" name="ListenLocalhost" asp-for="ListenLocalhost" /> <label for="ListenLocalhost">Слушать localhost</label></div>
+        <hr />
+        <div>
+            IP адрес: @Html.DropDownList("IP", ViewBag.Ips as SelectList)
+        </div>
+        <div>
+            Порт: <input id="Port" type="text" disabled="disabled" asp-for="Port" />
+        </div>
+        <div>
+            <input id="ListenLocalhost" type="checkbox" name="ListenLocalhost" asp-for="ListenLocalhost" /> <label for="ListenLocalhost">Слушать localhost</label>
+        </div>
+        <hr />
+        <div>
+            <input id="CheckUpdate" type="checkbox" name="CheckUpdate" asp-for="CheckUpdate" /> <label for="CheckUpdate">Проверять обновления</label>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.LatestVersion) && !string.IsNullOrEmpty(Model.DownloadLink)) {
+            <div>
+                <b>Доступна новая версия: @(Model.LatestVersion)</b> - <a href="@(Model.DownloadLink)">Скачать</a>
+            </div>
+        }
         <hr />
         <div>
             Порт AceStream: <input id="AceStreamPort" type="text" asp-for="AceStreamPort" /> <input id="CheckASButton" type="button" value="Проверить" OnClick="window.open('@ViewData["AceStreamCheck"]')" />
-        </div>
-        <div>
-            <input id="CheckUpdate" type="checkbox" name="CheckUpdate" asp-for="CheckUpdate" /> <label for="CheckUpdate">Проверять обновления</label>
         </div>
         <div>Режим логирования: @Html.DropDownList("Log", ViewBag.Logs as SelectList)</div>
         <hr />

@@ -56,5 +56,13 @@ namespace RemoteFork.Models {
         [Required]
         [Display(Name = "Developer mode")]
         public bool DeveloperMode { get; set; }
+        
+        [Required]
+        [Display(Name = "Download link")]
+        public string DownloadLink { get; set; }
+        
+        [Required]
+        [Display(Name = "Latest version")]
+        public string LatestVersion { get; set; }
     }
 }

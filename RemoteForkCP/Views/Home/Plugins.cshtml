@@ -7,6 +7,7 @@
 
 <form asp-controller="Home" asp-action="Plugins" method="post">
     <div>
+        <hr />
         <div>
             <input id="Enable" type="checkbox" name="Enable" asp-for="Enable" /> <label for="Enable">Включить плагины</label>
         </div>
@@ -18,8 +19,8 @@
                     <label>
                         <input type="checkbox"
                                name="EnablePlugins"
-                               value="@item.Value" 
-                               @if(Model.EnablePlugins.Contains(item.Value)){<text>checked="checked"</text>}/> @item.Text
+                               value="@item.Value"
+                               @if (Model.EnablePlugins.Contains(item.Value)) { <text> checked="checked" </text> } /> @item.Text
                         </label>
                     </div>
             }
@@ -27,7 +28,7 @@
         </div>
         <hr />
         <div>
-            <input id="ResetSettings" type="reset" value="Отмена" /><input id="ReimportPlugins" type="button" value="Обновить" onclick="location.href='@Url.Action("Plugins", "Home")?action=reimport'"/><input id="SubmitSettings" type="submit" value="Сохранить" />
+            <input id="ResetSettings" type="reset" value="Отмена" /><input id="ReimportPlugins" type="button" value="Обновить" onclick="location.href='@Url.Action("Plugins", "Home")?action=reimport'" /><input id="SubmitSettings" type="submit" value="Сохранить" />
         </div>
     </div>
 </form>

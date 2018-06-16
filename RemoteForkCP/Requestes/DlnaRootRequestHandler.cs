@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using RemoteFork.Plugins;
 using RemoteFork.Server;
 using RemoteFork.Settings;
+using RemoteFork.Updater;
 
 namespace RemoteFork.Requestes {
     public class DlnaRootRequestHandler : BaseRequestHandler<string> {
@@ -13,6 +14,18 @@ namespace RemoteFork.Requestes {
 
         public override string Handle(HttpRequest request, HttpResponse response) {
             var result = new List<Item>();
+
+            if (ProgramSettings.Settings.CheckUpdate) {
+                if (UpdateController.IsUpdateAvaiable("RemoteFork")) {
+                    result.Add(
+                        new Item {
+                            Name = $"Доступна новая версия: {UpdateController.GetUpdater("RemoteFork").GetLatestVersionNumber(false).Result}",
+                            Link = "http://newversion.m3u",
+                            Type = ItemType.DIRECTORY
+                        }
+                    );
+                }
+            }
 
             if (ProgramSettings.Settings.Dlna) {
                 if (ProgramSettings.Settings.DlnaFilterType == FilterMode.INCLUSION) {
@@ -69,12 +82,12 @@ namespace RemoteFork.Requestes {
                     new Item {
                         Name = plugin.Value.Name,
                         Link = PluginRequestHandler.CreatePluginUrl(request, plugin.Key),
-                        ImageLink = plugin.Value.ImageLink,
+                        ImageLink = plugin.Value.Attribute.ImageLink,
                         Type = ItemType.DIRECTORY
                     }
                 );
 
-                Log.LogDebug("Plugin: {0}", plugin.Value.Name);
+                Log.LogDebug("Plugin: {0}", plugin.Value.ToString());
             }
 
             return ResponseSerializer.ToM3U(result.ToArray());

@@ -80,8 +80,7 @@ namespace RemoteFork.Requestes {
             }
 
             var playlist = new Playlist {
-                Items = items.ToArray(),
-                IsIptv = "false"
+                Items = items.ToArray()
             };
             return ResponseSerializer.PlaylistToXml(playlist);
         }

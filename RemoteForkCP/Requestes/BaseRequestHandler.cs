@@ -9,7 +9,6 @@ namespace RemoteFork.Requestes {
         protected static readonly Logger Log = new Logger(typeof(BaseRequestHandler<T>));
 
         public virtual T Handle(HttpContext context) {
-            Log.LogDebug("SET DEFAULT HEADERS");
             SetDefaultReponseHeaders(context.Response);
 
             return Handle(context.Request, context.Response);

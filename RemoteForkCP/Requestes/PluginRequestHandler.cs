@@ -22,7 +22,7 @@ namespace RemoteFork.Requestes {
                 var plugin = PluginManager.Instance.GetPlugin(pluginKey);
 
                 if (plugin != null) {
-                    Log.LogDebug("Execute: {0}", plugin.Name);
+                    Log.LogDebug("Execute: {0}", plugin.ToString());
 
                     try {
                         var query = request.Query.ConvertToNameValue();
@@ -70,7 +70,7 @@ namespace RemoteFork.Requestes {
             };
 
             if (parameters != null) {
-                foreach (var parameter in parameters.AllKeys) {
+                foreach (string parameter in parameters.AllKeys) {
                     query.Add(parameter, parameters[parameter]);
                 }
             }

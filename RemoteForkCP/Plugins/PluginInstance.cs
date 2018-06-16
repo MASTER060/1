@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
+using RemoteFork.Settings;
+using RemoteFork.Updater;
 
 namespace RemoteFork.Plugins {
     internal class PluginInstance {
-        public readonly string Author;
-        public readonly string Description;
-        public readonly string Id;
-        public readonly string ImageLink;
         public readonly string Key;
-        public readonly string Name;
-        public readonly string Version;
+        public readonly PluginAttribute Attribute;
+
+        public string Id => Attribute.Id;
+        public string Name => Attribute.Name;
+
         private readonly Assembly _assembly;
         private readonly Type _type;
 
@@ -17,20 +19,21 @@ namespace RemoteFork.Plugins {
 
         public PluginInstance(string key, Assembly assembly, Type type, PluginAttribute attribute) {
             Key = key;
-            Id = attribute.Id;
-            Name = attribute.Name;
-            Description = attribute.Description;
-            ImageLink = attribute.ImageLink;
-            Version = attribute.Version;
-            Author = attribute.Author;
+            Attribute = attribute;
             _assembly = assembly;
             _type = type;
+            if (ProgramSettings.Settings.CheckUpdate) {
+                if (!string.IsNullOrEmpty(attribute.Github) && attribute.Github.Count(c => c == '/') == 2) {
+                    UpdateController.AddUpdate(key, new GithubProvider(attribute.Id, attribute.Github, false),
+                        attribute.Version);
+                }
+            }
         }
 
         public IPlugin Instance => _instance ?? (_instance = _assembly.CreateInstance(_type.FullName) as IPlugin);
 
         public override string ToString() {
-            return $"{Name} {Version} ({Author})";
+            return $"{Attribute.Name} {Attribute.Version} ({Attribute.Author})";
         }
     }
 }
