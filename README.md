@@ -13,5 +13,5 @@
 - [Utility](https://github.com/ShutovPS/RemoteFork.Utility) - вспомогательные пакеты, включающие функционал, используемый во всех версиях приложений и пагинах.
 - [Android](https://github.com/ShutovPS/remote_forkplayer_android) - приложение для Android (разработка пока приостановлена).
 #
-[Обсуждение на форуме](http://forkplayer.tv/forums/forum/remotefork/)
-[Telegram-канал](https://t.me/joinchat/BHfAkQmFtWAxig8C33DWGw)
+- [Обсуждение на форуме](http://forkplayer.tv/forums/forum/remotefork/)
+- [Telegram-канал](https://t.me/joinchat/BHfAkQmFtWAxig8C33DWGw)
