@@ -13,7 +13,6 @@ using RemoteFork.Updater;
 
 namespace RemoteFork {
     public class Program {
-        private static readonly Logger _logger = new Logger(typeof(Program));
         private static Server server;
 
         private static readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();

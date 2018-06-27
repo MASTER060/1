@@ -50,7 +50,7 @@ namespace RemoteFork.Updater {
             }
 
             if (_releaseAsset != null) {
-                var regex = new Regex("(\\d+\\.?){3}(\\d+)");
+                var regex = new Regex("(\\d+\\.?){2,3}(\\d+)");
                 return regex.IsMatch(_releaseAsset.TagName)
                     ? regex.Match(_releaseAsset.TagName).Value
                     : _releaseAsset.TagName;

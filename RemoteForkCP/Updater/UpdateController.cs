@@ -22,7 +22,11 @@ namespace RemoteFork.Updater {
         }
 
         public static bool IsUpdateAvaiable(string id) {
-            return _updaters[id].FindUpdate;
+            if (_updaters.ContainsKey(id)) {
+                return _updaters[id].FindUpdate;
+            }
+
+            return false;
         }
 
         public static Updater GetUpdater(string id) {

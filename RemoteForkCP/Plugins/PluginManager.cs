@@ -1,15 +1,14 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using RemoteFork.Log;
+using RemoteFork.Settings;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Security.Cryptography;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
-using RemoteFork.Log;
-using RemoteFork.Settings;
 
 namespace RemoteFork.Plugins {
     internal class PluginManager {
@@ -17,7 +16,7 @@ namespace RemoteFork.Plugins {
 
         public static readonly PluginManager Instance = new PluginManager();
 
-        private readonly Dictionary<string, PluginInstance> _plugins = new Dictionary<string, PluginInstance>();
+        private Dictionary<string, PluginInstance> _plugins = new Dictionary<string, PluginInstance>();
 
         private PluginManager() {
             LoadPlugins();
@@ -44,7 +43,7 @@ namespace RemoteFork.Plugins {
             }
         }
 
-        private static List<MetadataReference> CollectReferences() {
+        private static IEnumerable<MetadataReference> CollectReferences() {
             // first, collect all assemblies
             var assemblies = new HashSet<Assembly>();
 
@@ -59,6 +58,7 @@ namespace RemoteFork.Plugins {
             foreach (var assembly in assemblies) {
                 result.Add(MetadataReference.CreateFromFile(assembly.Location));
             }
+
             result.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
 
             return result;
@@ -82,7 +82,7 @@ namespace RemoteFork.Plugins {
 
         private void LoadScript(string fileName, string hash) {
             string codeToCompile = File.ReadAllText(fileName);
-            
+
             var syntaxTree = CSharpSyntaxTree.ParseText(codeToCompile);
             string assemblyName = Path.GetRandomFileName();
             var references = CollectReferences();
@@ -92,7 +92,7 @@ namespace RemoteFork.Plugins {
                 references: references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
             using (var ms = new MemoryStream()) {
-                EmitResult emitResult = compilation.Emit(ms);
+                var emitResult = compilation.Emit(ms);
                 if (!emitResult.Success) {
                     // some errors
                     var failures = emitResult.Diagnostics.Where(diagnostic =>
@@ -134,6 +134,8 @@ namespace RemoteFork.Plugins {
 
                             Log.LogDebug("Loaded plugin [id: {0}, name: {1}]", plugin.Id, plugin.ToString());
                         }
+
+                        _plugins = _plugins.OrderBy(p => p.Value.Name).ToDictionary(p => p.Key, p => p.Value);
                     }
                 }
             }
@@ -163,8 +165,9 @@ namespace RemoteFork.Plugins {
                 if (ProgramSettings.Settings.Plugins) {
                     foreach (var plugin in _plugins) {
 #if !DEBUG
-                        if (ProgramSettings.Settings.DeveloperMode || ProgramSettings.Settings.EnablePlugins.Contains(plugin.Value.Key))
-#endif
+                        if (ProgramSettings.Settings.DeveloperMode ||
+                            ProgramSettings.Settings.EnablePlugins.Contains(plugin.Value.Key))
+#endif 
                         {
                             dict.Add(plugin.Key, plugin.Value);
                         }
@@ -173,6 +176,7 @@ namespace RemoteFork.Plugins {
 
                 return dict;
             }
+
             return _plugins;
         }
 
@@ -180,13 +184,15 @@ namespace RemoteFork.Plugins {
             if (_plugins.ContainsKey(id)) {
                 if (ProgramSettings.Settings.Plugins) {
 #if !DEBUG
-                    if (ProgramSettings.Settings.DeveloperMode ||ProgramSettings.Settings.EnablePlugins.Contains(_plugins[id].Key))
-#endif
-                    {
+                    if (ProgramSettings.Settings.DeveloperMode ||
+                        ProgramSettings.Settings.EnablePlugins.Contains(_plugins[id].Key))
+#endif 
+    {
                         return _plugins[id];
                     }
                 }
             }
+
             return null;
         }
     }

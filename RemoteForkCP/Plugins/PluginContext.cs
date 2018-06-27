@@ -1,6 +1,8 @@
-﻿using System.Collections.Specialized;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using RemoteFork.Requestes;
+using System.Collections.Specialized;
+using RemoteFork.Settings;
+using RemoteFork.Updater;
 
 namespace RemoteFork.Plugins {
     internal class PluginContext : IPluginContext {
@@ -20,6 +22,17 @@ namespace RemoteFork.Plugins {
 
         public string CreatePluginUrl(NameValueCollection parameters) {
             return PluginRequestHandler.CreatePluginUrl(_request, _pluginName, parameters);
+        }
+
+        public string GetLatestVersionNumber(string id) {
+            if (ProgramSettings.Settings.CheckUpdate) {
+                if (UpdateController.IsUpdateAvaiable(id)) {
+                    var updater = UpdateController.GetUpdater(id);
+                    return updater.GetLatestVersionNumber(false).Result;
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace RemoteFork.Plugins {
             _type = type;
             if (ProgramSettings.Settings.CheckUpdate) {
                 if (!string.IsNullOrEmpty(attribute.Github) && attribute.Github.Count(c => c == '/') == 2) {
-                    UpdateController.AddUpdate(key, new GithubProvider(attribute.Id, attribute.Github, false),
+                    UpdateController.AddUpdate(attribute.Id, new GithubProvider(attribute.Id, attribute.Github, false),
                         attribute.Version);
                 }
             }
