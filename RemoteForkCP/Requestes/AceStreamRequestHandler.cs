@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Plugins;
@@ -14,7 +15,7 @@ namespace RemoteFork.Requestes {
     public class AceStreamRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "acestream/acestream";
 
-        public override string Handle(HttpRequest request, HttpResponse response) {
+        public override async Task<string> Handle(HttpRequest request, HttpResponse response) {
             try {
                 string url = HttpUtility.UrlDecode(request.QueryString.Value);
                 if (request.Method == "POST") {
@@ -27,7 +28,7 @@ namespace RemoteFork.Requestes {
                     url = url.Substring(3);
 
                     string contentId = FileList.GetContentId(url);
-                    return GetFileList(FileList.GetFileList(contentId, "content_id"), contentId, "content_id");
+                    return await GetFileList(FileList.GetFileList(contentId, "content_id"), contentId, "content_id");
                 } else if (url.StartsWith("torrenturl=")) {
                     url = url.Substring(11);
                     url = HttpUtility.UrlDecode(url);
@@ -35,14 +36,15 @@ namespace RemoteFork.Requestes {
                         url = url.Substring(10);
                     }
 
-                    var data = HTTPUtility.GetBytesRequest(url);
+                    var data = await HTTPUtility.GetBytesRequestAsync(url);
                     string contentId = FileList.GetContentId(data);
-                    return GetFileList(FileList.GetFileList(contentId, "content_id"), contentId, "content_id");
+                    return await GetFileList(FileList.GetFileList(contentId, "content_id"), contentId, "content_id");
                 } else if (url.StartsWith("magnet=")) {
                     url = url.Substring(7);
 
-                    return GetFileList(FileList.GetFileList(url, "magnet"), url, "magnet");
+                    return await GetFileList(FileList.GetFileList(url, "magnet"), url, "magnet");
                 }
+
                 return string.Empty;
             } catch (Exception exception) {
                 Log.LogError(exception);
@@ -50,13 +52,13 @@ namespace RemoteFork.Requestes {
             }
         }
 
-        public string GetFileList(Dictionary<string,string> files, string key, string type) {
+        public async Task<string> GetFileList(Dictionary<string, string> files, string key, string type) {
             var items = new List<Item>();
 
             if (files.Count > 0) {
                 if (files.Count > 1) {
                     string stream = string.Format("{0}/ace/getstream?{1}={2}", AceStreamEngine.GetServer, type, key);
-                    return HTTPUtility.GetRequest(stream);
+                    return await HTTPUtility.GetRequestAsync(stream);
                 } else {
                     string stream = string.Format("{0}/ace/getstream?{1}={2}", AceStreamEngine.GetServer, type, key);
                     string name = Path.GetFileName(files.First().Value);

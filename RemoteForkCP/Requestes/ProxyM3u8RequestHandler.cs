@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Network;
@@ -9,7 +10,7 @@ namespace RemoteFork.Requestes {
     public class ProxyM3u8RequestHandler : BaseRequestHandler<byte[]> {
         public const string UrlPath = "proxym3u8";
 
-        public override byte[] Handle(HttpRequest request, HttpResponse response) {
+        public override async Task<byte[]> Handle(HttpRequest request, HttpResponse response) {
             try {
                 string url = HttpUtility.UrlDecode(request.Path.Value.Replace("/" + UrlPath, ""));
                 if (url.StartsWith("B")) {
@@ -75,7 +76,7 @@ namespace RemoteFork.Requestes {
                 // response.AddHeader("Accept-Ranges", "bytes");
                 Log.LogDebug($"Real url:{url}");
                 Log.LogDebug($"usertype:{usertype}");
-                var data = HTTPUtility.GetBytesRequest(url, header, usertype);
+                var data = await HTTPUtility.GetBytesRequestAsync(url, header, usertype);
                 return data;
             } catch (Exception exception) {
                 Log.LogError(exception);

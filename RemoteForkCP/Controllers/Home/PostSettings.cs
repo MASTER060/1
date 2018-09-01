@@ -1,4 +1,5 @@
-﻿using RemoteFork.Models;
+﻿using System;
+using RemoteFork.Models;
 using RemoteFork.Network;
 using RemoteFork.Settings;
 
@@ -17,14 +18,22 @@ namespace RemoteFork.Controllers.Home {
                 ProgramSettings.Settings.CheckUpdate = settings.CheckUpdate;
                 ProgramSettings.Settings.DeveloperMode = settings.DeveloperMode;
 
+                if (!string.IsNullOrEmpty(settings.ProxyType)) {
+                    Enum.TryParse(settings.ProxyType, out ProxyType value);
+                    if (ProgramSettings.Settings.ProxyType != value) {
+                        ProgramSettings.Settings.ProxyType = value;
+                    }
+                }
+
                 ProgramSettings.Settings.UseProxy = settings.ProxyEnable;
                 ProgramSettings.Settings.ProxyAddress = settings.ProxyAddress;
+                ProgramSettings.Settings.ProxyPort = settings.ProxyPort;
                 ProgramSettings.Settings.ProxyUserName = settings.ProxyUserName;
                 ProgramSettings.Settings.ProxyPassword = settings.ProxyPassword;
                 ProgramSettings.Settings.ProxyNotDefaultEnable = settings.ProxyNotDefaultEnable;
 
                 if (settings.ProxyEnable) {
-                    HTTPUtility.CreateProxy(ProgramSettings.Settings.ProxyAddress,
+                    HTTPUtility.CreateProxy(ProgramSettings.Settings.ProxyAddress, ProgramSettings.Settings.ProxyPort,
                         ProgramSettings.Settings.ProxyUserName, ProgramSettings.Settings.ProxyPassword);
                 } else {
                     HTTPUtility.CreateProxy();

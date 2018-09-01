@@ -12,9 +12,6 @@
             <input id="Enable" type="checkbox" name="Enable" asp-for="Enable" /> <label for="Enable">Включить DLNA</label>
         </div>
         <hr />
-        @*<div>
-            <input id="HiidenFiles" type="checkbox" name="HiidenFiles" asp-for="HiidenFiles" /> <label for="HiidenFiles">Show hidden files</label>
-        </div>*@
         <div>Режим фильтрации:@Html.DropDownList("FilterMode", ViewBag.FilterMode as SelectList)</div>
         <div>
             Расширения файлов: <input id="FileExtensions" type="text" asp-for="FileExtensions" />

@@ -20,6 +20,8 @@ namespace RemoteFork.Models {
         [Display(Name = "Log")]
         public string Log { get; set; }
 
+        #region  PROXY
+
         [Required]
         [Display(Name = "Proxy Enable")]
         public bool ProxyEnable { get; set; }
@@ -34,12 +36,23 @@ namespace RemoteFork.Models {
         public string ProxyAddress { get; set; }
 
         [Required]
+        [Display(Name = "Proxy Port")]
+        public int ProxyPort { get; set; }
+
+        [Required]
         [Display(Name = "Proxy UserName")]
         public string ProxyUserName { get; set; }
 
         [Required]
         [Display(Name = "Proxy Password")]
         public string ProxyPassword { get; set; }
+
+
+        [Required]
+        [Display(Name = "Proxy Type")]
+        public string ProxyType { get; set; }
+
+        #endregion PROXY
 
         [Required]
         [Display(Name = "AceStream Port")]
@@ -52,15 +65,15 @@ namespace RemoteFork.Models {
         [Required]
         [Display(Name = "UserAgent")]
         public string UserAgent { get; set; }
-        
+
         [Required]
         [Display(Name = "Developer mode")]
         public bool DeveloperMode { get; set; }
-        
+
         [Required]
         [Display(Name = "Download link")]
         public string DownloadLink { get; set; }
-        
+
         [Required]
         [Display(Name = "Latest version")]
         public string LatestVersion { get; set; }

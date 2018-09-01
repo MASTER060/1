@@ -27,6 +27,15 @@ namespace RemoteFork.Controllers.Home {
             viewBag.AceStreamCheck =
                 $"http://{ProgramSettings.Settings.IpAddress}:{ProgramSettings.Settings.AceStreamPort}/webui/api/service?method=get_version&format=jsonp&callback=mycallback";
 
+            var proxyType = Enum.GetValues(typeof(ProxyType)).Cast<ProxyType>();
+            var proxyTypeList = proxyType.Select(proxy => new SelectListItem() {
+                    Text = proxy.ToString(),
+                    Value = ((byte)proxy).ToString()
+                })
+                .ToList();
+            viewBag.ProxyType = new SelectList(proxyTypeList, "Value", "Text",
+                ((byte)ProgramSettings.Settings.ProxyType).ToString());
+
             var model = new SettingsModel() {
                 IP = ProgramSettings.Settings.IpAddress,
                 Port = ProgramSettings.Settings.Port,
@@ -34,9 +43,11 @@ namespace RemoteFork.Controllers.Home {
 
                 ProxyEnable = ProgramSettings.Settings.UseProxy,
                 ProxyAddress = ProgramSettings.Settings.ProxyAddress,
+                ProxyPort = ProgramSettings.Settings.ProxyPort,
                 ProxyUserName = ProgramSettings.Settings.ProxyUserName,
                 ProxyPassword = ProgramSettings.Settings.ProxyPassword,
                 ProxyNotDefaultEnable = ProgramSettings.Settings.ProxyNotDefaultEnable,
+                ProxyType = ((byte)ProgramSettings.Settings.ProxyType).ToString(),
 
                 AceStreamPort = ProgramSettings.Settings.AceStreamPort,
                 CheckUpdate = ProgramSettings.Settings.CheckUpdate,

@@ -6,10 +6,6 @@ namespace RemoteFork.Models {
         [Display(Name = "Enable")]
         public bool Enable { get; set; }
 
-        //[Required]
-        //[Display(Name = "HiidenFiles")]
-        //public bool HiidenFiles { get; set; }
-
         [Required]
         [Display(Name = "FilterMode")]
         public string FilterMode { get; set; }

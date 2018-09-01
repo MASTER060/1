@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Settings;
@@ -14,7 +15,7 @@ namespace RemoteFork.Requestes {
     public class DlnaFileRequestHandler : BaseRequestHandler<Stream> {
         public const string URL_PATH = "dlna_file";
 
-        public override Stream Handle(HttpRequest request, HttpResponse response) {
+        public override async Task<Stream> Handle(HttpRequest request, HttpResponse response) {
             Log.LogDebug("HandleStream get file");
 
             string file = string.Empty;
@@ -26,10 +27,9 @@ namespace RemoteFork.Requestes {
 
             if (ProgramSettings.Settings.Dlna && !string.IsNullOrEmpty(file)) {
                 try {
-                    var fileRequest = FileRequest.Create(request, file);
+                    var fileRequest = await FileRequest.Create(request, file);
 
                     if (fileRequest.File.Exists && Tools.Tools.CheckAccessPath(fileRequest.File.FullName)) {
-
                         response.Headers.Add("Accept-Ranges", "bytes");
                         if (ValidateRanges(response, fileRequest) &&
                             ValidateModificationDate(request, response, fileRequest) &&
@@ -209,59 +209,62 @@ namespace RemoteFork.Requestes {
             File = new FileInfo(new Uri(file).LocalPath);
         }
 
-        private void Parse() {
+        private async Task Parse() {
             EntityTag = GenerateEntityTag();
             ContentType = MimeTypes.ContainsKey(File.Extension)
                 ? MimeTypes.Get(File.Extension)
                 : "application/octet-stream";
-            ParseRanges();
+            await ParseRanges();
         }
 
-        private void ParseRanges() {
-            if (_request.Headers.ContainsKey("Range")) {
-                string rangesHeader = _request.Headers["Range"];
-                string ifRangeHeader = _request.Headers[HEADER_IF_RANGE];
-                var ifRangeHeaderDate = ParseHttpDateHeader(_request, HEADER_IF_RANGE);
+        private async Task ParseRanges() {
+            await Task.Run(() => {
+                if (_request.Headers.ContainsKey("Range")) {
+                    string rangesHeader = _request.Headers["Range"];
+                    string ifRangeHeader = _request.Headers[HEADER_IF_RANGE];
+                    var ifRangeHeaderDate = ParseHttpDateHeader(_request, HEADER_IF_RANGE);
 
-                if (string.IsNullOrEmpty(rangesHeader)
-                    || (!string.IsNullOrEmpty(ifRangeHeader)
-                        && (ifRangeHeader != EntityTag
-                            || (ifRangeHeaderDate != DateTime.MinValue && File.LastWriteTime > ifRangeHeaderDate)))) {
-                    RangesStartIndexes = new[] {0L};
-                    RangesEndIndexes = new[] {File.Length - 1};
-                    RangeRequest = false;
-                    MultipartRequest = false;
-                } else {
-                    var ranges = rangesHeader.Replace("bytes=", string.Empty).Split(CommaSplitArray);
+                    if (string.IsNullOrEmpty(rangesHeader)
+                        || (!string.IsNullOrEmpty(ifRangeHeader)
+                            && (ifRangeHeader != EntityTag
+                                || (ifRangeHeaderDate != DateTime.MinValue &&
+                                    File.LastWriteTime > ifRangeHeaderDate)))) {
+                        RangesStartIndexes = new[] {0L};
+                        RangesEndIndexes = new[] {File.Length - 1};
+                        RangeRequest = false;
+                        MultipartRequest = false;
+                    } else {
+                        var ranges = rangesHeader.Replace("bytes=", string.Empty).Split(CommaSplitArray);
 
-                    RangesStartIndexes = new long[ranges.Length];
-                    RangesEndIndexes = new long[ranges.Length];
-                    RangeRequest = true;
-                    MultipartRequest = ranges.Length > 1;
+                        RangesStartIndexes = new long[ranges.Length];
+                        RangesEndIndexes = new long[ranges.Length];
+                        RangeRequest = true;
+                        MultipartRequest = ranges.Length > 1;
 
-                    for (var i = 0; i < ranges.Length; i++) {
-                        var currentRange = ranges[i].Split(DashSplitArray);
+                        for (var i = 0; i < ranges.Length; i++) {
+                            var currentRange = ranges[i].Split(DashSplitArray);
 
-                        if (string.IsNullOrEmpty(currentRange[1])) {
-                            RangesEndIndexes[i] = File.Length - 1;
-                        } else {
-                            RangesEndIndexes[i] = long.Parse(currentRange[1]);
-                        }
+                            if (string.IsNullOrEmpty(currentRange[1])) {
+                                RangesEndIndexes[i] = File.Length - 1;
+                            } else {
+                                RangesEndIndexes[i] = long.Parse(currentRange[1]);
+                            }
 
-                        if (string.IsNullOrEmpty(currentRange[0])) {
-                            RangesStartIndexes[i] = File.Length - 1 - RangesEndIndexes[i];
-                            RangesEndIndexes[i] = File.Length - 1;
-                        } else {
-                            RangesStartIndexes[i] = long.Parse(currentRange[0]);
+                            if (string.IsNullOrEmpty(currentRange[0])) {
+                                RangesStartIndexes[i] = File.Length - 1 - RangesEndIndexes[i];
+                                RangesEndIndexes[i] = File.Length - 1;
+                            } else {
+                                RangesStartIndexes[i] = long.Parse(currentRange[0]);
+                            }
                         }
                     }
+                } else {
+                    RangesStartIndexes = new[] {0L};
+                    RangesEndIndexes = new[] {(File.Length - 1)};
+                    RangeRequest = false;
+                    MultipartRequest = false;
                 }
-            } else {
-                RangesStartIndexes = new[] {0L};
-                RangesEndIndexes = new[] {(File.Length - 1)};
-                RangeRequest = false;
-                MultipartRequest = false;
-            }
+            });
         }
 
         public long GetContentLength() {
@@ -304,10 +307,10 @@ namespace RemoteFork.Requestes {
                 Md5.ComputeHash(Encoding.ASCII.GetBytes($"{File.FullName}|{File.LastWriteTime}")));
         }
 
-        public static FileRequest Create(HttpRequest request, string file) {
+        public static async Task<FileRequest>  Create(HttpRequest request, string file) {
             var fr = new FileRequest(request, file);
 
-            fr.Parse();
+            await fr.Parse();
 
             return fr;
         }

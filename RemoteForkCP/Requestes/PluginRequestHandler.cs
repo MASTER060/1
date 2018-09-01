@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Plugins;
 using RemoteFork.Tools;
@@ -15,7 +16,7 @@ namespace RemoteFork.Requestes {
 
         internal static readonly Regex PluginParamRegex = new Regex($@"{PARAM_PLUGIN_KEY}(\w+)[\\]?", RegexOptions.Compiled);
 
-        public override string Handle(HttpRequest request, HttpResponse response) {
+        public override async Task<string> Handle(HttpRequest request, HttpResponse response) {
             string pluginKey = ParsePluginKey(request);
 
             if (!string.IsNullOrEmpty(pluginKey)) {
@@ -25,9 +26,13 @@ namespace RemoteFork.Requestes {
                     Log.LogDebug("Execute: {0}", plugin.ToString());
 
                     try {
-                        var query = request.Query.ConvertToNameValue();
-                        var context = new PluginContext(pluginKey, request, query);
-                        var pluginResponse = plugin.Instance.GetList(context);
+                        Playlist pluginResponse = null;
+
+                        await Task.Run((() => {
+                            var query = request.Query.ConvertToNameValue();
+                            var context = new PluginContext(pluginKey, request, query);
+                            pluginResponse = plugin.Instance.GetList(context);
+                        }));
 
                         if (pluginResponse != null) {
                             if (!string.IsNullOrEmpty(pluginResponse.source)) {

@@ -37,7 +37,8 @@
         <hr />
         <div>
             <input id="ProxyEnable" type="checkbox" name="ProxyEnable" asp-for="ProxyEnable" /> <label for="ProxyEnable">Включить Proxy</label><br />
-            Адрес: <input id="ProxyAddress" type="text" style="width: 30%" asp-for="ProxyAddress" /><br /><br />
+            Адрес: <input id="ProxyAddress" type="text" style="width: 30%" asp-for="ProxyAddress" /> | Порт: <input id="ProxyPort" type="text" style="width: 10%" asp-for="ProxyPort" /><br /><br />
+            <div>Тип Proxy:@Html.DropDownList("ProxyType", ViewBag.ProxyType as SelectList)</div>
             Имя: <input id="ProxyUserName" type="text" asp-for="ProxyUserName" /><br />
             Пароль: <input id="ProxyPassword" type="text" asp-for="ProxyPassword" /><br />
             <input id="ProxyNotDefaultEnable" type="checkbox" name="ProxyNotDefaultEnable" asp-for="ProxyNotDefaultEnable" /> <label for="ProxyNotDefaultEnable">Включить Proxy только для специальных запросов</label><br />

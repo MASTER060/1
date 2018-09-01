@@ -64,7 +64,7 @@ namespace RemoteFork {
 #endif
 
                 if (ProgramSettings.Settings.UseProxy) {
-                    HTTPUtility.CreateProxy(ProgramSettings.Settings.ProxyAddress,
+                    HTTPUtility.CreateProxy(ProgramSettings.Settings.ProxyAddress, ProgramSettings.Settings.ProxyPort,
                         ProgramSettings.Settings.ProxyUserName, ProgramSettings.Settings.ProxyPassword);
                 } else {
                     HTTPUtility.CreateProxy();
@@ -96,8 +96,7 @@ namespace RemoteFork {
                 Task.Run(() => {
                     string url =
                         $"http://getlist2.obovse.ru/remote/index.php?v={Assembly.GetExecutingAssembly().GetName().Version}&do=list&localip={_ip}:{_port}&proxy=false";
-                    string result = HTTPUtility.GetRequest(url);
-                    Log.LogInformation(result);
+                    HTTPUtility.GetRequest(url);
                 });
             }
 
