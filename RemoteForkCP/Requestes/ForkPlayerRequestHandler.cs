@@ -20,7 +20,7 @@ namespace RemoteFork.Requestes {
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "forkplayer");
             string filePath = Path.Combine(path, "forkplayer.js");
             
-            if (string.IsNullOrEmpty(script)) {
+            if (string.IsNullOrEmpty(script) || script.Length < 1024) {
                 if (File.Exists(filePath)) {
                     script = await File.ReadAllTextAsync(filePath);
                 }

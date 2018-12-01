@@ -73,6 +73,13 @@ namespace RemoteFork.Controllers {
             return View();
         }
 
+        [Route(DlnaTorrentRequestHandler.URL_PATH)]
+        public async Task<ActionResult> TorrentFile() {
+            HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
+            ViewData["Message"] = await new DlnaTorrentRequestHandler().Handle(HttpContext);
+            return View();
+        }
+
         [Route(ForkPlayerRequestHandler.URL_PATH)]
         public async Task<ActionResult> ForkPlayer() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";

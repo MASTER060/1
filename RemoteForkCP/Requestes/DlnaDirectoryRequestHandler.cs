@@ -40,15 +40,18 @@ namespace RemoteFork.Requestes {
                     var filesInfo = FileManager.GetFiles(rootDirectory);
 
                     foreach (var file in filesInfo.Where(f => Tools.Tools.CheckAccessPath(f.Key))) {
+                        bool torrent = Path.GetExtension(file.Key) == ".torrent";
                         result.Add(
                             new Item {
                                 //Name = $"{file.Value} ({Tools.Tools.FSize(file.Length)})",
                                 Name = $"{file.Value} ({Tools.Tools.FSize(new FileInfo(file.Key).Length)})",
-                                Link = CreateUrl(request, DlnaFileRequestHandler.URL_PATH,
+                                Link = CreateUrl(request, torrent
+                                        ? DlnaTorrentRequestHandler.URL_PATH
+                                        : DlnaFileRequestHandler.URL_PATH,
                                     new NameValueCollection() {
                                         {string.Empty, HttpUtility.UrlEncode(file.Key)}
                                     }),
-                                Type = ItemType.FILE
+                                Type = torrent ? ItemType.DIRECTORY : ItemType.FILE
                             }
                         );
 
