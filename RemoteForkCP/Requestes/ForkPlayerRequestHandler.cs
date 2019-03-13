@@ -10,13 +10,14 @@ namespace RemoteFork.Requestes {
         public const string URL_PATH = "forkplayer";
 
         public override async Task<string> Handle(HttpRequest request, HttpResponse response) {
+            string script = string.Empty;
+#if !DEBUG
             string userAgent = request.Headers["User-Agent"].ToString();
             var headers = new Dictionary<string, string> {
                 {"User-Agent", userAgent}
             };
-
-            string script =
-                await HTTPUtility.GetRequestAsync("http://getlist5.obovse.ru/jsapp/app.js.php?run=js", headers);
+            script = await HTTPUtility.GetRequestAsync("http://getlist5.obovse.ru/jsapp/app.js.php?run=js", headers);
+#endif
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "forkplayer");
             string filePath = Path.Combine(path, "forkplayer.js");
             
