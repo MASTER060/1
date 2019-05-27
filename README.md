@@ -17,4 +17,11 @@
 - [RemoteFork](https://github.com/ShutovPS/RemoteFork) - веб-сервер, обработчик запросов от FP.
 - [Plugins](https://github.com/ShutovPS/RemoteFork.Plugins) - система плагинов для RF.
 - [Utility](https://github.com/ShutovPS/RemoteFork.Utility) - вспомогательные пакеты, включающие функционал, используемый во всех версиях приложений и пагинах.
-- [Android](https://github.com/ShutovPS/remote_forkplayer_android) - приложение для Android (разработка пока приостановлена).
+- [Android](https://github.com/ShutovPS/remote_forkplayer_android) - приложение для Android (разработка приостановлена).
+
+## Libraries used
+
+- [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json)
+- [octokit.net](https://github.com/octokit/octokit.net)
+- [SocksSharp](https://github.com/extremecodetv/SocksSharp)
+- [Mime](https://github.com/hey-red/Mime)
