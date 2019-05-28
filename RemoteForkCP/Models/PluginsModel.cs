@@ -9,6 +9,10 @@ namespace RemoteFork.Models {
         public bool Enable { get; set; }
 
         [Required]
+        [Display(Name = "IconsEnable")]
+        public bool IconsEnable { get; set; }
+
+        [Required]
         [Display(Name = "EnablePlugins")]
         public IList<string> EnablePlugins { get; set; }
 

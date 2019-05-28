@@ -18,6 +18,8 @@ namespace RemoteFork.Controllers.Home {
                 ProgramSettings.Settings.CheckUpdate = settings.CheckUpdate;
                 ProgramSettings.Settings.DeveloperMode = settings.DeveloperMode;
 
+                ProgramSettings.Settings.StartPageModernStyle = settings.StartPageModernStyle;
+
                 if (!string.IsNullOrEmpty(settings.ProxyType)) {
                     Enum.TryParse(settings.ProxyType, out ProxyType value);
                     if (ProgramSettings.Settings.ProxyType != value) {

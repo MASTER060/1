@@ -4,28 +4,29 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using RemoteFork.Items;
 using RemoteFork.Plugins;
 using RemoteFork.Server;
 using RemoteFork.Settings;
 using RemoteFork.Updater;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public class DlnaRootRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "treeview";
 
         public override async Task<string> Handle(HttpRequest request, HttpResponse response) {
-            var result = new List<Item>();
+            var items = new List<IItem>();
 
             await Task.Run((() => {
 
                 if (ProgramSettings.Settings.CheckUpdate) {
                     if (UpdateController.IsUpdateAvaiable("RemoteFork")) {
-                        result.Add(
-                            new Item {
-                                Name =
+                        items.Add(
+                            new FileItem() {
+                                Title =
                                     $"Доступна новая версия: {UpdateController.GetUpdater("RemoteFork").GetLatestVersionNumber(false).Result}",
-                                Link = "http://newversion.m3u",
-                                Type = ItemType.DIRECTORY
+                                Link = "http://newversion.m3u"
                             }
                         );
                     }
@@ -38,7 +39,7 @@ namespace RemoteFork.Requestes {
                                 Console.WriteLine(directory);
                                 if (FileManager.DirectoryExists(directory)) {
                                     Console.WriteLine(true);
-                                    result.Add(DlnaDirectoryRequestHandler.CreateDirectoryItem(request, directory));
+                                    items.Add(DlnaDirectoryRequestHandler.CreateDirectoryItem(request, directory));
 
                                     Log.LogDebug($"Filtering directory: {directory}");
                                 }
@@ -54,10 +55,9 @@ namespace RemoteFork.Requestes {
                                 string subText =
                                     $"<br>Метка диска: {drive.VolumeLabel}<br>Тип носителя: {drive.DriveType}";
 
-                                result.Add(new Item {
-                                    Name = mainText + subText,
-                                    Link = DlnaDirectoryRequestHandler.CreateDriveItem(request, drive.Name),
-                                    Type = ItemType.DIRECTORY
+                                items.Add(new DirectoryItem() {
+                                    Title = mainText + subText,
+                                    Link = DlnaDirectoryRequestHandler.CreateDriveItem(request, drive.Name)
                                 });
 
                                 Log.LogDebug($"Drive: {mainText}{subText}");
@@ -68,14 +68,13 @@ namespace RemoteFork.Requestes {
 
 
                 if ((ProgramSettings.Settings.UserUrls != null) && (ProgramSettings.Settings.UserUrls.Length > 0)) {
-                    result.Add(
-                        new Item {
-                            Name = "Пользовательские ссылки",
+                    items.Add(
+                        new DirectoryItem() {
+                            Title = "Пользовательские ссылки",
                             Link = CreateUrl(request, UserUrlsRequestHandler.URL_PATH,
                                 new NameValueCollection() {
                                     {string.Empty, UserUrlsRequestHandler.PARAM_URLS}
-                                }),
-                            Type = ItemType.DIRECTORY
+                                })
                         }
                     );
 
@@ -83,20 +82,36 @@ namespace RemoteFork.Requestes {
                 }
 
                 foreach (var plugin in PluginManager.Instance.GetPlugins()) {
-                    result.Add(
-                        new Item {
-                            Name = plugin.Value.Name,
-                            Link = PluginRequestHandler.CreatePluginUrl(request, plugin.Key),
-                            ImageLink = plugin.Value.Attribute.ImageLink,
-                            Type = ItemType.DIRECTORY
-                        }
-                    );
+                    var item = new DirectoryItem() {
+                        Title = plugin.Value.Name,
+                        Link = PluginRequestHandler.CreatePluginUrl(request, plugin.Key)
+                    };
+                    if (ProgramSettings.Settings.PluginIcons) {
+                        item.ImageLink = plugin.Value.Attribute.ImageLink;
+                    }
+
+                    items.Add(item);
 
                     Log.LogDebug("Plugin: {0}", plugin.Value.ToString());
                 }
             }));
 
-            return ResponseSerializer.ToM3U(result.ToArray());
+            PlayList playList = null;
+
+            if (ProgramSettings.Settings.StartPageModernStyle) {
+                playList = new RootPlayList();
+            } else {
+                playList = new PlayList();
+            }
+
+            playList.Items = items.ToArray();
+
+            return ResponseManager.CreateResponse(playList);
+        }
+
+        private class RootPlayList : PlayList {
+            [JsonProperty("typeList", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public string TypeList = "start";
         }
     }
 }

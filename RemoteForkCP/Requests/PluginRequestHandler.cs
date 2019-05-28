@@ -6,15 +6,17 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using RemoteFork.Items;
 using RemoteFork.Plugins;
 using RemoteFork.Tools;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public class PluginRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "plugin";
         public const string PARAM_PLUGIN_KEY = "plugin";
 
-        internal static readonly Regex PluginParamRegex = new Regex($@"{PARAM_PLUGIN_KEY}(\w+)[\\]?", RegexOptions.Compiled);
+        internal static readonly Regex PluginParamRegex =
+            new Regex($@"{PARAM_PLUGIN_KEY}(\w+)[\\]?", RegexOptions.Compiled);
 
         public override async Task<string> Handle(HttpRequest request, HttpResponse response) {
             string pluginKey = ParsePluginKey(request);
@@ -26,24 +28,24 @@ namespace RemoteFork.Requestes {
                     Log.LogDebug("Execute: {0}", plugin.ToString());
 
                     try {
-                        Playlist pluginResponse = null;
+                        PlayList playList = null;
 
                         await Task.Run((() => {
                             var query = request.Query.ConvertToNameValue();
                             var context = new PluginContext(pluginKey, request, query);
-                            pluginResponse = plugin.Instance.GetList(context);
+                            playList = plugin.GetPlayList(context);
                         }));
 
-                        if (pluginResponse != null) {
-                            if (!string.IsNullOrEmpty(pluginResponse.source)) {
+                        if (playList != null) {
+                            // var playList = new PlayList(pluginResponse);
+
+                            if (!string.IsNullOrEmpty(playList.Source)) {
                                 Log.LogDebug(
                                     "Plugin Playlist.source not null! Write to response Playlist.source and ignore other methods. Plugin: {0}",
                                     pluginKey);
-                                return pluginResponse.source;
-                            //} else if (!string.IsNullOrEmpty(pluginResponse.IsIptv) && pluginResponse.IsIptv == "True") {
-                                //return ResponseSerializer.PlaylistToM3U8(pluginResponse);
+                                return playList.Source;
                             } else {
-                                return ResponseSerializer.PlaylistToXml(pluginResponse);
+                                return ResponseManager.CreateResponse(playList);
                             }
                         }
                     } catch (Exception exception) {
@@ -53,14 +55,16 @@ namespace RemoteFork.Requestes {
                     }
                 }
             }
-            response.StatusCode = (int)HttpStatusCode.NotFound;
+
+            response.StatusCode = (int) HttpStatusCode.NotFound;
             return $"Plugin is not defined in request. Plugin: {pluginKey}";
         }
 
         private static string ParsePluginKey(HttpRequest request) {
             string pluginParam = string.Empty;
             if (request.Query.ContainsKey(string.Empty)) {
-                pluginParam = request.Query[string.Empty].FirstOrDefault(s => PluginParamRegex.IsMatch(s ?? string.Empty));
+                pluginParam = request.Query[string.Empty]
+                    .FirstOrDefault(s => PluginParamRegex.IsMatch(s ?? string.Empty));
             }
 
             var pluginParamMatch = PluginParamRegex.Match(pluginParam ?? string.Empty);
@@ -68,7 +72,8 @@ namespace RemoteFork.Requestes {
             return pluginParamMatch.Success ? pluginParamMatch.Groups[1].Value : string.Empty;
         }
 
-        internal static string CreatePluginUrl(HttpRequest request, string pluginName, NameValueCollection parameters = null) {
+        internal static string CreatePluginUrl(HttpRequest request, string pluginName,
+            NameValueCollection parameters = null) {
             var query = new NameValueCollection {
                 {string.Empty, string.Concat(PARAM_PLUGIN_KEY, pluginName, Path.DirectorySeparatorChar, ".xml")},
                 {"host", request.Host.ToUriComponent()}

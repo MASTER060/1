@@ -4,7 +4,7 @@ using System.Web;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Server;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public class TestRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "test";
 

@@ -6,12 +6,14 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
+using RemoteFork.Items;
 using RemoteFork.Network;
 using RemoteFork.Plugins;
+using RemoteFork.Plugins.Items.Converter;
 using RemoteFork.Settings;
 using RemoteFork.Torrents;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public class DlnaTorrentRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "dlna_torrent";
 
@@ -33,12 +35,13 @@ namespace RemoteFork.Requestes {
                         var data = await File.ReadAllBytesAsync(fileRequest.File.FullName);
 
                         string source = string.Empty;
+
                         var items = GetItems(data, ref source);
 
                         if (!string.IsNullOrEmpty(source)) {
                             return source;
                         } else {
-                            return ResponseSerializer.ToM3U(items.ToArray());
+                            return ResponseManager.CreateResponse(items);
                         }
                     } else {
                         Log.LogDebug("File not found: {0}", file);
@@ -57,21 +60,22 @@ namespace RemoteFork.Requestes {
             return null;
         }
 
-        private List<Item> GetItems(byte[] data, ref string source) {
-            var items = new List<Item>();
+        private static List<IItem> GetItems(byte[] data, ref string source) {
+            var items = new List<IItem>();
             string contentId = FileList.GetContentId(data);
             var files = FileList.GetFileList(contentId, "content_id");
 
             if (files.Count > 0) {
-                string stream = string.Format("{0}/ace/getstream?{1}={2}", AceStreamEngine.GetServer, "content_id", contentId);
+                string stream = string.Format("{0}/ace/getstream?{1}={2}", AceStreamEngine.GetServer, "content_id",
+                    contentId);
+
                 if (files.Count > 1) {
                     source = HTTPUtility.GetRequest(stream);
                 } else {
                     string name = Path.GetFileName(files.First().Value);
-                    var item = new Item() {
-                        Name = Path.GetFileName(name),
-                        Link = stream,
-                        Type = ItemType.FILE
+                    var item = new FileItem() {
+                        Title = Path.GetFileName(name),
+                        Link = stream
                     };
                     items.Add(item);
                 }

@@ -5,7 +5,7 @@ using System.Web;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Log;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public abstract class BaseRequestHandler<T> {
         protected static readonly Logger Log = new Logger(typeof(BaseRequestHandler<T>));
 

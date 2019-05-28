@@ -71,6 +71,10 @@ namespace RemoteFork.Models {
         public bool DeveloperMode { get; set; }
 
         [Required]
+        [Display(Name = "StartPage modern style")]
+        public bool StartPageModernStyle { get; set; }
+
+        [Required]
         [Display(Name = "Download link")]
         public string DownloadLink { get; set; }
 

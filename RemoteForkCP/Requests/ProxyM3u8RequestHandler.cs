@@ -6,7 +6,7 @@ using System.Web;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Network;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public class ProxyM3u8RequestHandler : BaseRequestHandler<byte[]> {
         public const string UrlPath = "proxym3u8";
 

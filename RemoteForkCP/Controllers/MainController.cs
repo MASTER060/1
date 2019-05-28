@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using RemoteFork.Log.Analytics;
-using RemoteFork.Requestes;
+using RemoteFork.Requests;
 using RemoteFork.Models;
 
 namespace RemoteFork.Controllers {

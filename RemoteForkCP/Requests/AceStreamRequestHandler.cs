@@ -7,11 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using RemoteFork.Plugins;
+using RemoteFork.Items;
 using RemoteFork.Torrents;
 using HttpResponse = Microsoft.AspNetCore.Http.HttpResponse;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public class AceStreamRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "acestream/acestream";
 
@@ -53,7 +53,7 @@ namespace RemoteFork.Requestes {
         }
 
         public async Task<string> GetFileList(Dictionary<string, string> files, string key, string type) {
-            var items = new List<Item>();
+            var items = new List<IItem>();
 
             if (files.Count > 0) {
                 if (files.Count > 1) {
@@ -62,29 +62,24 @@ namespace RemoteFork.Requestes {
                 } else {
                     string stream = string.Format("{0}/ace/getstream?{1}={2}", AceStreamEngine.GetServer, type, key);
                     string name = Path.GetFileName(files.First().Value);
-                    var item = new Item() {
-                        Name = Path.GetFileName(name),
+                    var item = new FileItem() {
+                        Title = Path.GetFileName(name),
                         ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png",
-                        Link = stream,
-                        Type = ItemType.FILE
+                        Link = stream
                     };
                     items.Add(item);
 
                     stream = string.Format("{0}/ace/manifest.m3u8?{1}={2}", AceStreamEngine.GetServer, type, key);
-                    item = new Item() {
-                        Name = "(hls) " + Path.GetFileName(name),
+                    item = new FileItem() {
+                        Title = "(hls) " + Path.GetFileName(name),
                         ImageLink = "http://obovse.ru/ForkPlayer2.5/img/file.png",
-                        Link = stream,
-                        Type = ItemType.FILE
+                        Link = stream
                     };
                     items.Add(item);
                 }
             }
 
-            var playlist = new Playlist {
-                Items = items.ToArray()
-            };
-            return ResponseSerializer.PlaylistToXml(playlist);
+            return ResponseManager.CreateResponse(items);
         }
     }
 }

@@ -11,6 +11,9 @@
         <div>
             <input id="Enable" type="checkbox" name="Enable" asp-for="Enable" /> <label for="Enable">Включить плагины</label>
         </div>
+        <div>
+            <input id="IconsEnable" type="checkbox" name="IconsEnable" asp-for="IconsEnable" /> <label for="IconsEnable">Отображать иконки</label>
+        </div>
         <hr />
         <div class="container">
             @using (Html.BeginForm("Index", "Home")) {

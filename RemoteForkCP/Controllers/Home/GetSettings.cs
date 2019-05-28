@@ -52,7 +52,9 @@ namespace RemoteFork.Controllers.Home {
                 AceStreamPort = ProgramSettings.Settings.AceStreamPort,
                 CheckUpdate = ProgramSettings.Settings.CheckUpdate,
                 UserAgent = ProgramSettings.Settings.UserAgent,
-                DeveloperMode = ProgramSettings.Settings.DeveloperMode
+                DeveloperMode = ProgramSettings.Settings.DeveloperMode,
+
+                StartPageModernStyle = ProgramSettings.Settings.StartPageModernStyle,
             };
 
             if (ProgramSettings.Settings.CheckUpdate) {

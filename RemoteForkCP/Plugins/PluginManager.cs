@@ -124,7 +124,9 @@ namespace RemoteFork.Plugins {
 
         private void LoadAssembly(Assembly assembly, string hash) {
             foreach (var type in assembly.GetExportedTypes()) {
-                if (typeof(IPlugin).IsAssignableFrom(type) && (type.IsAbstract == false)) {
+                if ((typeof(IPlugin).IsAssignableFrom(type) || typeof(IRemotePlugin).IsAssignableFrom(type)) &&
+                    (type.IsAbstract == false)) {
+
                     var attribute = type.GetCustomAttribute<PluginAttribute>();
 
                     if (attribute != null) {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using RemoteFork.Network;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public class ForkPlayerRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "forkplayer";
 

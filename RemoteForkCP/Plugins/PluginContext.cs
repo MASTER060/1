@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using RemoteFork.Requestes;
+using RemoteFork.Requests;
 using System.Collections.Specialized;
 using RemoteFork.Settings;
 using RemoteFork.Updater;

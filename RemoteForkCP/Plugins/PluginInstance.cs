@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using RemoteFork.Items;
 using RemoteFork.Settings;
 using RemoteFork.Updater;
 
@@ -15,7 +16,15 @@ namespace RemoteFork.Plugins {
         private readonly Assembly _assembly;
         private readonly Type _type;
 
-        private IPlugin _instance;
+        private IRemotePlugin _instance;
+
+        public IRemotePlugin Instance =>
+            _instance ?? (_instance = _assembly.CreateInstance(_type.FullName) as IRemotePlugin);
+
+        private IPlugin _oldInstance;
+
+        public IPlugin OldInstance =>
+            _oldInstance ?? (_oldInstance = _assembly.CreateInstance(_type.FullName) as IPlugin);
 
         public PluginInstance(string key, Assembly assembly, Type type, PluginAttribute attribute) {
             Key = key;
@@ -30,7 +39,19 @@ namespace RemoteFork.Plugins {
             }
         }
 
-        public IPlugin Instance => _instance ?? (_instance = _assembly.CreateInstance(_type.FullName) as IPlugin);
+        public PlayList GetPlayList(PluginContext context) {
+            PlayList playList = null;
+
+            if (typeof(IPlugin).IsAssignableFrom(_type)) {
+                var pluginResponse = OldInstance.GetList(context);
+
+                playList = new RemoteFork.Plugins.Items.Converter.PlayList(pluginResponse);
+            } else if (typeof(IRemotePlugin).IsAssignableFrom(_type)) {
+                playList = Instance.GetPlayList(context);
+            }
+
+            return playList;
+        }
 
         public override string ToString() {
             return $"{Attribute.Name} {Attribute.Version} ({Attribute.Author})";

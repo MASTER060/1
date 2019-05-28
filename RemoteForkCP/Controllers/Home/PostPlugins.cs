@@ -6,6 +6,8 @@ namespace RemoteFork.Controllers.Home {
     public class PostPlugins {
         public static void PostModel(PluginsModel settings) {
             ProgramSettings.Settings.Plugins = settings.Enable;
+            ProgramSettings.Settings.PluginIcons = settings.IconsEnable;
+
             if (settings.EnablePlugins != null && settings.EnablePlugins.Any()) {
                 ProgramSettings.Settings.EnablePlugins = settings.EnablePlugins.ToArray();
             } else {

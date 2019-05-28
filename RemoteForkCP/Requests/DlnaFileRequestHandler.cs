@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 using RemoteFork.Settings;
 using RemoteFork.Tools;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public class DlnaFileRequestHandler : BaseRequestHandler<Stream> {
         public const string URL_PATH = "dlna_file";
 

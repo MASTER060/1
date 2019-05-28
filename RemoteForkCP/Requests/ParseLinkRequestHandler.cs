@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
 
     public class ParseLinkRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "parserlink";
@@ -67,7 +67,7 @@ namespace RemoteFork.Requestes {
                 result = await HTTPUtility.GetRequestAsync(text.Substring(9));
             } else {
                 bool verbose = text.IndexOf(" -i", StringComparison.Ordinal) > 0;
-                bool autoredirect = text.IndexOf(" -L", StringComparison.Ordinal) > 0;
+                bool autoRedirect = text.IndexOf(" -L", StringComparison.Ordinal) > 0;
 
                 string url = Regex.Match(text, "(?:\")(.*?)(?=\")").Groups[1].Value;
                 var matches = Regex.Matches(text, "(?:-H\\s\")(.*?)(?=\")");
@@ -85,7 +85,7 @@ namespace RemoteFork.Requestes {
                     Log.LogDebug("POST DATA");
                     try {
                         string dataString = Regex.Match(text, "(?:--data\\s\")(.*?)(?=\")").Groups[1].Value;
-                        result = await HTTPUtility.PostRequestAsync(url, dataString, header, verbose, autoredirect);
+                        result = await HTTPUtility.PostRequestAsync(url, dataString, header, verbose, autoRedirect);
                     } catch (Exception e) {
                         result = e.ToString();
                         Log.LogDebug(e.ToString());
@@ -93,7 +93,7 @@ namespace RemoteFork.Requestes {
                 } else {
                     Log.LogInformation(url);
 
-                    result = await HTTPUtility.GetRequestAsync(url, header, verbose, autoredirect);
+                    result = await HTTPUtility.GetRequestAsync(url, header, verbose, autoRedirect: autoRedirect);
                 }
             }
 

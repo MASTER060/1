@@ -7,11 +7,11 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using RemoteFork.Plugins;
+using RemoteFork.Items;
 using RemoteFork.Server;
 using RemoteFork.Settings;
 
-namespace RemoteFork.Requestes {
+namespace RemoteFork.Requests {
     public class DlnaDirectoryRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "dlna_directory";
 
@@ -27,12 +27,11 @@ namespace RemoteFork.Requestes {
 
                 var directoriesInfo = FileManager.GetDirectories(rootDirectory);
 
-                var result = new List<Item>();
+                var items = new List<IItem>();
 
                 await Task.Run((() => {
-
                     foreach (var directory in directoriesInfo.Where(d => Tools.Tools.CheckAccessPath(d.Key))) {
-                        result.Add(CreateDirectoryItem(request, directory.Key, directory.Value));
+                        items.Add(CreateDirectoryItem(request, directory.Key, directory.Value));
 
                         Log.LogDebug("Directory: {0}", directory);
                     }
@@ -41,25 +40,38 @@ namespace RemoteFork.Requestes {
 
                     foreach (var file in filesInfo.Where(f => Tools.Tools.CheckAccessPath(f.Key))) {
                         bool torrent = Path.GetExtension(file.Key) == ".torrent";
-                        result.Add(
-                            new Item {
-                                //Name = $"{file.Value} ({Tools.Tools.FSize(file.Length)})",
-                                Name = $"{file.Value} ({Tools.Tools.FSize(new FileInfo(file.Key).Length)})",
-                                Link = CreateUrl(request, torrent
-                                        ? DlnaTorrentRequestHandler.URL_PATH
-                                        : DlnaFileRequestHandler.URL_PATH,
-                                    new NameValueCollection() {
-                                        {string.Empty, HttpUtility.UrlEncode(file.Key)}
-                                    }),
-                                Type = torrent ? ItemType.DIRECTORY : ItemType.FILE
-                            }
-                        );
+
+                        if (torrent) {
+                            items.Add(
+                                new DirectoryItem() {
+                                    Title = $"{file.Value} ({Tools.Tools.FSize(new FileInfo(file.Key).Length)})",
+                                    Link = CreateUrl(request, torrent
+                                            ? DlnaTorrentRequestHandler.URL_PATH
+                                            : DlnaFileRequestHandler.URL_PATH,
+                                        new NameValueCollection() {
+                                            {string.Empty, HttpUtility.UrlEncode(file.Key)}
+                                        })
+                                }
+                            );
+                        } else {
+                            items.Add(
+                                new FileItem() {
+                                    Title = $"{file.Value} ({Tools.Tools.FSize(new FileInfo(file.Key).Length)})",
+                                    Link = CreateUrl(request, torrent
+                                            ? DlnaTorrentRequestHandler.URL_PATH
+                                            : DlnaFileRequestHandler.URL_PATH,
+                                        new NameValueCollection() {
+                                            {string.Empty, HttpUtility.UrlEncode(file.Key)}
+                                        }),
+                                }
+                            );
+                        }
 
                         Log.LogDebug("File: {0}", file);
                     }
                 }));
 
-                return ResponseSerializer.ToXml(result);
+                return ResponseManager.CreateResponse(items);
             } else {
                 Log.LogDebug("Directory Not Found: {0}", rootDirectory);
                 response.StatusCode = (int) HttpStatusCode.NotFound;
@@ -67,14 +79,14 @@ namespace RemoteFork.Requestes {
             }
         }
 
-        internal static Item CreateDirectoryItem(HttpRequest request, string directory) {
+        internal static DirectoryItem CreateDirectoryItem(HttpRequest request, string directory) {
             return CreateDirectoryItem(request, directory, directory);
         }
 
-        internal static Item CreateDirectoryItem(HttpRequest request, string directoryPath, string directoryName) {
+        internal static DirectoryItem CreateDirectoryItem(HttpRequest request, string directoryPath, string directoryName) {
 
-            return new Item {
-                Name = directoryName,
+            return new DirectoryItem() {
+                Title = directoryName,
                 Link = CreateUrl(
                     request,
                     URL_PATH,
@@ -84,8 +96,7 @@ namespace RemoteFork.Requestes {
                             string.Concat(directoryPath, ".xml")
                         }
                     }
-                ),
-                Type = ItemType.DIRECTORY
+                )
             };
         }
 

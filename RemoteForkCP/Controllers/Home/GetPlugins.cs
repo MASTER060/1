@@ -18,6 +18,7 @@ namespace RemoteFork.Controllers.Home {
 
             var model = new PluginsModel() {
                 Enable = ProgramSettings.Settings.Plugins,
+                IconsEnable = ProgramSettings.Settings.PluginIcons,
                 Plugins = pluginsList,
                 EnablePlugins = ProgramSettings.Settings.EnablePlugins
             };
