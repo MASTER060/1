@@ -2,7 +2,7 @@
 
 **Программа является дополнением к приложению для тв** [*ForkPlayer*](http://forkplayer.tv/).
 
-**Cкачать актуальную версию**: [1.40.0.13](https://github.com/ShutovPS/RemoteFork/releases/latest) | [![Build status](https://ci.appveyor.com/api/projects/status/incpdeg9j6ibll6g?svg=true)](https://ci.appveyor.com/project/ShutovPS/remotefork)
+**Cкачать актуальную версию**: [1.40.1.0](https://github.com/ShutovPS/RemoteFork/releases/latest) | [![Build status](https://ci.appveyor.com/api/projects/status/incpdeg9j6ibll6g?svg=true)](https://ci.appveyor.com/project/ShutovPS/remotefork)
 
 ## Основное функции:
 - Обработка запросов, недоступных в самом FP.
