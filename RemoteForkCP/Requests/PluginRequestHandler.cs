@@ -13,13 +13,14 @@ using RemoteFork.Tools;
 namespace RemoteFork.Requests {
     public class PluginRequestHandler : BaseRequestHandler<string> {
         public const string URL_PATH = "plugin";
-        public const string PARAM_PLUGIN_KEY = "plugin";
+
+        public const string PARAM_PLUGIN_KEY = "pluginId";
 
         internal static readonly Regex PluginParamRegex =
             new Regex($@"{PARAM_PLUGIN_KEY}(\w+)[\\]?", RegexOptions.Compiled);
 
         public override async Task<string> Handle(HttpRequest request, HttpResponse response) {
-            string pluginKey = ParsePluginKey(request);
+            string pluginKey = request.Query[PARAM_PLUGIN_KEY];
 
             if (!string.IsNullOrEmpty(pluginKey)) {
                 var plugin = PluginManager.Instance.GetPlugin(pluginKey);
@@ -60,22 +61,11 @@ namespace RemoteFork.Requests {
             return $"Plugin is not defined in request. Plugin: {pluginKey}";
         }
 
-        private static string ParsePluginKey(HttpRequest request) {
-            string pluginParam = string.Empty;
-            if (request.Query.ContainsKey(string.Empty)) {
-                pluginParam = request.Query[string.Empty]
-                    .FirstOrDefault(s => PluginParamRegex.IsMatch(s ?? string.Empty));
-            }
-
-            var pluginParamMatch = PluginParamRegex.Match(pluginParam ?? string.Empty);
-
-            return pluginParamMatch.Success ? pluginParamMatch.Groups[1].Value : string.Empty;
-        }
-
-        internal static string CreatePluginUrl(HttpRequest request, string pluginName,
-            NameValueCollection parameters = null) {
+        internal static string CreatePluginUrl(HttpRequest request,
+                                               string pluginName,
+                                               NameValueCollection parameters = null) {
             var query = new NameValueCollection {
-                {string.Empty, string.Concat(PARAM_PLUGIN_KEY, pluginName, Path.DirectorySeparatorChar, ".xml")},
+                {PARAM_PLUGIN_KEY, pluginName},
                 {"host", request.Host.ToUriComponent()}
             };
 

@@ -87,7 +87,7 @@ namespace RemoteFork.Requests {
                         Link = PluginRequestHandler.CreatePluginUrl(request, plugin.Key)
                     };
                     if (ProgramSettings.Settings.PluginIcons) {
-                        item.ImageLink = plugin.Value.Attribute.ImageLink;
+                        item.ImageLink = PluginIconRequestHandler.CreateImageUrl(request, plugin.Value);
                     }
 
                     items.Add(item);

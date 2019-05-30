@@ -73,6 +73,18 @@ namespace RemoteFork.Controllers {
             return View();
         }
 
+        [Route(PluginIconRequestHandler.URL_PATH)]
+        public async Task<ActionResult> PluginIcon() {
+            HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
+            var stream = await new PluginIconRequestHandler().Handle(HttpContext);
+            
+            if (stream != null) {
+                return new FileStreamResult(stream, HttpContext.Response.ContentType);
+            } 
+            
+            return File(new byte[0], "text/html; charset=utf-8");
+        }
+
         [Route(DlnaTorrentRequestHandler.URL_PATH)]
         public async Task<ActionResult> TorrentFile() {
             HttpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
