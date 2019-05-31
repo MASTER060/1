@@ -104,7 +104,7 @@ namespace RemoteFork.Requests {
                 playList = new PlayList();
             }
 
-            playList.Items = items.ToArray();
+            playList.Items = items;
 
             return ResponseManager.CreateResponse(playList);
         }
