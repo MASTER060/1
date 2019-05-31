@@ -13,23 +13,24 @@ namespace RemoteFork.Plugins {
         public string Id => Attribute.Id;
         public string Name => Attribute.Name;
 
-        private readonly Assembly _assembly;
+        public Assembly Assembly { get; }
+        
         private readonly Type _type;
 
         private IRemotePlugin _instance;
 
         public IRemotePlugin Instance =>
-            _instance ?? (_instance = _assembly.CreateInstance(_type.FullName) as IRemotePlugin);
+            _instance ?? (_instance = Assembly.CreateInstance(_type.FullName) as IRemotePlugin);
 
         private IPlugin _oldInstance;
 
         public IPlugin OldInstance =>
-            _oldInstance ?? (_oldInstance = _assembly.CreateInstance(_type.FullName) as IPlugin);
+            _oldInstance ?? (_oldInstance = Assembly.CreateInstance(_type.FullName) as IPlugin);
 
         public PluginInstance(string key, Assembly assembly, Type type, PluginAttribute attribute) {
             Key = key;
             Attribute = attribute;
-            _assembly = assembly;
+            Assembly = assembly;
             _type = type;
             if (ProgramSettings.Settings.CheckUpdate) {
                 if (!string.IsNullOrEmpty(attribute.Github) && attribute.Github.Count(c => c == '/') == 2) {

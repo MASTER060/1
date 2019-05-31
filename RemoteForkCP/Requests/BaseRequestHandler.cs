@@ -10,14 +10,14 @@ namespace RemoteFork.Requests {
         protected static readonly Logger Log = new Logger(typeof(BaseRequestHandler<T>));
 
         public virtual async Task<T> Handle(HttpContext context) {
-            SetDefaultReponseHeaders(context.Response);
+            SetDefaultResponseHeaders(context.Response);
 
             return await Handle(context.Request, context.Response);
         }
 
         public virtual async Task<T> Handle(HttpContext context, bool datatype) {
             if (!datatype) {
-                SetDefaultReponseHeaders(context.Response);
+                SetDefaultResponseHeaders(context.Response);
             } else {
                 Log.LogDebug("NO DEFAULT HEADERS");
             }
@@ -26,7 +26,7 @@ namespace RemoteFork.Requests {
 
         public abstract Task<T> Handle(HttpRequest request, HttpResponse response);
 
-        protected virtual void SetDefaultReponseHeaders(HttpResponse response) {
+        protected virtual void SetDefaultResponseHeaders(HttpResponse response) {
             response.ContentType = "text/html";
         }
 

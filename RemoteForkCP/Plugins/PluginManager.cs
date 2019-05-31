@@ -17,19 +17,22 @@ namespace RemoteFork.Plugins {
         public static readonly PluginManager Instance = new PluginManager();
 
         private Dictionary<string, PluginInstance> _plugins = new Dictionary<string, PluginInstance>();
+        
+        public static string PluginsPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
 
         private PluginManager() {
             LoadPlugins();
         }
 
         private void LoadPlugins() {
-            string pathPlugins = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
+            string pathPlugins = PluginsPath;
 
             if (Directory.Exists(pathPlugins)) {
                 LoadAssemblies(pathPlugins);
                 LoadScripts(pathPlugins);
             }
         }
+
 
         private void LoadScripts(string pathPlugins) {
             var dir = new DirectoryInfo(pathPlugins);
