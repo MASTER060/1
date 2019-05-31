@@ -17,7 +17,7 @@ namespace RemoteFork.Plugins {
         public static readonly PluginManager Instance = new PluginManager();
 
         private Dictionary<string, PluginInstance> _plugins = new Dictionary<string, PluginInstance>();
-        
+
         public static string PluginsPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
 
         private PluginManager() {
@@ -172,7 +172,7 @@ namespace RemoteFork.Plugins {
 #if !DEBUG
                         if (ProgramSettings.Settings.DeveloperMode ||
                             ProgramSettings.Settings.EnablePlugins.Contains(plugin.Value.Key))
-#endif 
+#endif
                         {
                             dict.Add(plugin.Key, plugin.Value);
                         }
@@ -191,8 +191,8 @@ namespace RemoteFork.Plugins {
 #if !DEBUG
                     if (ProgramSettings.Settings.DeveloperMode ||
                         ProgramSettings.Settings.EnablePlugins.Contains(_plugins[id].Key))
-#endif 
-    {
+#endif
+                    {
                         return _plugins[id];
                     }
                 }

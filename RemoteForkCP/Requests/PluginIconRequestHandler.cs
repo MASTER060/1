@@ -2,16 +2,14 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using RemoteFork.Log;
+using RemoteFork.Network;
 using RemoteFork.Plugins;
+using RemoteFork.Tools;
 
 namespace RemoteFork.Requests {
     public class PluginIconRequestHandler : BaseRequestHandler<Stream> {
-        private static readonly Logger Log = new Logger(typeof(PluginIconRequestHandler));
-
         public const string URL_PATH = "plugin_icon";
 
         public override async Task<Stream> Handle(HttpRequest request, HttpResponse response) {
@@ -26,11 +24,11 @@ namespace RemoteFork.Requests {
                     Stream stream = null;
 
                     await Task.Run((() => {
-                        var pluginImage = new PluginImage(plugin.Attribute.ImageLink);
-                        
-                        response.ContentType = pluginImage.ContentType;
+                        var pluginImage = new PluginImage(plugin.Attribute.ImageLink, pluginId);
 
-                        stream = pluginImage.GetStream(plugin);
+                        // response.ContentType = pluginImage.ContentType;
+
+                        stream = pluginImage.GetStream().Result;
                     }));
 
                     return stream;
@@ -45,23 +43,19 @@ namespace RemoteFork.Requests {
         }
 
         protected override void SetDefaultResponseHeaders(HttpResponse response) {
-            response.ContentType = PluginImage.MimeTypePng;
+            response.ContentType = MimeTypes.Get(".png");
         }
 
         internal static string CreateImageUrl(HttpRequest request, PluginInstance plugin) {
             try {
-                var pluginImage = new PluginImage(plugin.Attribute.ImageLink);
-
-                if (pluginImage.IsLocalImage) {
-                    return CreateUrl(request,
-                                     URL_PATH,
-                                     new NameValueCollection {
-                                         {PluginRequestHandler.PARAM_PLUGIN_KEY, plugin.Id}
-                                     }
-                    );
-                }
-            } catch (Exception) {
-                // ignored
+                return CreateUrl(request,
+                    URL_PATH,
+                    new NameValueCollection {
+                        {PluginRequestHandler.PARAM_PLUGIN_KEY, plugin.Id}
+                    }
+                );
+            } catch (Exception exception) {
+                Log.LogError(exception);
             }
 
             return plugin.Attribute.ImageLink;
@@ -69,74 +63,49 @@ namespace RemoteFork.Requests {
     }
 
     internal class PluginImage {
-        public const string MimeTypePng = "image/png";
-        
-        private const string PrefixFile = "file:";
-
-        private const string PrefixPlugin = "plugin:";
-
         private readonly string _imageLink;
+        private readonly string _pluginName;
 
-        public PluginImage(string imageLink) {
+        public PluginImage(string imageLink, string pluginName) {
             _imageLink = string.IsNullOrEmpty(imageLink) ? string.Empty : imageLink;
+            _pluginName = string.IsNullOrEmpty(pluginName) ? string.Empty : pluginName;
         }
 
-        public bool IsLocalImage => IsLocalFile || IsPluginFile;
-
-        private bool IsLocalFile => _imageLink.StartsWith(PrefixFile);
-
-        private bool IsPluginFile => _imageLink.StartsWith(PrefixPlugin);
-
-        public string ContentType {
+        public bool IsLocalFile {
             get {
-                try {
-                    var extension = Path.GetExtension(LocalPath);
-
-                    switch (extension) {
-                        case ".jpg":
-                        case ".jpeg":
-                            return MediaTypeNames.Image.Jpeg;
-                        case ".png":
-                            return MimeTypePng;
-                        case ".gif":
-                            return MediaTypeNames.Image.Gif;
-                    }
-                } catch (Exception) {
-                    // ignored
+                if (File.Exists(LocalFilePath)) {
+                    return true;
                 }
 
-                return MimeTypePng;
+                return false;
             }
         }
 
-        private string LocalPath {
-            get {
-                if (IsLocalFile) {
-                    return _imageLink.Substring(PrefixFile.Length);
-                }
-
-                if (IsPluginFile) {
-                    return _imageLink.Substring(PrefixPlugin.Length); 
-                }
-
-                return _imageLink;
-            }
+        private string LocalFilePath {
+            get { return Path.Combine(PluginManager.PluginsPath, _pluginName + ".png"); }
         }
-        
-        public Stream GetStream(PluginInstance plugin) {
+
+        public async Task<Stream> GetStream() {
+            MemoryStream iconData = null;
+
             try {
-                if (IsLocalFile) {
-                    return new FileStream(Path.Combine(PluginManager.PluginsPath, LocalPath), FileMode.Open, FileAccess.Read);
+                byte[] buffer;
+
+                if (!IsLocalFile) {
+                    buffer = await HTTPUtility.GetBytesRequestAsync(_imageLink);
+
+                    await File.WriteAllBytesAsync(LocalFilePath, buffer);
+                } else {
+                    buffer = await File.ReadAllBytesAsync(LocalFilePath);
                 }
 
-                if (IsPluginFile) {
-                    return plugin.Assembly.GetManifestResourceStream(LocalPath);
-                }
-            } catch (Exception e) {
-                //
+                iconData = new MemoryStream(buffer);
+
+            } catch (Exception exception) {
             }
 
-            return null;
+            return iconData;
         }
     }
 }
+
